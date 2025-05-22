@@ -1,0 +1,165 @@
+Build a full-featured, production-ready financial calculator website using ReactJS.
+
+The website should be modern, scalable, and well-structured. It must support tools for budget planning, financial calculation, salary management, and investment planning.
+
+🏗️ High-Level Purpose:
+Build a responsive, user-friendly financial toolkit web app with multiple calculators:
+
+Budget planner
+
+Mortgage calculator
+
+EMI calculator
+
+Salary manager
+
+ROI calculator
+
+Retirement planner
+
+Currency converter
+
+Savings tracker
+
+🧰 Technical Stack & Frameworks:
+🔹 Frontend
+ReactJS (v18+)
+
+Functional components with React Hooks
+
+React Router v6+ for page navigation
+
+Context API or Redux Toolkit for state management
+
+Tailwind CSS (or styled-components) for responsive design
+
+Chart.js or Recharts for data visualization
+
+React Hook Form or Formik for form handling and validation
+
+🔹 Backend (optional but preferred)
+Node.js with Express.js
+
+MongoDB (with Mongoose)
+
+Firebase as a serverless/database option (optional)
+
+🔹 APIs & Libraries
+Currency exchange API (e.g., exchangerate-api.com or fixer.io)
+
+JWT or Firebase for authentication (if login is included)
+
+PDF export library (e.g., jsPDF, html2canvas)
+
+🔹 Tooling & Environment
+ESLint + Prettier setup
+
+Vite or Create React App for bootstrapping
+
+PWA support (manifest + service workers)
+
+dotenv for managing environment variables
+
+🔹 Testing
+Jest and React Testing Library
+
+Unit and integration tests for major components
+
+🔹 Deployment
+Vercel, Netlify, or Firebase Hosting
+
+📋 Required Features & Components:
+✅ Budget Planner
+Add/edit/delete expense categories
+
+Monthly income vs expense visualization
+
+Goal setting and alerts
+
+✅ Budget Calculator
+Auto-balance for multiple inputs
+
+Color-coded overspending indicators
+
+✅ EMI Calculator
+Loan amount, term, interest input
+
+Outputs: EMI, interest, repayment schedule
+
+✅ Mortgage Calculator
+Includes down payment, rate, term
+
+Charts for monthly breakdown
+
+✅ Salary Management Tool
+Gross to net breakdown
+
+Tax and deduction estimate
+
+Annual increment forecasting
+
+✅ Retirement Planner
+Age, current savings, monthly input
+
+Projected corpus at retirement
+
+✅ ROI & Investment Calculator
+Compound vs simple interest
+
+Outputs maturity value and interest earned
+
+✅ Currency Converter
+Real-time exchange using external API
+
+Conversion history (optional)
+
+✅ Savings Goal Tracker
+Monthly savings recommendation
+
+Progress visualization
+
+🌙 Extra Features:
+Dark Mode / Light Mode switch (store preference in localStorage)
+
+Save user data locally (or with Firebase)
+
+Export charts and tables to PDF
+
+Authentication (login, signup, reset password) — optional
+
+Accessibility features (ARIA roles, keyboard navigation)
+
+SEO and meta tags
+
+📁 Folder Structure:
+bash
+Copy
+Edit
+/src
+ ┣ /components
+ ┃ ┣ /charts
+ ┃ ┣ /forms
+ ┃ ┣ /calculators
+ ┣ /pages
+ ┃ ┣ Home.jsx
+ ┃ ┣ BudgetPlanner.jsx
+ ┃ ┣ EMICalculator.jsx
+ ┃ ┣ ...
+ ┣ /hooks
+ ┣ /context
+ ┣ /utils
+ ┣ /styles
+ ┣ App.jsx
+ ┣ main.jsx or index.jsx
+📌 Deliverables:
+Full source code with comments
+
+Mobile and desktop responsive views
+
+Modular, scalable architecture
+
+Working PWA support (offline fallback + add to home screen)
+
+Unit tests for key features
+
+Deployment-ready build

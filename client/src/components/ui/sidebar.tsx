@@ -1,0 +1,123 @@
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
+import { useTheme } from "@/hooks/use-theme";
+import { routes } from "@/types";
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const [location] = useLocation();
+  const { theme, toggleTheme } = useTheme();
+
+  const menuItems = routes;
+
+  return (
+    <>
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed top-0 left-0 z-20 h-full w-64 transform transition-transform duration-200 ease-in-out",
+          "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-md",
+          "lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+            <Logo />
+            <button
+              onClick={onClose}
+              className="lg:hidden text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="overflow-y-auto flex-grow p-4">
+            <p className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-2">
+              Calculators
+            </p>
+            <ul className="space-y-1">
+              {menuItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    href={item.path}
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center p-3 rounded-lg cursor-pointer transition-colors",
+                      location === item.path
+                        ? "bg-primary-50 dark:bg-gray-700 text-primary-600 dark:text-primary-400"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    )}
+                  >
+                    <i className={`fas ${item.icon} mr-3`}></i>
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                Settings
+              </p>
+              <ul className="space-y-1">
+                <li>
+                  <button
+                    onClick={toggleTheme}
+                    className="w-full flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+                  >
+                    <i
+                      className={cn(
+                        "fas mr-3",
+                        theme === "dark"
+                          ? "fa-sun text-yellow-400"
+                          : "fa-moon text-gray-600"
+                      )}
+                    ></i>
+                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  </button>
+                </li>
+                <li>
+                  <button className="w-full flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                    <i className="fas fa-user-circle mr-3"></i>
+                    <span>Account</span>
+                  </button>
+                </li>
+                <li>
+                  <button className="w-full flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                    <i className="fas fa-cog mr-3"></i>
+                    <span>Settings</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </nav>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <button className="flex items-center text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400">
+              <i className="fas fa-sign-out-alt mr-3"></i>
+              <span>Log Out</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 z-10 bg-black bg-opacity-50 lg:hidden"
+        ></div>
+      )}
+    </>
+  );
+}
