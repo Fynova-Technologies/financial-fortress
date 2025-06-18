@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, forwardRef } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,8 +15,10 @@ import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { ExpenseCategory, Expense } from "@/types";
+import IncomeInput from "../forms/InputIncome";
+import { PageHeader } from "../page-header";
 
-export function BudgetPlanner() {
+export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const {
     budgetData,
     updateBudgetData,
@@ -39,6 +41,13 @@ export function BudgetPlanner() {
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [income, setIncome] =useState<number | "">("");
+  const [submittedIncome, setSubmittedIncome] = useState<number>(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
+
+
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const handleAddExpense = () => {
     if (
@@ -93,10 +102,42 @@ export function BudgetPlanner() {
     return category ? category.color : "#718096";
   };
 
+  // function for submitting the total income
+  const handleSubmit = () => {
+    if (income !== "") {
+      const numericIncome = Number(income);
+      setSubmittedIncome(numericIncome);
+      updateBudgetData({ totalIncome: numericIncome }); //update context
+      setIncome("");
+    }
+  };
+
+
+  // fileter function for not rendering the categories when categories is not avaliable in pie chart
+  const filteredCategories = budgetData.expenseCategories.filter(
+    (cat) => cat.amount > 0
+  )
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-1">
+        <CardContent className="p-6">
+          <IncomeInput income={income} setIncome={setIncome} onSubmit={handleSubmit} />
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4"> Add Your All expenses </p>
+          <div className="flex justify-start">
+            <Button
+              onClick={() => setShowAddExpenseModal(true)}
+              variant="outline"
+              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Add Expense
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Budget Summary Card */}
-      <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
+      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-3">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Monthly Budget Overview</h3>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
@@ -106,6 +147,7 @@ export function BudgetPlanner() {
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatCurrency(budgetData.totalIncome)}
+                {/* {formatCurrency(submittedIncome)} */}
               </p>
             </div>
             <div className="mb-4 md:mb-0">
@@ -143,7 +185,7 @@ export function BudgetPlanner() {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={budgetData.expenseCategories}
+                  data={filteredCategories}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -155,7 +197,7 @@ export function BudgetPlanner() {
                     `${name}: ${(percent * 100).toFixed(0)}%`
                   }
                 >
-                  {budgetData.expenseCategories.map((entry, index) => (
+                  {filteredCategories.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -173,7 +215,7 @@ export function BudgetPlanner() {
               className="bg-primary-500 hover:bg-primary-600 text-white"
             >
               <i className="fas fa-plus mr-2"></i>
-              Add Expense
+              Add More Expense
             </Button>
           </div>
         </CardContent>
@@ -206,7 +248,9 @@ export function BudgetPlanner() {
                     className="h-2 rounded-full"
                     style={{
                       width: `${
+                        budgetData.totalExpenses > 0 ?
                         (category.amount / budgetData.totalExpenses) * 100
+                        : 0
                       }%`,
                       backgroundColor: category.color,
                     }}
@@ -215,13 +259,17 @@ export function BudgetPlanner() {
                 <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
                   <span>
                     {Math.round(
+                      budgetData.totalExpenses > 0 ?
                       (category.amount / budgetData.totalExpenses) * 100
+                      : 0
                     )}
                     % of expenses
                   </span>
                   <span>
                     {Math.round(
+                      budgetData.totalExpenses > 0 ?
                       (category.amount / budgetData.totalIncome) * 100
+                      : 0
                     )}
                     % of income
                   </span>
@@ -283,7 +331,7 @@ export function BudgetPlanner() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredExpenses.map((expense) => (
+                {/* {filteredExpenses.map((expense) => (
                   <tr key={expense.id}>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                       {expense.description}
@@ -308,7 +356,9 @@ export function BudgetPlanner() {
                       {formatCurrency(expense.amount)}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-                      <button className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400">
+                      <button 
+                        className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+                      >
                         <i className="fas fa-edit"></i>
                       </button>
                       <button
@@ -319,7 +369,129 @@ export function BudgetPlanner() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))} */}
+                
+                {filteredExpenses.map((expense) => {
+                  const isEditing = editingId === expense.id;
+                  return (
+                    <tr key={expense.id}>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            value={editedExpense.description ?? expense.description}
+                            onChange={(e) =>
+                              setEditedExpense({ ...editedExpense, description: e.target.value })
+                            }
+                            className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
+                          />
+                          ) : (
+                            expense.description
+                        )}
+                    </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                        {isEditing ? (
+                          <select
+                            value={editedExpense.category ?? expense.category}
+                            onChange={(e) =>
+                              setEditedExpense({ ...editedExpense, category: e.target.value })
+                            }
+                            className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
+                          >
+                            {budgetData.expenseCategories.map((cat) => (
+                              <option key={cat.id} value={cat.name}>{cat.name}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span
+                            className="px-2 py-1 rounded-full text-xs"
+                            style={{
+                              backgroundColor: `${getExpenseCategoryColor(expense.category)}20`,
+                              color: getExpenseCategoryColor(expense.category),
+                            }}
+                          >
+                            {expense.category}
+                          </span>
+                        )}
+                    </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                        {isEditing ? (
+                          <input
+                            type="date"
+                            value={
+                              editedExpense.date
+                              ? new Date(editedExpense.date).toISOString().split("T")[0]
+                              : new Date(expense.date).toISOString().split("T")[0]
+                            }
+                            onChange={(e) =>
+                              setEditedExpense({ ...editedExpense, date: e.target.value })
+                            }
+                            className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
+                          />
+                        ) : (
+                          new Date(expense.date).toLocaleDateString()
+                        )}
+                    </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            value={editedExpense.amount ?? expense.amount}
+                            onChange={(e) =>
+                              setEditedExpense({ ...editedExpense, amount: parseFloat(e.target.value) })
+                            }
+                            className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
+                          />
+                        ) : (
+                          formatCurrency(expense.amount)
+                        )}
+                    </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
+                        {isEditing ? (
+                          <>
+                          <button
+                            onClick={() => {
+                              updateExpense(expense.id, editedExpense);
+                              setEditingId(null);
+                              setEditedExpense({});
+                            }}
+                            className="text-green-500 hover:text-green-600 mr-2"
+                          >
+                            <i className="fas fa-check"></i>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditedExpense({});
+                            }}
+                            className="text-gray-400 hover:text-gray-500"
+                          >
+                            <i className="fas fa-times"></i>
+                          </button>
+                          </>
+                        ) : (
+                          <>
+                          <button
+                          className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+                          onClick={() => {
+                            setEditingId(expense.id);
+                            setEditedExpense(expense);
+                          }}
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button
+                            className="ml-3 text-gray-600 dark:text-gray-400 hover:text-error"
+                            onClick={() => deleteExpense(expense.id)}
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -420,4 +592,4 @@ export function BudgetPlanner() {
       </Dialog>
     </div>
   );
-}
+})

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import {
   Pie
 } from "recharts";
 
-export function MortgageCalculator() {
+export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { mortgageData, updateMortgageData, calculateMortgage } = useCalculator();
   const [results, setResults] = useState<any>(null);
 
@@ -248,7 +248,7 @@ export function MortgageCalculator() {
       </Card>
       
       {/* Calculator Results Card */}
-      <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
+      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Mortgage Summary</h3>
           
@@ -367,4 +367,4 @@ export function MortgageCalculator() {
       </Card>
     </div>
   );
-}
+})

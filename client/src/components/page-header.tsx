@@ -1,11 +1,14 @@
 import { Button } from "@/components/ui/button";
+import { ExportPDFButton } from "./ExportPDFButton";
+import { RefObject } from "react";
 
 interface PageHeaderProps {
   title: string;
   description: string;
+  exportTargetRef?: RefObject<HTMLElement>
 }
 
-export function PageHeader({ title, description }: PageHeaderProps) {
+export function PageHeader({ title, description, exportTargetRef }: PageHeaderProps) {
   return (
     <div className="mb-8 lg:flex lg:items-center lg:justify-between">
       <div>
@@ -18,10 +21,7 @@ export function PageHeader({ title, description }: PageHeaderProps) {
           <i className="fas fa-save mr-2"></i>
           Save Data
         </Button>
-        <Button variant="outline" className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200">
-          <i className="fas fa-file-export mr-2"></i>
-          Export
-        </Button>
+        {exportTargetRef && <ExportPDFButton targetRef={exportTargetRef} />}
       </div>
     </div>
   );

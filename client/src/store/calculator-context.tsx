@@ -67,27 +67,27 @@ interface CalculatorContextType {
 
 // Default values
 const defaultBudgetData: BudgetData = {
-  totalIncome: 5000,
-  totalExpenses: 3200,
+  totalIncome: 0,
+  totalExpenses: 0,
   expenseCategories: [
-    { id: '1', name: 'Housing', amount: 1200, color: '#3B82F6' },
-    { id: '2', name: 'Food', amount: 600, color: '#10B981' },
-    { id: '3', name: 'Transportation', amount: 400, color: '#F59E0B' },
-    { id: '4', name: 'Utilities', amount: 300, color: '#EF4444' },
-    { id: '5', name: 'Entertainment', amount: 200, color: '#8B5CF6' },
-    { id: '6', name: 'Other', amount: 500, color: '#EC4899' },
+    { id: '1', name: 'Housing', amount: 0, color: '#3B82F6' }, //1200
+    { id: '2', name: 'Food', amount: 0, color: '#10B981' }, //600
+    { id: '3', name: 'Transportation', amount: 0, color: '#F59E0B' }, //400
+    { id: '4', name: 'Utilities', amount: 0, color: '#EF4444' }, //300
+    { id: '5', name: 'Entertainment', amount: 0, color: '#8B5CF6' }, //200
+    { id: '6', name: 'Other', amount: 0, color: '#EC4899' }, //500
   ],
   expenses: [
-    { id: '1', description: 'Rent', category: 'Housing', date: '2023-07-01', amount: 1200 },
-    { id: '2', description: 'Groceries', category: 'Food', date: '2023-07-03', amount: 150 },
-    { id: '3', description: 'Internet', category: 'Utilities', date: '2023-07-05', amount: 80 },
-    { id: '4', description: 'Gas', category: 'Transportation', date: '2023-07-07', amount: 50 },
-    { id: '5', description: 'Netflix', category: 'Entertainment', date: '2023-07-10', amount: 15 },
-    { id: '6', description: 'Restaurant', category: 'Food', date: '2023-07-12', amount: 75 },
-    { id: '7', description: 'Phone Bill', category: 'Utilities', date: '2023-07-15', amount: 90 },
-    { id: '8', description: 'Car Payment', category: 'Transportation', date: '2023-07-15', amount: 350 },
-    { id: '9', description: 'Clothes', category: 'Other', date: '2023-07-18', amount: 120 },
-    { id: '10', description: 'Gym Membership', category: 'Other', date: '2023-07-20', amount: 50 },
+    // { id: '1', description: 'Rent', category: 'Housing', date: '2023-07-01', amount: 1200 },
+    // { id: '2', description: 'Groceries', category: 'Food', date: '2023-07-03', amount: 150 },
+    // { id: '3', description: 'Internet', category: 'Utilities', date: '2023-07-05', amount: 80 },
+    // { id: '4', description: 'Gas', category: 'Transportation', date: '2023-07-07', amount: 50 },
+    // { id: '5', description: 'Netflix', category: 'Entertainment', date: '2023-07-10', amount: 15 },
+    // { id: '6', description: 'Restaurant', category: 'Food', date: '2023-07-12', amount: 75 },
+    // { id: '7', description: 'Phone Bill', category: 'Utilities', date: '2023-07-15', amount: 90 },
+    // { id: '8', description: 'Car Payment', category: 'Transportation', date: '2023-07-15', amount: 350 },
+    // { id: '9', description: 'Clothes', category: 'Other', date: '2023-07-18', amount: 120 },
+    // { id: '10', description: 'Gym Membership', category: 'Other', date: '2023-07-20', amount: 50 },
   ]
 };
 
@@ -175,7 +175,8 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
   const addExpenseCategory = (category: ExpenseCategory) => {
     setBudgetData(prev => ({
       ...prev,
-      expenseCategories: [...prev.expenseCategories, category]
+      expenseCategories: [...prev.expenseCategories, category],
+      totalExpenses: prev.totalExpenses + category.amount,
     }));
   };
 
@@ -196,12 +197,63 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addExpense = (expense: Expense) => {
-    setBudgetData(prev => ({
-      ...prev,
-      expenses: [...prev.expenses, expense],
-      totalExpenses: prev.totalExpenses + expense.amount
-    }));
+    setBudgetData(prev => {
+      const updatedExpenses = [...prev.expenses, expense];
+
+      const updatedCategories = prev.expenseCategories.map(cat =>
+        cat.name === expense.category
+          ? { ...cat, amount: cat.amount + expense.amount }
+          : cat
+      );
+
+      return {
+        ...prev,
+        expenses: updatedExpenses,
+        expenseCategories: updatedCategories,
+        totalExpenses: prev.totalExpenses + expense.amount,
+      };
+    });
   };
+
+
+//Add expeneses even for new categories that don't exist
+
+// const addExpense = (expense: Expense) => {      
+//   setBudgetData(prev => {
+//     const updatedExpenses = [...prev.expenses, expense];
+//     const existingCategory = prev.expenseCategories.find(cat => cat.name === expense.category);
+
+//     let updatedCategories = prev.expenseCategories;
+
+//     if (existingCategory) {
+//       updatedCategories = updatedCategories.map(cat =>
+//         cat.name === expense.category
+//           ? { ...cat, amount: cat.amount + expense.amount }
+//           : cat
+//       );
+//     } else {
+//       // Create new category with default color
+//       updatedCategories = [
+//         ...updatedCategories,
+//         {
+//           id: crypto.randomUUID(),
+//           name: expense.category,
+//           amount: expense.amount,
+//           color: "#3B82F6", // or any random color generator
+//         },
+//       ];
+//     }
+
+//     return {
+//       ...prev,
+//       expenses: updatedExpenses,
+//       expenseCategories: updatedCategories,
+//       totalExpenses: prev.totalExpenses + expense.amount,
+//     };
+//   });
+// };
+
+
 
   const updateExpense = (id: string, expense: Partial<Expense>) => {
     setBudgetData(prev => {
