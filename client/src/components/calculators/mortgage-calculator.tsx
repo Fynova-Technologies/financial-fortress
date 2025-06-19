@@ -22,6 +22,7 @@ import {
 export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { mortgageData, updateMortgageData, calculateMortgage } = useCalculator();
   const [results, setResults] = useState<any>(null);
+  const [viewFullamortizationSchedule, setViewFullamortizationSchedule] = useState(false);
 
   // Calculate on first load and when inputs change
   useEffect(() => {
@@ -82,7 +83,10 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   ] : [];
 
   // Get first few years of amortization for the table
-  const amortizationSchedule = results?.amortizationSchedule?.slice(0, 5) || [];
+  const amortizationSchedule = results?.amortizationSchedule
+  ? (viewFullamortizationSchedule ? results.amortizationSchedule : results.amortizationSchedule.slice(0, 5))
+  : [];
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -356,9 +360,12 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                   </table>
                 </div>
                 
-                <button className="mt-3 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm flex items-center">
-                  View Full Amortization Schedule
-                  <i className="fas fa-chevron-right ml-1 text-xs"></i>
+                <button 
+                  className="mt-3 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm flex items-center"
+                  onClick={() => setViewFullamortizationSchedule(prev => !prev)}
+                >
+                  {viewFullamortizationSchedule ? "Hide Full Amortization Schedule" : "View Full Amortization Schedule"}
+                  <i className={`fas ml-1 text-xs transition-transform duration-200 ${viewFullamortizationSchedule ? "fa-chevron-up" : "fa-chevron-right"}`}></i>
                 </button>
               </div>
             </>

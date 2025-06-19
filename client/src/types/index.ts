@@ -160,3 +160,17 @@ export interface CalculationResult {
   projectedAmount?: number;
   [key: string]: any;
 }
+
+export interface AmortizationRow {
+  month: number;
+  principal: number;
+  interest: number;
+  balance: number;
+}
+
+export interface YearlyAmortizationRow {
+  year: number;
+  principal: number;
+  interest: number;
+  balance: number;
+}

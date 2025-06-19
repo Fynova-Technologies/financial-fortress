@@ -130,9 +130,9 @@ export function SavingsTracker() {
                     <div className="flex justify-between mb-2">
                       <h4 className="font-medium">{goal.name}</h4>
                       <div className="flex space-x-1">
-                        <button className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400">
+                        {/* <button className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400">
                           <i className="fas fa-edit"></i>
-                        </button>
+                        </button> */}
                         <button 
                           className="text-gray-600 dark:text-gray-400 hover:text-error"
                           onClick={() => deleteSavingsGoal(goal.id)}
