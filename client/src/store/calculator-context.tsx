@@ -661,93 +661,146 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     setCurrencyData(prev => ({ ...prev, ...data }));
   };
 
-  const convertCurrency = () => {
-    const { amount, fromCurrency, toCurrency } = currencyData;
-    
-    // Static exchange rates for demo purposes
-    // In a real app, you would use an API
-    const exchangeRates = {
-      USD: { EUR: 0.85, GBP: 0.75, JPY: 110.2, CAD: 1.25, AUD: 1.35, INR: 74.5 },
-      EUR: { USD: 1.18, GBP: 0.88, JPY: 129.7, CAD: 1.47, AUD: 1.59, INR: 87.7 },
-      GBP: { USD: 1.33, EUR: 1.14, JPY: 147.0, CAD: 1.67, AUD: 1.81, INR: 99.5 },
-      JPY: { USD: 0.0091, EUR: 0.0077, GBP: 0.0068, CAD: 0.0113, AUD: 0.0123, INR: 0.68 },
-      CAD: { USD: 0.80, EUR: 0.68, GBP: 0.60, JPY: 88.2, AUD: 1.08, INR: 59.7 },
-      AUD: { USD: 0.74, EUR: 0.63, GBP: 0.55, JPY: 81.6, CAD: 0.93, INR: 55.2 },
-      INR: { USD: 0.0134, EUR: 0.0114, GBP: 0.0101, JPY: 1.48, CAD: 0.0168, AUD: 0.0181 }
+  // fetching the currency exchange rate and historic data upto past 13 days from fastforex.io
+const convertCurrency = async () => {
+  const { amount, fromCurrency, toCurrency } = currencyData;
+
+  try {
+    // Convert request
+    const res = await fetch(
+      `https://api.fastforex.io/convert?api_key=9b9d7bccf3-6c4f32e619-sy1q7y&from=${fromCurrency}&to=${toCurrency}&amount=${amount}`
+    );
+
+    if (!res.ok) throw new Error("Failed to fetch conversion data");
+    const data = await res.json();
+    if (!data.result?.rate || !data.result[toCurrency]) throw new Error("Invalid conversion response");
+
+    // Historical data request
+    const today = new Date();
+    const endDate = today.toISOString().split("T")[0];
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - 13);
+    const start = startDate.toISOString().split("T")[0];
+
+    const historyRes = await fetch(
+      `https://api.fastforex.io/time-series?api_key=9b9d7bccf3-6c4f32e619-sy1q7y&from=${fromCurrency}&to=${toCurrency}&start=${start}&end=${endDate}`
+    );
+
+    if (!historyRes.ok) throw new Error("Failed to fetch historical data");
+    const historyData = await historyRes.json();
+    const rates = historyData.results?.[toCurrency];
+
+    if (!rates) throw new Error("Invalid historical data");
+
+    const chartData = Object.entries(rates).map(([date, rate]: any) => ({
+      date,
+      rate
+    }));
+
+    return {
+      convertedAmount: data.result[toCurrency],
+      exchangeRate: data.result.rate,
+      chartData: chartData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     };
-    
-    // Check if we have direct exchange rate
-    if (exchangeRates[fromCurrency] && exchangeRates[fromCurrency][toCurrency]) {
-      const rate = exchangeRates[fromCurrency][toCurrency];
-      const convertedAmount = amount * rate;
-      
-      // Generate historical data for chart (simulated)
-      const chartData = [];
-      const today = new Date();
-      const baseRate = rate;
-      
-      for (let i = 30; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        
-        // Create some random fluctuation around the current rate
-        const randomFactor = 0.95 + (Math.random() * 0.1); // 0.95 to 1.05
-        const historicalRate = baseRate * randomFactor;
-        
-        chartData.push({
-          date: date.toISOString().split('T')[0],
-          rate: historicalRate
-        });
-      }
-      
-      return {
-        convertedAmount,
-        exchangeRate: rate,
-        chartData
-      };
-    }
-    
-    // If we don't have direct rate, convert via USD (simplified approach)
-    if (fromCurrency !== 'USD' && toCurrency !== 'USD') {
-      const toUSD = exchangeRates[fromCurrency].USD;
-      const fromUSD = exchangeRates['USD'][toCurrency];
-      
-      const rate = toUSD * fromUSD;
-      const convertedAmount = amount * rate;
-      
-      // Simplified chart data using the calculated rate
-      const chartData = [];
-      const today = new Date();
-      const baseRate = rate;
-      
-      for (let i = 30; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        
-        // Create some random fluctuation around the current rate
-        const randomFactor = 0.95 + (Math.random() * 0.1); // 0.95 to 1.05
-        const historicalRate = baseRate * randomFactor;
-        
-        chartData.push({
-          date: date.toISOString().split('T')[0],
-          rate: historicalRate
-        });
-      }
-      
-      return {
-        convertedAmount,
-        exchangeRate: rate,
-        chartData
-      };
-    }
-    
-    // Fallback for unsupported currency pairs
+  } catch (err: any) {
+    console.error("Currency conversion error:", err.message || err);
     return {
       convertedAmount: 0,
       exchangeRate: 0,
-      error: "Unsupported currency pair"
+      chartData: [],
+      error: err.message || "Failed to fetch currency data. Please try again."
     };
-  };
+  }
+};
+
+  // const convertCurrency = async() => {
+  //   const { amount, fromCurrency, toCurrency } = currencyData;
+    
+  //   // Static exchange rates for demo purposes
+  //   // In a real app, you would use an API
+  //   const exchangeRates = {
+  //     USD: { EUR: 0.85, GBP: 0.75, JPY: 110.2, CAD: 1.25, AUD: 1.35, INR: 74.5 },
+  //     EUR: { USD: 1.18, GBP: 0.88, JPY: 129.7, CAD: 1.47, AUD: 1.59, INR: 87.7 },
+  //     GBP: { USD: 1.33, EUR: 1.14, JPY: 147.0, CAD: 1.67, AUD: 1.81, INR: 99.5 },
+  //     JPY: { USD: 0.0091, EUR: 0.0077, GBP: 0.0068, CAD: 0.0113, AUD: 0.0123, INR: 0.68 },
+  //     CAD: { USD: 0.80, EUR: 0.68, GBP: 0.60, JPY: 88.2, AUD: 1.08, INR: 59.7 },
+  //     AUD: { USD: 0.74, EUR: 0.63, GBP: 0.55, JPY: 81.6, CAD: 0.93, INR: 55.2 },
+  //     INR: { USD: 0.0134, EUR: 0.0114, GBP: 0.0101, JPY: 1.48, CAD: 0.0168, AUD: 0.0181 }
+  //   };
+    
+  //   // Check if we have direct exchange rate
+  //   if (exchangeRates[fromCurrency] && exchangeRates[fromCurrency][toCurrency]) {
+  //     const rate = exchangeRates[fromCurrency][toCurrency];
+  //     const convertedAmount = amount * rate;
+      
+  //     // Generate historical data for chart (simulated)
+  //     const chartData = [];
+  //     const today = new Date();
+  //     const baseRate = rate;
+      
+  //     for (let i = 30; i >= 0; i--) {
+  //       const date = new Date(today);
+  //       date.setDate(date.getDate() - i);
+        
+  //       // Create some random fluctuation around the current rate
+  //       const randomFactor = 0.95 + (Math.random() * 0.1); // 0.95 to 1.05
+  //       const historicalRate = baseRate * randomFactor;
+        
+  //       chartData.push({
+  //         date: date.toISOString().split('T')[0],
+  //         rate: historicalRate
+  //       });
+  //     }
+      
+  //     return {
+  //       convertedAmount,
+  //       exchangeRate: rate,
+  //       chartData
+  //     };
+  //   }
+    
+  //   // If we don't have direct rate, convert via USD (simplified approach)
+  //   if (fromCurrency !== 'USD' && toCurrency !== 'USD') {
+  //     const toUSD = exchangeRates[fromCurrency].USD;
+  //     const fromUSD = exchangeRates['USD'][toCurrency];
+      
+  //     const rate = toUSD * fromUSD;
+  //     const convertedAmount = amount * rate;
+      
+  //     // Simplified chart data using the calculated rate
+  //     const chartData = [];
+  //     const today = new Date();
+  //     const baseRate = rate;
+      
+  //     for (let i = 30; i >= 0; i--) {
+  //       const date = new Date(today);
+  //       date.setDate(date.getDate() - i);
+        
+  //       // Create some random fluctuation around the current rate
+  //       const randomFactor = 0.95 + (Math.random() * 0.1); // 0.95 to 1.05
+  //       const historicalRate = baseRate * randomFactor;
+        
+  //       chartData.push({
+  //         date: date.toISOString().split('T')[0],
+  //         rate: historicalRate
+  //       });
+  //     }
+      
+  //     return {
+  //       convertedAmount,
+  //       exchangeRate: rate,
+  //       chartData
+  //     };
+  //   }
+    
+  //   // Fallback for unsupported currency pairs
+  //   return {
+  //     convertedAmount: 0,
+  //     exchangeRate: 0,
+  //     error: "Unsupported currency pair"
+  //   };
+  // };
+
 
   // Savings Tracker functions
   const updateSavingsData = (data: Partial<SavingsData>) => {

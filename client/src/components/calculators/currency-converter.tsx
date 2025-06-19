@@ -24,8 +24,40 @@ const CURRENCIES = [
   { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
   { code: 'CAD', name: 'Canadian Dollar', symbol: 'C$' },
   { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' },
-  { code: 'INR', name: 'Indian Rupee', symbol: '₹' }
+  { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
+  { code: 'CNY', name: 'Chinese Yuan', symbol: '¥' },
+  { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' },
+  { code: 'NZD', name: 'New Zealand Dollar', symbol: 'NZ$' },
+  { code: 'SEK', name: 'Swedish Krona', symbol: 'kr' },
+  { code: 'NOK', name: 'Norwegian Krone', symbol: 'kr' },
+  { code: 'DKK', name: 'Danish Krone', symbol: 'kr' },
+  { code: 'SGD', name: 'Singapore Dollar', symbol: 'S$' },
+  { code: 'HKD', name: 'Hong Kong Dollar', symbol: 'HK$' },
+  { code: 'KRW', name: 'South Korean Won', symbol: '₩' },
+  { code: 'ZAR', name: 'South African Rand', symbol: 'R' },
+  { code: 'RUB', name: 'Russian Ruble', symbol: '₽' },
+  { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+  { code: 'MXN', name: 'Mexican Peso', symbol: 'MX$' },
+  { code: 'IDR', name: 'Indonesian Rupiah', symbol: 'Rp' },
+  { code: 'TRY', name: 'Turkish Lira', symbol: '₺' },
+  { code: 'THB', name: 'Thai Baht', symbol: '฿' },
+  { code: 'MYR', name: 'Malaysian Ringgit', symbol: 'RM' },
+  { code: 'PHP', name: 'Philippine Peso', symbol: '₱' },
+  { code: 'PLN', name: 'Polish Zloty', symbol: 'zł' },
+  { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč' },
+  { code: 'HUF', name: 'Hungarian Forint', symbol: 'Ft' },
+  { code: 'ILS', name: 'Israeli New Shekel', symbol: '₪' },
+  { code: 'AED', name: 'United Arab Emirates Dirham', symbol: 'د.إ' },
+  { code: 'SAR', name: 'Saudi Riyal', symbol: '﷼' },
+  { code: 'EGP', name: 'Egyptian Pound', symbol: 'E£' },
+  { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' },
+  { code: 'PKR', name: 'Pakistani Rupee', symbol: '₨' },
+  { code: 'BDT', name: 'Bangladeshi Taka', symbol: '৳' },
+  { code: 'LKR', name: 'Sri Lankan Rupee', symbol: 'Rs' },
+  { code: 'NPR', name: 'Nepalese Rupee', symbol: '₨' },
+  { code: 'VND', name: 'Vietnamese Dong', symbol: '₫' },
 ];
+
 
 export function CurrencyConverter() {
   const { currencyData, updateCurrencyData, convertCurrency } = useCalculator();
@@ -36,9 +68,10 @@ export function CurrencyConverter() {
     handleConvert();
   }, [currencyData]);
 
-  const handleConvert = () => {
-    const conversionResults = convertCurrency();
+  const handleConvert = async() => {
+    const conversionResults = await convertCurrency();
     setResults(conversionResults);
+    console.log('handleconverted amount data:', conversionResults)
   };
 
   const handleAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +123,7 @@ export function CurrencyConverter() {
                   type="number" 
                   value={currencyData.amount || ""} 
                   onChange={handleAmount}
-                  placeholder="1000"
+                  placeholder="1000"  
                   className="w-full"
                 />
               </div>
@@ -193,7 +226,7 @@ export function CurrencyConverter() {
               
               {/* Rate History Chart */}
               <div className="mb-6">
-                <h4 className="text-md font-semibold mb-3">Exchange Rate History (Last 30 Days)</h4>
+                <h4 className="text-md font-semibold mb-3">Exchange Rate History (Last 13 Days)</h4>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
