@@ -3,10 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { routes } from "@/types";
+import { useState } from "react";
 
 export default function Home() {
   const [location, setLocation] = useLocation();
   const { budgetData, calculateMortgage, calculateRetirement } = useCalculator();
+  const [viewAllActivity, setViewAllActivity] = useState(false);
 
   // Quick access calculators
   const quickAccessCalculators = [
@@ -183,6 +185,7 @@ export default function Home() {
           <Button 
             variant="link"
             className="mt-4 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 px-0 text-sm flex items-center"
+            onClick={() => setViewAllActivity(prev => !prev)}
           >
             View All Activity
             <i className="fas fa-chevron-right ml-1 text-xs"></i>
