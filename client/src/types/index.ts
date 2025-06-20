@@ -174,3 +174,7 @@ export interface YearlyAmortizationRow {
   interest: number;
   balance: number;
 }
+
+export interface RepaymentRow {
+  
+}

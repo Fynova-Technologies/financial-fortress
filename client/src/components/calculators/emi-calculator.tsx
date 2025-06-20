@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export function EMICalculator() {
   const { emiData, updateEMIData, calculateEMI } = useCalculator();
   const [results, setResults] = useState<any>(null);
+  const [viewFullRepaymentSchedule, setViewFullRepaymentSchedule] = useState(false);
 
   // Calculate on first load and when inputs change
   useEffect(() => {
@@ -64,7 +65,7 @@ export function EMICalculator() {
   ] : [];
 
   // First few payments for the schedule table
-  const repaymentSchedule = results?.repaymentSchedule?.slice(0, 5) || [];
+  const repaymentSchedule = results?.repaymentSchedule?(viewFullRepaymentSchedule?results.repaymentSchedule : results.repaymentSchedule.slice(0, 5)) : [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -268,8 +269,11 @@ export function EMICalculator() {
                   </table>
                 </div>
                 
-                <button className="mt-3 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm flex items-center">
-                  View Full Repayment Schedule
+                <button 
+                  className="mt-3 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm flex items-center"
+                  onClick={() => setViewFullRepaymentSchedule(prev => !prev)}
+                >
+                  {viewFullRepaymentSchedule ? "Hide Full Repayment Schedule" : "View Full Repayment Schedule"}                  
                   <i className="fas fa-chevron-right ml-1 text-xs"></i>
                 </button>
               </div>
