@@ -6,6 +6,10 @@ export function groupByYear(amortizationSchedule: AmortizationRow[]): YearlyAmor
   for (let i = 0; i < amortizationSchedule.length; i += 12) {
     const yearGroup = amortizationSchedule.slice(i, i + 12);
     const year = Math.floor(i / 12) + 1;
+    // dummy changes
+
+    // dummy changes
+
 
     const principal = yearGroup.reduce((sum, row) => sum + row.principal, 0);
     const interest = yearGroup.reduce((sum, row) => sum + row.interest, 0);
