@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { routes } from "@/types";
 import { useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Home() {
   const [location, setLocation] = useLocation();
   const { budgetData, calculateMortgage, calculateRetirement } = useCalculator();
   const [viewAllActivity, setViewAllActivity] = useState(false);
+  const { user, isAuthenticated } = useAuth0();
 
   // Quick access calculators
   const quickAccessCalculators = [
@@ -94,7 +96,12 @@ export default function Home() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center">
             <div className="mb-4 md:mb-0 md:mr-6">
-              <h2 className="text-xl font-bold mb-2">Welcome to FinCalc Pro</h2>
+              { isAuthenticated ? (
+              <h2 className="text-xl font-bold mb-2">Welcome {user?.name}</h2>
+              ): (
+                <h2 className="text-xl font-bold mb-2">Welcome to FinCalc Pro</h2>
+              )
+            }
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Your comprehensive financial planning toolkit. Get started with any of our calculators to take control of your finances.
               </p>
