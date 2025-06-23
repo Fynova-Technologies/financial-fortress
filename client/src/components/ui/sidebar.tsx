@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/hooks/use-theme";
 import { routes } from "@/types";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { loginWithRedirect, isAuthenticated, logout } = useAuth0();
 
   const menuItems = routes;
 
@@ -103,10 +105,29 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Footer */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <button className="flex items-center text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400">
-              <i className="fas fa-sign-out-alt mr-3"></i>
-              <span>Log Out</span>
-            </button>
+            {isAuthenticated ? (
+              <button
+                className="flex items-center text-gray-700 dark:text-gray-300 hover:text-red-500 dark:hover:text-red-400"
+                onClick={() =>
+                  logout({
+                    logoutParams: {
+                      returnTo: window.location.origin,
+                    },
+                  })
+                }
+              >
+                <i className="fas fa-sign-out-alt mr-3"></i>
+                <span>Log out</span>
+              </button>
+            ) : (
+              <button
+                className="flex items-center text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400"
+                onClick={() => loginWithRedirect()}
+              >
+                <i className="fas fa-sign-in-alt mr-3"></i>
+                <span>Log in</span>
+              </button>
+            )}
           </div>
         </div>
       </aside>
