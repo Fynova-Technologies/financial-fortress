@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef } from "react";
+import { useState, useRef, forwardRef, useEffect } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,6 +17,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { ExpenseCategory, Expense } from "@/types";
 import IncomeInput from "../forms/InputIncome";
 import { PageHeader } from "../page-header";
+import { useSave } from "@/store/saveContext";
+import api from "@/lib/api";
 
 export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const {
@@ -45,9 +47,26 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [submittedIncome, setSubmittedIncome] = useState<number>(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
-
-
+  const { registerSave } = useSave();
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const exportRef = useRef<HTMLDivElement>(null);
+
+    // load on mount
+  useEffect(() => {
+    api.get<Budget[]>("/budgets").then((res) => setBudgets(res.data));
+  }, []);
+
+  // define this page’s save function
+  const handleSave = async () => {
+    await api.put("/budgets", { budgets });
+    await api.get<Budget[]>("/budgets").then((res) => setBudgets(res.data));
+    alert("Budgets saved!");
+  };
+
+  // register it with the context
+  useEffect(() => {
+    registerSave(handleSave);
+  }, [handleSave, registerSave]);
 
   const handleAddExpense = () => {
     if (
@@ -119,7 +138,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   )
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div ref={exportRef} className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-1">
         <CardContent className="p-6">
           <IncomeInput income={income} setIncome={setIncome} onSubmit={handleSubmit} />

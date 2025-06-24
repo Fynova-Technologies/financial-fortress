@@ -100,8 +100,7 @@ export default function Home() {
               <h2 className="text-xl font-bold mb-2">Welcome {user?.name}</h2>
               ): (
                 <h2 className="text-xl font-bold mb-2">Welcome to FinCalc Pro</h2>
-              )
-            }
+              )}
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 Your comprehensive financial planning toolkit. Get started with any of our calculators to take control of your finances.
               </p>
