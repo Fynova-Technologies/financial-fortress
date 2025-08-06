@@ -15,7 +15,7 @@ const IncomeInput: React.FC<IncomeInputProps> = ({ income, setIncome, onSubmit }
   return (
     <>
       <h3 className="text-lg font-semibold mb-4">Add Income and Expenses</h3>
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <div className="flex flex-col md:flex-col md:justify-between mb-6">
         <div className="mb-4 md:mb-0 w-full">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
             Add Total Income

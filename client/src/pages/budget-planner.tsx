@@ -2,15 +2,59 @@
 import { BudgetPlanner as BudgetPlannerComponent } from "@/components/calculators/budget-planner";
 import { PageHeader } from "@/components/page-header";
 import { useRef } from "react";
+import { useCalculator } from "@/store/calculator-context";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function BudgetPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);
+  const budgetPlannerRef = useRef<HTMLDivElement>(null);
+  const { getAccessTokenSilently, isLoading } = useAuth0();
+  const { budgetData } = useCalculator();
+
+  const handleSaveData = async () => {
+    if (isLoading) {
+      console.warn("Auth0 is still loading—try again later.");
+      return;
+    }
+    
+    try {
+      const token = await getAccessTokenSilently();
+      console.log("access token granted: ", token);
+
+      const payload = {
+        name: "My Budget",
+        total_income: budgetData.totalIncome,
+        expenseCategories: budgetData.expenseCategories,
+        expenses: budgetData.expenses
+      };
+
+      const res = await fetch("http://localhost:5000/api/budgets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Response error:", errorData);
+        throw new Error(errorData.error || "Failed to save budget");
+      }
+    } catch (error) {
+      console.error("Save failed:", error);
+      alert("Failed to save budget");
+    }
+  };
   return (
     <div>
       <PageHeader 
         title="Budget Planner" 
         description="Track your income and expenses"
         exportTargetRef={exportRef}
+        onSave={handleSaveData}
       />
       <BudgetPlannerComponent ref={exportRef}/>
     </div>

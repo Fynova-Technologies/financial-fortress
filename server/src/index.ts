@@ -1,10 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { registerRoutes } from "./routes/route.js";
+import { setupVite, serveStatic, log } from "./vite.js";
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(cors({
+  origin: 'http://localhost:5173', //frontend origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, //for session
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -59,8 +66,8 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  app.listen(8000, () => {
-  console.log('Server running on http://localhost:8000');
+  app.listen(5000, () => {
+  console.log('Server running on http://localhost:5000');
 });
 
 })();

@@ -127,6 +127,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <i className="fas fa-sign-in-alt mr-3"></i>
                 <span>Log in</span>
               </button>
+    
             )}
           </div>
         </div>

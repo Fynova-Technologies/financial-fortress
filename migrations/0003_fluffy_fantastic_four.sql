@@ -1,0 +1,1 @@
+ALTER TABLE "emi_calculations" ALTER COLUMN "interest_rate" SET DATA TYPE numeric(5, 2);

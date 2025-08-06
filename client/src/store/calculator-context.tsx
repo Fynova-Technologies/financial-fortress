@@ -92,14 +92,14 @@ const defaultBudgetData: BudgetData = {
 };
 
 const defaultMortgageData: MortgageData = {
-  homePrice: 300000,
-  downPaymentPercent: 20,
-  downPaymentAmount: 60000,
-  loanTerm: 30,
-  interestRate: 4.5,
-  propertyTax: 3600,
-  homeInsurance: 1200,
-  pmi: 0.5
+  homePrice: 10,
+  downPaymentPercent: 10,
+  downPaymentAmount: 10,
+  loanTerm: 10,
+  interestRate: 10,
+  propertyTax: 10,
+  homeInsurance: 10,
+  pmi: 10
 };
 
 const defaultEMIData: EMIData = {
@@ -169,7 +169,7 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
 
   // Budget Planner functions
   const updateBudgetData = (data: Partial<BudgetData>) => {
-    setBudgetData(prev => ({ ...prev, ...data }));
+    setBudgetData((prev) => ({ ...prev, ...data }));
   };
 
   const addExpenseCategory = (category: ExpenseCategory) => {
@@ -196,62 +196,62 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
-  const addExpense = (expense: Expense) => {
-    setBudgetData(prev => {
-      const updatedExpenses = [...prev.expenses, expense];
+  // const addExpense = (expense: Expense) => {
+  //   setBudgetData(prev => {
+  //     const updatedExpenses = [...prev.expenses, expense];
 
-      const updatedCategories = prev.expenseCategories.map(cat =>
-        cat.name === expense.category
-          ? { ...cat, amount: cat.amount + expense.amount }
-          : cat
-      );
+  //     const updatedCategories = prev.expenseCategories.map(cat =>
+  //       cat.name === expense.category
+  //         ? { ...cat, amount: cat.amount + expense.amount }
+  //         : cat
+  //     );
 
-      return {
-        ...prev,
-        expenses: updatedExpenses,
-        expenseCategories: updatedCategories,
-        totalExpenses: prev.totalExpenses + expense.amount,
-      };
-    });
-  };
+  //     return {
+  //       ...prev,
+  //       expenses: updatedExpenses,
+  //       expenseCategories: updatedCategories,
+  //       totalExpenses: prev.totalExpenses + expense.amount,
+  //     };
+  //   });
+  // };
 
 
 //Add expeneses even for new categories that don't exist
 
-// const addExpense = (expense: Expense) => {      
-//   setBudgetData(prev => {
-//     const updatedExpenses = [...prev.expenses, expense];
-//     const existingCategory = prev.expenseCategories.find(cat => cat.name === expense.category);
+const addExpense = (expense: Expense) => {      
+  setBudgetData(prev => {
+    const updatedExpenses = [...prev?.expenses, expense];
+    const existingCategory = prev.expenseCategories.find(cat => cat.name === expense.category);
 
-//     let updatedCategories = prev.expenseCategories;
+    let updatedCategories = prev.expenseCategories;
 
-//     if (existingCategory) {
-//       updatedCategories = updatedCategories.map(cat =>
-//         cat.name === expense.category
-//           ? { ...cat, amount: cat.amount + expense.amount }
-//           : cat
-//       );
-//     } else {
-//       // Create new category with default color
-//       updatedCategories = [
-//         ...updatedCategories,
-//         {
-//           id: crypto.randomUUID(),
-//           name: expense.category,
-//           amount: expense.amount,
-//           color: "#3B82F6", // or any random color generator
-//         },
-//       ];
-//     }
+    if (existingCategory) {
+      updatedCategories = updatedCategories.map(cat =>
+        cat.name === expense.category
+          ? { ...cat, amount: cat.amount + expense.amount }
+          : cat
+      );
+    } else {
+      // Create new category with default color
+      updatedCategories = [
+        ...updatedCategories,
+        {
+          id: crypto.randomUUID(),
+          name: expense.category,
+          amount: expense.amount,
+          color: "#3B82F6", // or any random color generator
+        },
+      ];
+    }
 
-//     return {
-//       ...prev,
-//       expenses: updatedExpenses,
-//       expenseCategories: updatedCategories,
-//       totalExpenses: prev.totalExpenses + expense.amount,
-//     };
-//   });
-// };
+    return {
+      ...prev,
+      expenses: updatedExpenses,
+      expenseCategories: updatedCategories,
+      totalExpenses: prev.totalExpenses + expense.amount,
+    };
+  });
+};
 
 
 

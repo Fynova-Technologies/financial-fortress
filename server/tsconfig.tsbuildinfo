@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/vite.ts","./src/config/sharedvitesettings.ts","./src/middleware/auth0middleware.ts","./src/models/schema.ts","./src/routes/route.ts","./src/storage/storage.ts","./src/utils/db.ts"],"version":"5.6.3"}

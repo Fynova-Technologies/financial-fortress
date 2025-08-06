@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import {
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function ROICalculator() {
+export const ROICalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { roiData, updateROIData, calculateROI } = useCalculator();
   const [results, setResults] = useState<any>(null);
 
@@ -161,20 +161,20 @@ export function ROICalculator() {
               </div>
             </div>
             
-            <div className="pt-2">
+            {/* <div className="pt-2">
               <Button 
                 onClick={handleCalculate}
                 className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg"
               >
                 Calculate ROI
               </Button>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
       
       {/* Results Card */}
-      <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
+      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Investment Growth Summary</h3>
           
@@ -284,4 +284,4 @@ export function ROICalculator() {
       </Card>
     </div>
   );
-}
+})

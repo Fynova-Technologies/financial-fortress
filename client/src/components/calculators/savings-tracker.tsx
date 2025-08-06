@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,11 +26,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { SavingsGoal } from "@/types";
+import { savingsGoals } from "server/src/models/schema";
 
-export function SavingsTracker() {
+export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
   const { savingsData, updateSavingsData, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, calculateSavings } = useCalculator();
   const [results, setResults] = useState<any>(null);
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState<Partial<SavingsGoal>>({
     id: "",
     name: "",
@@ -49,11 +51,46 @@ export function SavingsTracker() {
     setResults(savingsResults);
   };
 
-  const handleAddGoal = () => {
-    if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
-      return;
-    }
+  // const handleAddGoal = () => {
+  //   if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
+  //     return;
+  //   }
 
+  //   const newId = Date.now().toString();
+  //   addSavingsGoal({
+  //     id: newId,
+  //     name: newGoal.name || "",
+  //     targetAmount: newGoal.targetAmount || 0,
+  //     currentAmount: newGoal.currentAmount || 0,
+  //     targetDate: newGoal.targetDate || ""
+  //   });
+
+  //   setNewGoal({
+  //     id: "",
+  //     name: "",
+  //     targetAmount: 0,
+  //     currentAmount: 0,
+  //     targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split('T')[0]
+  //   });
+  //   setShowAddGoalModal(false);
+  // };
+
+  const handleAddGoal = () => {
+  if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
+    return;
+  }
+
+  if (editingGoalId) {
+    // Edit existing goal
+    updateSavingsGoal(editingGoalId, {
+      id: editingGoalId,
+      name: newGoal.name || "",
+      targetAmount: newGoal.targetAmount || 0,
+      currentAmount: newGoal.currentAmount || 0,
+      targetDate: newGoal.targetDate || ""
+    });
+  } else {
+    // Add new goal
     const newId = Date.now().toString();
     addSavingsGoal({
       id: newId,
@@ -62,16 +99,24 @@ export function SavingsTracker() {
       currentAmount: newGoal.currentAmount || 0,
       targetDate: newGoal.targetDate || ""
     });
+  }
 
-    setNewGoal({
-      id: "",
-      name: "",
-      targetAmount: 0,
-      currentAmount: 0,
-      targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split('T')[0]
-    });
-    setShowAddGoalModal(false);
-  };
+  // Reset form and close modal
+  resetForm();
+};
+
+const resetForm = () => {
+  setNewGoal({
+    id: "",
+    name: "",
+    targetAmount: 0,
+    currentAmount: 0,
+    targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split('T')[0]
+  });
+  setEditingGoalId(null);
+  setShowAddGoalModal(false);
+};
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -99,6 +144,10 @@ export function SavingsTracker() {
       }, {})
     }));
   };
+
+  const handleCancel = () => {
+  resetForm();
+};
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -130,9 +179,22 @@ export function SavingsTracker() {
                     <div className="flex justify-between mb-2">
                       <h4 className="font-medium">{goal.name}</h4>
                       <div className="flex space-x-1">
-                        {/* <button className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400">
+                        <button 
+                          className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+                          onClick={() => {
+                            setEditingGoalId(goal.id);
+                            setNewGoal({
+                              id: goal.id,
+                              name: goal.name,
+                              targetAmount: goal.targetAmount,
+                              currentAmount: goal.currentAmount,
+                              targetDate: new Date(goal.targetDate).toISOString().split('T')[0]
+                            });
+                            setShowAddGoalModal(true);
+                          }}
+                        >
                           <i className="fas fa-edit"></i>
-                        </button> */}
+                        </button>
                         <button 
                           className="text-gray-600 dark:text-gray-400 hover:text-error"
                           onClick={() => deleteSavingsGoal(goal.id)}
@@ -318,7 +380,7 @@ export function SavingsTracker() {
       <Dialog open={showAddGoalModal} onOpenChange={setShowAddGoalModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Savings Goal</DialogTitle>
+            <DialogTitle>{editingGoalId ? 'Edit Savings Goal' : 'Add New Savings Goal'}</DialogTitle>
             <DialogDescription>
               Enter your savings goal details below.
             </DialogDescription>
@@ -373,14 +435,15 @@ export function SavingsTracker() {
           <DialogFooter className="flex justify-end space-x-3 pt-4">
             <Button
               variant="outline"
-              onClick={() => setShowAddGoalModal(false)}
+              // onClick={() => setShowAddGoalModal(false)}
+              onClick={handleCancel}
             >
               Cancel
             </Button>
-            <Button onClick={handleAddGoal}>Add Goal</Button>
+            <Button onClick={handleAddGoal}>{editingGoalId ? 'Save Changes' : 'Add Goal'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
-}
+})

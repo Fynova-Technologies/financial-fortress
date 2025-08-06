@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
+import { exportToExcelAmortization } from "@/utils/amortizationSchedule";
 import {
   PieChart,
   Pie,
@@ -20,7 +21,7 @@ import {
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function EMICalculator() {
+export const EMICalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { emiData, updateEMIData, calculateEMI } = useCalculator();
   const [results, setResults] = useState<any>(null);
   const [viewFullRepaymentSchedule, setViewFullRepaymentSchedule] = useState(false);
@@ -57,6 +58,20 @@ export function EMICalculator() {
   const handleStartDate = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateEMIData({ startDate: e.target.value });
   };
+
+    const handleExportSchedule = () => {
+  if (!results?.amortizationSchedule) return;
+
+  // Format the data for export (only show year, principal, interest, balance)
+  const dataToExport = results.amortizationSchedule.map((year: any) => ({
+    Year: year.year,
+    Principal: year.principal,
+    Interest: year.interest,
+    Balance: year.balance,
+  }));
+
+  exportToExcelAmortization(dataToExport, "Amortization_Schedule");
+};
 
   // Chart data for payment breakdown
   const chartData = results ? [
@@ -163,20 +178,20 @@ export function EMICalculator() {
               />
             </div>
             
-            <div className="pt-2">
+            {/* <div className="pt-2">
               <Button 
                 onClick={handleCalculate}
                 className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg"
               >
                 Calculate EMI
               </Button>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
       
       {/* EMI Results Card */}
-      <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
+      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">EMI Summary</h3>
           
@@ -236,7 +251,7 @@ export function EMICalculator() {
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="text-md font-semibold">Repayment Schedule</h4>
-                  <button className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm">
+                  <button className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm" onClick={handleExportSchedule}>
                     <i className="fas fa-download mr-1"></i>
                     Export Schedule
                   </button>
@@ -283,4 +298,4 @@ export function EMICalculator() {
       </Card>
     </div>
   );
-}
+})

@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef } from "react";
+import { useState, useRef, forwardRef, useEffect } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,6 +17,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { ExpenseCategory, Expense } from "@/types";
 import IncomeInput from "../forms/InputIncome";
 import { PageHeader } from "../page-header";
+import { useAuth0 } from "@auth0/auth0-react";
+import { index } from "drizzle-orm/mysql-core";
 
 export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const {
@@ -38,6 +40,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     date: new Date().toISOString().split("T")[0],
     amount: 0,
   });
+  console.log("New Expense State:", newExpense);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
@@ -47,18 +50,81 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
 
 
+  // Add this near the top of your component for debugging
+console.log("Current budget data:", budgetData);
+console.log("Expense categories:", budgetData?.expenseCategories);
+console.log("Categories length:", budgetData?.expenseCategories?.length);
+
+
   const exportRef = useRef<HTMLDivElement>(null);
+  const { getAccessTokenSilently, user } = useAuth0();
+
+  // load budget data from server when component mounts
+  // and when user changes (to ensure we have the latest budget for the authenticated user)
+  useEffect(() => {
+  const loadBudget = async () => {
+    try {
+      // Wait for Auth0 to be ready
+      if (!user || !getAccessTokenSilently) {
+        return;
+      }
+
+      const token = await getAccessTokenSilently();
+      const res = await fetch("http://localhost:5000/api/budgets", {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const budgets = await res.json(); 
+      console.log("Loaded budgets:", budgets);
+
+      // Check if user has any budgets
+      if (budgets && budgets.length > 0) {
+        // Load the first/most recent budget
+        const latestBudget = budgets[0];
+        
+        updateBudgetData({
+          totalIncome: Number(latestBudget.total_income) || 0,
+          expenseCategories: latestBudget.expense_categories || [],
+          expenses: latestBudget.expenses || []
+        });
+        
+        console.log("Budget data loaded successfully");
+      } else {
+        console.log("No existing budgets found");
+        // Optionally reset to default state
+        updateBudgetData({
+          totalIncome: 0,
+          expenseCategories: [],
+          expenses: []
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load saved budget:", error);
+    }
+  }
+
+  // Only run when user is authenticated and available
+  if (user) {
+    loadBudget();
+  }
+}, [user, getAccessTokenSilently]); 
 
   const handleAddExpense = () => {
+    console.log("Adding new expense:", newExpense.description, newExpense.category, newExpense.date, newExpense.amount);
     if (
       !newExpense.description ||
       !newExpense.category ||
       !newExpense.date ||
       !newExpense.amount
     ) {
-      return;
-    }
+      return alert("Please fill in all fields.");
 
+    }
     const newId = Date.now().toString();
     addExpense({
       id: newId,
@@ -86,7 +152,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     });
   };
 
-  const filteredExpenses = budgetData.expenses.filter((expense) => {
+  const filteredExpenses = budgetData?.expenses?.filter((expense) => {
     const matchesSearch = expense.description
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -112,9 +178,8 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     }
   };
 
-
   // fileter function for not rendering the categories when categories is not avaliable in pie chart
-  const filteredCategories = budgetData.expenseCategories.filter(
+  const filteredCategories = budgetData?.expenseCategories?.filter(
     (cat) => cat.amount > 0
   )
 
@@ -197,7 +262,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                     `${name}: ${(percent * 100).toFixed(0)}%`
                   }
                 >
-                  {filteredCategories.map((entry, index) => (
+                  {filteredCategories?.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -226,7 +291,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Expense Categories</h3>
           <div className="space-y-4">
-            {budgetData.expenseCategories.map((category, index) => (
+            {budgetData?.expenseCategories?.map((category, index) => (
               <div
                 key={category.id}
                 className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
@@ -302,7 +367,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
                 <option>All Categories</option>
-                {budgetData.expenseCategories.map((category) => (
+                {budgetData?.expenseCategories?.map((category) => (
                   <option key={category.id}>{category.name}</option>
                 ))}
               </select>
@@ -371,7 +436,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                   </tr>
                 ))} */}
                 
-                {filteredExpenses.map((expense) => {
+                {filteredExpenses?.map((expense) => {
                   const isEditing = editingId === expense.id;
                   return (
                     <tr key={expense.id}>
@@ -499,7 +564,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {filteredExpenses.length} of {budgetData.expenses.length}{" "}
+              Showing {filteredExpenses?.length} of {budgetData?.expenses?.length}{" "}
               expenses
             </p>
             <div className="flex space-x-2">
@@ -547,11 +612,15 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 id="category"
                 name="category"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={newExpense.category}
+                value={newExpense.category || ""}
                 onChange={handleInputChange}
               >
-                {budgetData.expenseCategories.map((category) => (
-                  <option key={category.id}>{category.name}</option>
+
+                {budgetData?.expenseCategories?.length === 0 && (
+                  <option disabled>No categories available</option>
+                )}
+                {budgetData?.expenseCategories?.map((category) => (
+                  <option key={category.id} value={category.name}>{category.name}</option>
                 ))}
               </select>
             </div>

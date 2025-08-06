@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
+import { exportToExcelAmortization } from "@/utils/amortizationSchedule";
 import {
   BarChart,
   Bar,
@@ -74,6 +75,21 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
     updateMortgageData({ pmi: value });
   };
 
+  const handleExportSchedule = () => {
+  if (!results?.amortizationSchedule) return;
+
+  // Format the data for export (only show year, principal, interest, balance)
+  const dataToExport = results.amortizationSchedule.map((year: any) => ({
+    Year: year.year,
+    Principal: year.principal,
+    Interest: year.interest,
+    Balance: year.balance,
+  }));
+
+  exportToExcelAmortization(dataToExport, "Amortization_Schedule");
+};
+
+
   // Payment breakdown chart data
   const paymentBreakdownData = results ? [
     { name: 'Principal & Interest', value: results.monthlyPayment },
@@ -102,7 +118,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                 type="number" 
                 value={mortgageData.homePrice || ""} 
                 onChange={handleHomePrice}
-                placeholder="300,000"
+                placeholder="50,000"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
               <div className="mt-2">
@@ -129,7 +145,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                   type="number" 
                   value={mortgageData.downPaymentAmount || ""} 
                   onChange={handleDownPaymentAmount}
-                  placeholder="60,000"
+                  placeholder="Down Payment Amount"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
                 <span className="text-gray-600 dark:text-gray-400">$</span>
@@ -171,7 +187,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                 type="number" 
                 value={mortgageData.interestRate || ""} 
                 onChange={handleInterestRate}
-                placeholder="4.5"
+                placeholder="Set Interest Rate"
                 step="0.01"
                 min="0"
                 max="15"
@@ -201,7 +217,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                   type="number" 
                   value={mortgageData.propertyTax || ""} 
                   onChange={handlePropertyTax}
-                  placeholder="3,600"
+                  placeholder="set Property Tax"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
                 <span className="text-gray-600 dark:text-gray-400 ml-2">$</span>
@@ -215,7 +231,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                   type="number" 
                   value={mortgageData.homeInsurance || ""} 
                   onChange={handleHomeInsurance}
-                  placeholder="1,200"
+                  placeholder="set Home Insurance"
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 />
                 <span className="text-gray-600 dark:text-gray-400 ml-2">$</span>
@@ -229,7 +245,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                   type="number" 
                   value={mortgageData.pmi || ""} 
                   onChange={handlePMI}
-                  placeholder="0.5"
+                  placeholder="set PMI"
                   step="0.01"
                   min="0"
                   max="2"
@@ -239,14 +255,14 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
               </div>
             </div>
             
-            <div className="pt-2">
+            {/* <div className="pt-2">
               <Button 
                 onClick={handleCalculate}
                 className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg"
               >
                 Calculate Mortgage
               </Button>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
@@ -331,7 +347,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
               <div>
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="text-md font-semibold">Amortization Schedule</h4>
-                  <button className="text-primary-500 hover:text-primary-600 text-sm">
+                  <button className="text-primary-500 hover:text-primary-600 text-sm" onClick={handleExportSchedule}>
                     <i className="fas fa-download mr-1"></i>
                     Export Schedule
                   </button>
