@@ -120,14 +120,32 @@ interface RoiRequest extends Request<{}, {}, RoiRequestBody> {
 }
 
 // Savings Goal Request Body
-interface savingsGoalRequestBody {
+// interface savingsGoalRequestBody {
+//   name: string;
+//   target_amount: string; // Target amount in dollars
+//   current_amount: string; // Current amount saved in dollars
+//   target_date: Date; // Target date for the savings goal (ISO date string)
+// }
+
+// interface SavingsGoalRequest extends Request<{}, {}, savingsGoalRequestBody> {
+//   auth?: {
+//     sub: string;
+//     [key: string]: any;
+//   };
+// }
+
+interface SavingsGoalItem {
   name: string;
   target_amount: string; // Target amount in dollars
   current_amount: string; // Current amount saved in dollars
   target_date: Date; // Target date for the savings goal (ISO date string)
 }
 
-interface SavingsGoalRequest extends Request<{}, {}, savingsGoalRequestBody> {
+interface SavingsGoalArrayRequestBody {
+  savingsGoals: SavingsGoalItem[];
+}
+
+interface SavingsGoalArrayRequest extends Request<{}, {}, SavingsGoalArrayRequestBody> {
   auth?: {
     sub: string;
     [key: string]: any;
@@ -142,21 +160,6 @@ interface SavingsGoalRequest extends Request<{}, {}, savingsGoalRequestBody> {
 // }
 
 // interface CurrencyRequest extends Request<{}, {}, CurrencyRequestBody> {
-//   auth?: {
-//     sub: string;
-//     [key: string]: any;
-//   };
-// }
-
-// Savings Tracker Request Body
-// interface SavingsTrackerRequestBody {
-//   name: string;
-//   targetAmount: string;
-//   currentAmount: string;
-//   targetDate: Date; // ISO date string
-// }
-
-// interface SavingsTrackerRequest extends Request<{}, {}, SavingsTrackerRequestBody> {
 //   auth?: {
 //     sub: string;
 //     [key: string]: any;
@@ -450,6 +453,7 @@ app.post('/api/retirement-calculations', checkJwt, async (req: RetirementRequest
     }
 
     const {lifeExpectancy, inflationRate, desiredMonthlyIncome, retirementAge, currentAge, currentSavings, monthlyContribution, expectedReturn } = req.body;
+    console.log("Request body retirement:", req.body);
 
     const retirementCalculation = await storage.createRetirementCalculation({
       userId: user.id,
@@ -459,7 +463,7 @@ app.post('/api/retirement-calculations', checkJwt, async (req: RetirementRequest
       currentSavings,
       monthlyContribution,
       expectedReturn,
-      inflationRate,
+      inflationRate: inflationRate.toString(), // in basis points (e.g., 200 for 2.00%)
       desiredMonthlyIncome,
     });
 
@@ -608,10 +612,44 @@ app.get('/api/roi-calculations', checkJwt, async (req: Auth0Request, res) => {
 );
 
 // Create savings goal
-app.post('/api/savings-goals', checkJwt, async (req: SavingsGoalRequest, res) => {
+// app.post('/api/savings-goals', checkJwt, async (req: SavingsGoalRequest, res) => {
+//   try {
+//     const auth0_id = req.auth?.sub;
+//     console.log('Auth0 ID:', auth0_id);
+//     if (!auth0_id) {
+//       return res.status(401).json({ error: "Unauthorized" });
+//     }
+
+//     const user = await storage.getUserByAuth0Id(auth0_id);
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+
+//     const { name, target_amount, current_amount, target_date } = req.body;
+//     console.log("Request body savings goal:", req.body);
+
+//     const savingsGoal = await storage.createSavingsGoal({
+//       userId: user.id,
+//       name,
+//       target_amount,
+//       current_amount,
+//       target_date: new Date(target_date), // Ensure targetDate is a Date object
+//     });
+
+
+//     res.status(201).json(savingsGoal);
+//   } catch (error) {
+//     console.error('Error creating savings goal:', error);
+//     res.status(500).json({ error: "16.Internal server error" });
+//   }
+// }
+// );
+
+app.post('/api/savings-goals', checkJwt, async (req: SavingsGoalArrayRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     console.log('Auth0 ID:', auth0_id);
+    
     if (!auth0_id) {
       return res.status(401).json({ error: "Unauthorized" });
     }
@@ -621,23 +659,48 @@ app.post('/api/savings-goals', checkJwt, async (req: SavingsGoalRequest, res) =>
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { name, target_amount, current_amount, target_date } = req.body;
+    const { savingsGoals } = req.body;
+    console.log("Request body savings goals:", req.body);
 
-    const savingsGoal = await storage.createSavingsGoal({
-      userId: user.id,
-      name,
-      target_amount,
-      current_amount,
-      target_date: new Date(target_date), // Ensure targetDate is a Date object
+    // Validate that savingsGoals is an array and not empty
+    if (!Array.isArray(savingsGoals) || savingsGoals.length === 0) {
+      return res.status(400).json({ error: "savingsGoals must be a non-empty array" });
+    }
+
+    // Create all savings goals
+    const createdGoals = [];
+    
+    for (const goalData of savingsGoals) {
+      const { name, target_amount, current_amount, target_date } = goalData;
+      
+      // Validate required fields for each goal
+      if (!name || !target_amount || !current_amount || !target_date) {
+        return res.status(400).json({ 
+          error: "Each savings goal must have name, target_amount, current_amount, and target_date" 
+        });
+      }
+
+      const savingsGoal = await storage.createSavingsGoal({
+        userId: user.id,
+        name,
+        target_amount,
+        current_amount,
+        target_date: new Date(target_date),
+      });
+      
+      createdGoals.push(savingsGoal);
+    }
+
+    res.status(201).json({
+      message: `Successfully created ${createdGoals.length} savings goals`,
+      savingsGoals: createdGoals
     });
-
-    res.status(201).json(savingsGoal);
+    
   } catch (error) {
-    console.error('Error creating savings goal:', error);
-    res.status(500).json({ error: "16.Internal server error" });
+    console.error('Error creating savings goals:', error);
+    res.status(500).json({ error: "Internal server error" });
   }
-}
-);
+});
 
 // Get user's savings goals
 app.get('/api/savings-goals', checkJwt, async (req: Auth0Request, res) => { 

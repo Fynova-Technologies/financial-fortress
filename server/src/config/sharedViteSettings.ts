@@ -7,18 +7,18 @@ export const sharedViteSettings = {
   server: {
     port: 3000,
     hmr: true,
-        plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
+  //       plugins: [
+  //   react(),
+  //   runtimeErrorOverlay(),
+  //   ...(process.env.NODE_ENV !== "production" &&
+  //   process.env.REPL_ID !== undefined
+  //     ? [
+  //         await import("@replit/vite-plugin-cartographer").then((m) =>
+  //           m.cartographer(),
+  //         ),
+  //       ]
+  //     : []),
+  // ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),

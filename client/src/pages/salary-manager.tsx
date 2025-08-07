@@ -27,7 +27,7 @@ export default function SalaryManager() {
         period: salaryData.period,
       };
 
-      const res = await fetch("http://localhost:5000/api/salary-calculations", {
+      const res = await fetch("http://localhost:5000/api/salary-management", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

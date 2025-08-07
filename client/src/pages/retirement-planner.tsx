@@ -23,7 +23,7 @@ export default function RetirementPlanner() {
       const payload = {
         currentAge: retirementData.currentAge,
         retirementAge: retirementData.retirementAge,
-        lifeExpenctancy: retirementData.lifeExpectancy,
+        lifeExpectancy: retirementData.lifeExpectancy,
         currentSavings: retirementData.currentSavings,
         monthlyContribution: retirementData.monthlyContribution,
         expectedReturn: retirementData.expectedReturn,
@@ -31,7 +31,7 @@ export default function RetirementPlanner() {
         desiredMonthlyIncome: retirementData.desiredMonthlyIncome,
       };
 
-      const res = await fetch("http://localhost:5000/api/retirement-plans", {
+      const res = await fetch("http://localhost:5000/api/retirement-calculations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,5 +1,6 @@
 import exp from "constants";
-import { pgTable, text, serial, integer, boolean, timestamp, decimal, uuid, numeric, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, decimal} from "drizzle-orm/pg-core";
+import { numeric } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -157,7 +158,8 @@ export const retirementCalculations = pgTable('retirement_calculations', {
   currentSavings: integer('current_savings').notNull(),
   monthlyContribution: integer('monthly_contribution').notNull(),
   expectedReturn: integer('expected_return').notNull(), // in basis points (e.g., 500 for 5.00%)
-  inflationRate: integer('inflation_rate').notNull(), // in basis points (e.g., 200 for 2.00%)
+  // inflationRate: integer('inflation_rate').notNull(), // in basis points (e.g., 200 for 2.00%)
+  inflationRate: decimal('inflation_rate', { precision: 5, scale: 2 }).notNull(), // e.g., 2.50%
   desiredMonthlyIncome: integer('desired_monthly_income').notNull(),
   created_at: timestamp('created_at').defaultNow(),
   updated_at: timestamp('updated_at').defaultNow(),

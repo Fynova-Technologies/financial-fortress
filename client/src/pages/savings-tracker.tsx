@@ -29,7 +29,7 @@ export default function SavingsTracker() {
         })),
       };
 
-      const res = await fetch("http://localhost:5000/api/savings-tracker", {
+      const res = await fetch("http://localhost:5000/api/savings-goals", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
