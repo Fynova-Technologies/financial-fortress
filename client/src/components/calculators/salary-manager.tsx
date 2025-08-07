@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   PieChart,
   Pie,
@@ -25,10 +26,67 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { use } from "passport";
 
 export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
   const { salaryData, updateSalaryData, calculateSalary } = useCalculator();
   const [results, setResults] = useState<any>(null);
+
+  const { getAccessTokenSilently, user } = useAuth0();
+
+  useEffect(() => {
+    const fetchSalaryData = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        console.log("access token granted Salary Manager: ", token);
+
+        const res = await fetch("http://localhost:5000/api/salary-management", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
+       const payload = await res.json();     
+
+        if (!res.ok) {
+          console.error("Server responded", res.status, payload);
+          throw new Error(payload.error || "Failed to load salary data");
+        }
+
+        // now payload is your Array
+        const allCalculations = payload as Array<{
+          grossSalary: number;
+          taxRate: number;
+          deductions: number;
+          bonuses: number;
+          period?: "monthly" | "annual";
+          createdAt: string;
+        }>;
+        
+        // If no data, return early
+        if (allCalculations.length === 0) return;
+        const initialData = allCalculations.reduce((a, b) =>
+          new Date(a.createdAt || '').getTime() > new Date(b.createdAt || '').getTime() ? a : b
+        );
+
+        updateSalaryData({
+          grossSalary: initialData.grossSalary,
+          taxRate: initialData.taxRate,
+          deductions: initialData.deductions,
+          bonuses: initialData.bonuses,
+          period: initialData.period || 'monthly'
+        });
+      } catch (error) {
+        console.error("Error fetching salary data:", error);
+      }
+    }
+
+    if(user){
+      fetchSalaryData();
+    }
+  }, [getAccessTokenSilently, user]);
 
   // Calculate on first load and when inputs change
   useEffect(() => {

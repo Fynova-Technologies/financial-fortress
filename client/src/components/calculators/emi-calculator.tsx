@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { exportToExcelAmortization } from "@/utils/amortizationSchedule";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   PieChart,
   Pie,
@@ -25,6 +26,56 @@ export const EMICalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { emiData, updateEMIData, calculateEMI } = useCalculator();
   const [results, setResults] = useState<any>(null);
   const [viewFullRepaymentSchedule, setViewFullRepaymentSchedule] = useState(false);
+
+  const { getAccessTokenSilently, user} = useAuth0();
+
+  useEffect(() => {
+    const fetchSavedData = async () => {  
+      try {
+        const token = await getAccessTokenSilently();
+        console.log("access token granted EMI: ", token);
+
+        const res = await fetch("http://localhost:5000/api/emi-calculations", {
+          // method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
+        const allCalculations: Array<{
+          loanAmount: number;
+          interestRate: number;
+          loanTerm: number;
+          termType: 'years' | 'months';
+          startDate: string;
+          createdAt: string;
+        }> = await res.json();
+
+        // Pick the most recent calculation
+        if (allCalculations.length === 0) return; 
+        const latest = allCalculations.reduce((a, b) =>
+          new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+        );
+
+        // Update context state with latest data
+        updateEMIData({
+          loanAmount: latest.loanAmount,
+          interestRate: latest.interestRate,
+          loanTerm: latest.loanTerm,
+          termType: latest.termType,
+          startDate: latest.startDate
+        });
+
+      } catch (error) {
+        console.error("Fetch failed:", error);
+      }
+    }
+
+    if(user){
+      fetchSavedData();
+    }
+  }, [getAccessTokenSilently, user]);
 
   // Calculate on first load and when inputs change
   useEffect(() => {
@@ -172,7 +223,7 @@ export const EMICalculator = forwardRef<HTMLDivElement>((_, ref) => {
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</Label>
               <Input 
                 type="date" 
-                value={emiData.startDate || ""} 
+                value={emiData.startDate ? emiData.startDate.split("T")[0] : ""}
                 onChange={handleStartDate}
                 className="w-full"
               />

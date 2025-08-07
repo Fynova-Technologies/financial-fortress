@@ -146,11 +146,11 @@ const defaultCurrencyData: CurrencyData = {
 
 const defaultSavingsData: SavingsData = {
   savingsGoals: [
-    { id: '1', name: 'Emergency Fund', targetAmount: 10000, currentAmount: 3000, targetDate: '2023-12-31' },
-    { id: '2', name: 'Vacation', targetAmount: 3000, currentAmount: 1500, targetDate: '2023-09-30' },
-    { id: '3', name: 'New Car', targetAmount: 15000, currentAmount: 5000, targetDate: '2024-06-30' }
+    // { id: '1', name: 'Emergency Fund', targetAmount: 10000, currentAmount: 3000, targetDate: '2023-12-31' },
+    // { id: '2', name: 'Vacation', targetAmount: 3000, currentAmount: 1500, targetDate: '2023-09-30' },
+    // { id: '3', name: 'New Car', targetAmount: 15000, currentAmount: 5000, targetDate: '2024-06-30' }
   ],
-  monthlySavings: 800
+  monthlySavings: 0
 };
 
 // Create context
@@ -810,7 +810,7 @@ const convertCurrency = async () => {
   const addSavingsGoal = (goal: SavingsGoal) => {
     setSavingsData(prev => ({
       ...prev,
-      savingsGoals: [...prev.savingsGoals, goal]
+      savingsGoals: [...(prev.savingsGoals ?? []), goal]
     }));
   };
 
@@ -834,14 +834,14 @@ const convertCurrency = async () => {
     const { savingsGoals, monthlySavings } = savingsData;
     
     // Calculate progress and projections for each goal
-    const goalResults = savingsGoals.map(goal => {
-      const targetDate = new Date(goal.targetDate);
-      const currentDate = new Date();
+    const goalResults = savingsGoals?.map(goal => {
+      const target_date = new Date(goal.targetDate);
+      const current_date = new Date();
       
       // Calculate months remaining
       const monthsRemaining = 
-        (targetDate.getFullYear() - currentDate.getFullYear()) * 12 + 
-        (targetDate.getMonth() - currentDate.getMonth());
+        (target_date.getFullYear() - current_date.getFullYear()) * 12 + 
+        (target_date.getMonth() - current_date.getMonth());
       
       // Calculate amount needed per month
       const remainingAmount = goal.targetAmount - goal.currentAmount;
@@ -851,10 +851,10 @@ const convertCurrency = async () => {
       const isAchievable = monthlyNeeded <= monthlySavings;
       
       // Calculate expected completion date based on current savings rate
-      let expectedCompletionDate = new Date(currentDate);
+      let expectedCompletionDate = new Date(current_date);
       if (monthlySavings > 0) {
         const monthsToCompletion = Math.ceil(remainingAmount / monthlySavings);
-        expectedCompletionDate.setMonth(currentDate.getMonth() + monthsToCompletion);
+        expectedCompletionDate.setMonth(current_date.getMonth() + monthsToCompletion);
       } else {
         expectedCompletionDate = new Date('2099-12-31'); // Far future if no monthly savings
       }
@@ -883,7 +883,7 @@ const convertCurrency = async () => {
       date.setMonth(today.getMonth() + month);
       
       // Create projection for each goal
-      const goalsData = goalResults.map(goal => {
+      const goalsData = goalResults?.map(goal => {
         let projectedAmount = goal.currentAmount;
         
         // Calculate projected amount for this month
@@ -914,8 +914,8 @@ const convertCurrency = async () => {
     
     return {
       goalResults,
-      totalSaved: savingsGoals.reduce((sum, goal) => sum + goal.currentAmount, 0),
-      totalTarget: savingsGoals.reduce((sum, goal) => sum + goal.targetAmount, 0),
+      totalSaved: savingsGoals?.reduce((sum, goal) => sum + goal.currentAmount, 0),
+      totalTarget: savingsGoals?.reduce((sum, goal) => sum + goal.targetAmount, 0),
       chartData
     };
   };

@@ -32,7 +32,7 @@ interface BudgetRequest extends Request<{}, {}, BudgetRequestBody> {
   };
 }
 
-// EMI Calculation Request Body
+// Mortgage Calculation Request Body
 interface MortgageRequestBody {
   homePrice: number;
   downPaymentAmount: number;
@@ -91,8 +91,9 @@ interface SalaryManagementRequestBody {
   grossSalary: number;
   taxRate: number;
   deductions: number;
-  bounses?: number; // Optional field for bonuses
+  bonuses?: number; // Optional field for bonuses
   period?: 'monthly' | 'annual'; // Optional field for period type
+  created_at?: Date; // Optional field for creation date
 }
 
 interface SalaryManagementRequest extends Request<{}, {}, SalaryManagementRequestBody> {
@@ -345,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       homePrice,
       downPaymentAmount,
       downPaymentPercent,
-      interestRate,
+      interestRate: interestRate.toString(), // Ensure interestRate is a string
       loanTerm,
       propertyTax,
       homeInsurance,
@@ -462,7 +463,7 @@ app.post('/api/retirement-calculations', checkJwt, async (req: RetirementRequest
       lifeExpectancy,
       currentSavings,
       monthlyContribution,
-      expectedReturn,
+      expectedReturn: expectedReturn.toString(), // in basis points (e.g., 500 for 5.00%)
       inflationRate: inflationRate.toString(), // in basis points (e.g., 200 for 2.00%)
       desiredMonthlyIncome,
     });
@@ -512,14 +513,14 @@ app.post('/api/salary-management', checkJwt, async (req: SalaryManagementRequest
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { grossSalary, taxRate, deductions, bounses, period } = req.body;
+    const { grossSalary, taxRate, deductions, bonuses, period } = req.body;
 
     const salaryManagement = await storage.createSalaryManagement({
       userId: user.id,
       grossSalary,
-      taxRate,
+      taxRate: taxRate.toString(), // Ensure taxRate is a string
       deductions,
-      bonuses: bounses || 0, // Default to 0 if not provided
+      bonuses: bonuses || 0, // Default to 0 if not provided
       period: period || 'monthly' // Default to 'monthly' if not provided
     });
 
@@ -575,7 +576,7 @@ app.post('/api/roi-calculations', checkJwt, async (req: RoiRequest, res) => {
       initialInvestment,
       additionalContribution,
       contributionFrequency,
-      annualRate,
+      annualRate: annualRate.toString(), // in basis points (e.g., 500 for 5.00%)
       compoundingFrequency,
       investmentTerm,
     });
@@ -612,39 +613,6 @@ app.get('/api/roi-calculations', checkJwt, async (req: Auth0Request, res) => {
 );
 
 // Create savings goal
-// app.post('/api/savings-goals', checkJwt, async (req: SavingsGoalRequest, res) => {
-//   try {
-//     const auth0_id = req.auth?.sub;
-//     console.log('Auth0 ID:', auth0_id);
-//     if (!auth0_id) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const user = await storage.getUserByAuth0Id(auth0_id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const { name, target_amount, current_amount, target_date } = req.body;
-//     console.log("Request body savings goal:", req.body);
-
-//     const savingsGoal = await storage.createSavingsGoal({
-//       userId: user.id,
-//       name,
-//       target_amount,
-//       current_amount,
-//       target_date: new Date(target_date), // Ensure targetDate is a Date object
-//     });
-
-
-//     res.status(201).json(savingsGoal);
-//   } catch (error) {
-//     console.error('Error creating savings goal:', error);
-//     res.status(500).json({ error: "16.Internal server error" });
-//   }
-// }
-// );
-
 app.post('/api/savings-goals', checkJwt, async (req: SavingsGoalArrayRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;

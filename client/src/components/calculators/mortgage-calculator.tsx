@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { exportToExcelAmortization } from "@/utils/amortizationSchedule";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   BarChart,
   Bar,
@@ -24,6 +25,65 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { mortgageData, updateMortgageData, calculateMortgage } = useCalculator();
   const [results, setResults] = useState<any>(null);
   const [viewFullamortizationSchedule, setViewFullamortizationSchedule] = useState(false);
+
+  const { user, getAccessTokenSilently } = useAuth0();
+
+  useEffect(() => {
+    const loadMOrtgageData = async () => {
+      try {
+        if (!user || !getAccessTokenSilently) return;
+
+        const token = await getAccessTokenSilently();
+        console.log("access token granted Mortgage Calculator: ", token);
+        const res = await fetch("http://localhost:5000/api/mortgage-calculations", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        }); 
+
+        //  Parse JSON — this is an array of records
+        const allCalculations: Array<{
+          homePrice: number;
+          downPaymentAmount: number;
+          downPaymentPercent: number;
+          interestRate: number;
+          loanTerm: number;
+          propertyTax: number;
+          homeInsurance: number;
+          pmi: number;
+          createdAt: string;
+        }> = await res.json();
+
+        //  Pick the one you want (e.g. most recent by createdAt)
+        if (allCalculations.length === 0) return; 
+        const latest = allCalculations.reduce((a, b) =>
+          new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+        );
+
+        // Update your context state so inputs get prefilled
+        updateMortgageData({
+          homePrice: latest.homePrice,
+          downPaymentAmount: latest.downPaymentAmount,
+          downPaymentPercent: latest.downPaymentPercent,
+          interestRate: latest.interestRate,
+          loanTerm: latest.loanTerm,
+          propertyTax: latest.propertyTax,
+          homeInsurance: latest.homeInsurance,
+          pmi: latest.pmi,
+        });
+
+      } catch (error) {
+        console.error("Failed to load mortgage data:", error);
+        alert("Failed to load mortgage data");
+      }
+    }
+    if (user){
+      loadMOrtgageData();
+    }
+  }
+  , [user, getAccessTokenSilently]);
 
   // Calculate on first load and when inputs change
   useEffect(() => {

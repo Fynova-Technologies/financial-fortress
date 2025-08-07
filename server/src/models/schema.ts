@@ -1,4 +1,5 @@
 import exp from "constants";
+import { int } from "drizzle-orm/mysql-core";
 import { pgTable, text, serial, integer, timestamp, decimal} from "drizzle-orm/pg-core";
 import { numeric } from "drizzle-orm/sqlite-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -105,7 +106,8 @@ export const mortgageCalculations = pgTable('mortgage_calculations', {
   downPaymentAmount: integer('down_payment_amount').notNull(),
   downPaymentPercent: integer('down_payment_percent').notNull(),
   loanTerm: integer('loan_term').notNull(), // in years
-  interestRate: integer('interest_rate').notNull(), // in basis points (e.g., 300 for 3.00%)
+  // interestRate: integer('interest_rate').notNull(), // in basis points (e.g., 300 for 3.00%)
+  interestRate: decimal('interest_rate', { precision: 5, scale: 2 }).notNull(), // e.g., 8.50%
   propertyTax: integer('property_tax').notNull(), // Annual property tax in dollars
   homeInsurance: integer('home_insurance').notNull(), // Annual home insurance in dollars
   pmi: integer('pmi').notNull(), // Private Mortgage Insurance in basis points (e.g., 50 for 0.50%)
@@ -157,7 +159,8 @@ export const retirementCalculations = pgTable('retirement_calculations', {
   lifeExpectancy: integer('life_expectancy').notNull(),
   currentSavings: integer('current_savings').notNull(),
   monthlyContribution: integer('monthly_contribution').notNull(),
-  expectedReturn: integer('expected_return').notNull(), // in basis points (e.g., 500 for 5.00%)
+  expectedReturn: decimal('expected_return', { precision: 5, scale: 2 }).notNull(), // e.g., 5.00%
+  // expectedReturn: integer('expected_return').notNull(), // in basis points (e.g., 500 for 5.00%)
   // inflationRate: integer('inflation_rate').notNull(), // in basis points (e.g., 200 for 2.00%)
   inflationRate: decimal('inflation_rate', { precision: 5, scale: 2 }).notNull(), // e.g., 2.50%
   desiredMonthlyIncome: integer('desired_monthly_income').notNull(),
@@ -184,7 +187,7 @@ export const salaryManagement = pgTable('salary_management', {
   id: serial('id').primaryKey(),  
   userId: integer('user_id').notNull(),
   grossSalary: integer('gross_salary').notNull(),
-  taxRate: integer('tax_rate').notNull(), // in basis points (e.g., 300 for 3.00%)
+  taxRate: decimal('tax_rate', { precision: 5, scale: 2 }).notNull(), // e.g., 3.00%
   deductions: integer('deductions').notNull(), // Total deductions in dollars
   bonuses: integer('bonuses').notNull(), // Total bonuses in dollars
   period: text('period').notNull(), // 'monthly' or 'annual'
@@ -210,7 +213,7 @@ export const roiCalculations = pgTable('roi_calculations', {
   initialInvestment: integer('investment_amount').notNull(),
   additionalContribution: integer('addition_contributions').notNull(), // Total additional contributions in dollars
   contributionFrequency: text('contribution_frequency').notNull(), // 'monthly', 'quarterly', 'annually'
-  annualRate: integer('annual_rate').notNull(), // Annual rate of return in basis points (e.g., 500 for 5.00%)
+  annualRate: decimal('annual_rate', { precision: 5, scale: 2 }).notNull(), // Annual rate of return in percentage (e.g., 5.00%)
   compoundingFrequency: text('compounding_frequency').notNull(), // 'daily', 'monthly', 'quarterly', 'annually'
   investmentTerm: integer('investment_term').notNull(), // Investment term in years
   // returnAmount: integer('return_amount').notNull(),

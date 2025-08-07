@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   LineChart,
   Line,
@@ -21,6 +22,63 @@ import {
 export const RetirementPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const { retirementData, updateRetirementData, calculateRetirement } = useCalculator();
   const [results, setResults] = useState<any>(null);
+
+  const { getAccessTokenSilently, user } = useAuth0();
+
+  useEffect(() => {
+    const fetchRetirementData = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        console.log("access token granted Retirement Planner: ", token);
+
+        const res = await fetch("http://localhost:5000/api/retirement-calculations", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch retirement data");
+        }
+
+        const allCalculations: Array<{
+          currentAge: number;
+          retirementAge: number;
+          lifeExpectancy: number;
+          currentSavings: number;
+          monthlyContribution: number;
+          expectedReturn: number;
+          inflationRate: number;
+          desiredMonthlyIncome: number;
+          createdAt: string;
+        }> = await res.json();
+
+        if (allCalculations.length === 0) return;
+        const latest = allCalculations.reduce((a, b) =>
+          new Date(a.createdAt) > new Date(b.createdAt) ? a : b 
+        );
+
+        updateRetirementData({
+          currentAge: latest.currentAge,
+          retirementAge: latest.retirementAge,
+          lifeExpectancy: latest.lifeExpectancy,
+          currentSavings: latest.currentSavings,
+          monthlyContribution: latest.monthlyContribution,
+          expectedReturn: latest.expectedReturn,
+          inflationRate: latest.inflationRate,
+          desiredMonthlyIncome: latest.desiredMonthlyIncome,
+        });
+
+      } catch (error) {
+        console.error("Error fetching retirement data:", error);
+      }
+    };
+
+    if(user){
+      fetchRetirementData();
+    }
+  }, [getAccessTokenSilently, user]);
 
   // Calculate on first load and when inputs change
   useEffect(() => {

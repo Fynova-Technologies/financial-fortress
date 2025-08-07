@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   BarChart,
   Bar,
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { SavingsGoal } from "@/types";
 import { savingsGoals } from "server/src/models/schema";
+import { use } from "passport";
 
 export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
   const { savingsData, updateSavingsData, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, calculateSavings } = useCalculator();
@@ -41,6 +43,74 @@ export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
     targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split('T')[0]
   });
 
+  const { getAccessTokenSilently, isLoading, user } = useAuth0();
+
+  useEffect(() => {
+    const saveData = async () => {
+      if (isLoading) {
+        console.warn("Auth0 is still loading—try again later.");
+        return;
+      }
+
+      try {
+        const token = await getAccessTokenSilently();
+        console.log("access token granted Savings Tracker: ", token);
+
+        const payload = {
+          savingsGoals: savingsData.savingsGoals.map(goal => ({
+            name: goal.name,
+            targetAmount: goal.targetAmount,
+            currentAmount: goal.currentAmount,
+            targetDate: new Date(goal.targetDate),
+          })),
+          monthlySavings: savingsData.monthlySavings || 0,
+        };
+
+        const res = await fetch("http://localhost:5000/api/savings-goals", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
+        const allCalculations: Array<{
+          id: string;
+          name: string;
+          target_amount: string;
+          current_amount: string;
+          target_date: string;
+        }> = await res.json();
+
+              const formatted = allCalculations.map((g) => ({
+        id: String(g.id),
+        name: g.name,
+        targetAmount: parseFloat(g.target_amount),
+        currentAmount: parseFloat(g.current_amount),
+        targetDate: g.target_date.split("T")[0], // yyyy-MM-dd
+      }));
+
+      updateSavingsData({ savingsGoals: formatted });
+
+        // if (allCalculations.length === 0) return;
+        // const latest = allCalculations.reduce((a, b) =>
+        //   new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+        // );
+
+        // updateSavingsData({
+        //   savingsGoals: latest.savingsGoals,
+        //   monthlySavings: latest.monthlySavings,
+        // });
+
+      } catch (error) {
+        console.error("Save failed:", error);
+        alert("Failed to save Savings Tracker data");
+      }
+    }
+    saveData();
+  }, [user, getAccessTokenSilently, isLoading]);
+
+
   // Calculate on first load and when inputs change
   useEffect(() => {
     handleCalculate();
@@ -50,30 +120,6 @@ export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
     const savingsResults = calculateSavings();
     setResults(savingsResults);
   };
-
-  // const handleAddGoal = () => {
-  //   if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
-  //     return;
-  //   }
-
-  //   const newId = Date.now().toString();
-  //   addSavingsGoal({
-  //     id: newId,
-  //     name: newGoal.name || "",
-  //     targetAmount: newGoal.targetAmount || 0,
-  //     currentAmount: newGoal.currentAmount || 0,
-  //     targetDate: newGoal.targetDate || ""
-  //   });
-
-  //   setNewGoal({
-  //     id: "",
-  //     name: "",
-  //     targetAmount: 0,
-  //     currentAmount: 0,
-  //     targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split('T')[0]
-  //   });
-  //   setShowAddGoalModal(false);
-  // };
 
   const handleAddGoal = () => {
   if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
@@ -150,7 +196,7 @@ const resetForm = () => {
 };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div ref={ref} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Goals Summary Card */}
       <Card className="bg-white dark:bg-gray-800 shadow-md">
         <CardContent className="p-6">
@@ -167,7 +213,7 @@ const resetForm = () => {
           </div>
           
           <div className="space-y-4">
-            {savingsData.savingsGoals.length === 0 ? (
+            {!savingsData?.savingsGoals || savingsData.savingsGoals.length === 0 ? (
               <div className="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <i className="fas fa-piggy-bank text-gray-400 text-4xl mb-2"></i>
                 <p className="text-gray-600 dark:text-gray-400">No savings goals yet. Add your first goal!</p>
@@ -273,7 +319,7 @@ const resetForm = () => {
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Savings Projections</h3>
           
-          {results && savingsData.savingsGoals.length > 0 && (
+          {results?.goalResults?.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="p-4 bg-primary-50 dark:bg-gray-700 rounded-lg">
@@ -320,7 +366,7 @@ const resetForm = () => {
                       />
                       <Tooltip formatter={(value: number) => formatCurrency(value)} />
                       <Legend />
-                      {savingsData.savingsGoals.map((goal, index) => (
+                      {savingsData?.savingsGoals?.map((goal, index) => (
                         <Line 
                           key={goal.id}
                           type="monotone" 
@@ -338,13 +384,13 @@ const resetForm = () => {
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                 <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2">Recommendations</h4>
                 <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                  {savingsData.monthlySavings < results.goalResults.reduce((sum: number, goal: any) => sum + goal.monthlyNeeded, 0) && (
+                  {savingsData.monthlySavings < results.goalResults?.reduce((sum: number, goal: any) => sum + goal.monthlyNeeded, 0) && (
                     <li className="flex items-start">
                       <i className="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
                       <span>Consider increasing your monthly savings to {formatCurrency(results.goalResults.reduce((sum: number, goal: any) => sum + goal.monthlyNeeded, 0))} to meet all your goals on time.</span>
                     </li>
                   )}
-                  {results.goalResults.some((goal: any) => !goal.isOnTrack) && (
+                  {results.goalResults?.some((goal: any) => !goal.isOnTrack) && (
                     <li className="flex items-start">
                       <i className="fas fa-exclamation-triangle text-warning mt-1 mr-2"></i>
                       <span>Some of your goals are off track. Consider adjusting your target dates or increasing your contributions.</span>
@@ -359,7 +405,7 @@ const resetForm = () => {
             </>
           )}
           
-          {(!results || savingsData.savingsGoals.length === 0) && (
+          {(!results || savingsData?.savingsGoals?.length === 0) && (
             <div className="text-center p-8">
               <i className="fas fa-chart-line text-gray-300 text-6xl mb-4"></i>
               <h4 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">No Data to Display</h4>

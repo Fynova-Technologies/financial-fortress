@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatPercentage } from "@/lib/utils";
+import { useAuth0 } from "@auth0/auth0-react";
 import {
   LineChart,
   Line,
@@ -18,10 +19,64 @@ import {
   Area
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { use } from "passport";
 
 export const ROICalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { roiData, updateROIData, calculateROI } = useCalculator();
   const [results, setResults] = useState<any>(null);
+
+  const { getAccessTokenSilently, user } = useAuth0();
+
+  useEffect(() => {
+    const fetchROIData = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        console.log("access token granted ROI: ", token);
+
+        const res = await fetch("http://localhost:5000/api/roi-calculations", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
+        // Parse JSON — this is an array of records
+        const allCalculations: Array<{
+          initialInvestment: number;
+          additionalContribution: number;
+          contributionFrequency: 'monthly' | 'quarterly' | 'annual';
+          annualRate: number;
+          compoundingFrequency: 'daily' | 'monthly' | 'quarterly' | 'annually';
+          investmentTerm: number;
+          createdAt: string;
+        }> = await res.json();
+
+        if ( allCalculations.length === 0) {
+          return;
+        }
+        const latest = allCalculations.reduce((a, b) =>
+          new Date(a.createdAt) > new Date(b.createdAt) ? a : b
+        );
+
+        updateROIData({
+          initialInvestment: latest.initialInvestment,
+          additionalContribution: latest.additionalContribution,
+          contributionFrequency: latest.contributionFrequency,
+          annualRate: latest.annualRate,
+          compoundingFrequency: latest.compoundingFrequency,
+          investmentTerm: latest.investmentTerm,
+        });
+        
+      } catch (error) {
+        console.error("Fetch failed:", error);
+      }
+    }
+
+    if(user){
+      fetchROIData();
+    }
+  }, [getAccessTokenSilently, user]);
 
   // Calculate on first load and when inputs change
   useEffect(() => {
