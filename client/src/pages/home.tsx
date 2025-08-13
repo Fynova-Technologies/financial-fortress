@@ -164,6 +164,7 @@ export default function Home() {
       ))}
       
       {/* Recent Activity Card */}
+      {isAuthenticated && (
       <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md col-span-1 md:col-span-2 lg:col-span-3">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
@@ -199,6 +200,7 @@ export default function Home() {
           </Button>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

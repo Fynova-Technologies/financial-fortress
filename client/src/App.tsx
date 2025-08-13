@@ -14,6 +14,7 @@ import ROICalculator from "@/pages/roi-calculator";
 import CurrencyConverter from "@/pages/currency-converter";
 import SavingsTracker from "@/pages/savings-tracker";
 import SalaryManager from "@/pages/salary-manager";
+import AuthPopupManager from "@/components/AuthPopupManager";
 
 function Router() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <MainLayout>
           <Router />
         </MainLayout>
+        <AuthPopupManager />
       </TooltipProvider>
     </QueryClientProvider>
   );

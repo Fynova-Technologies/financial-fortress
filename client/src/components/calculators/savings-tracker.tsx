@@ -56,15 +56,15 @@ export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
         const token = await getAccessTokenSilently();
         console.log("access token granted Savings Tracker: ", token);
 
-        const payload = {
-          savingsGoals: savingsData.savingsGoals.map(goal => ({
-            name: goal.name,
-            targetAmount: goal.targetAmount,
-            currentAmount: goal.currentAmount,
-            targetDate: new Date(goal.targetDate),
-          })),
-          monthlySavings: savingsData.monthlySavings || 0,
-        };
+        // const payload = {
+        //   savingsGoals: savingsData.savingsGoals.map(goal => ({
+        //     name: goal.name,
+        //     targetAmount: goal.targetAmount,
+        //     currentAmount: goal.currentAmount,
+        //     targetDate: new Date(goal.targetDate),
+        //   })),
+        //   monthlySavings: savingsData.monthlySavings || 0,
+        // };
 
         const res = await fetch("http://localhost:5000/api/savings-goals", {
           headers: {
@@ -80,27 +80,35 @@ export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
           target_amount: string;
           current_amount: string;
           target_date: string;
+          created_at: string;
+          monthly_savings?: number;
         }> = await res.json();
 
-              const formatted = allCalculations.map((g) => ({
-        id: String(g.id),
-        name: g.name,
-        targetAmount: parseFloat(g.target_amount),
-        currentAmount: parseFloat(g.current_amount),
-        targetDate: g.target_date.split("T")[0], // yyyy-MM-dd
-      }));
+      //   const formatted = allCalculations.map((g) => ({
+      //     id: String(g.id),
+      //     name: g.name,
+      //     targetAmount: parseFloat(g.target_amount),
+      //     currentAmount: parseFloat(g.current_amount),
+      //     targetDate: g.target_date.split("T")[0], // yyyy-MM-dd
+      //   }));
 
-      updateSavingsData({ savingsGoals: formatted });
+      // updateSavingsData({ savingsGoals: formatted });
 
-        // if (allCalculations.length === 0) return;
-        // const latest = allCalculations.reduce((a, b) =>
-        //   new Date(a.createdAt) > new Date(b.createdAt) ? a : b
-        // );
+        if (allCalculations.length === 0) return;
+        const latest = allCalculations.reduce((a, b) =>
+          new Date(a.created_at) > new Date(b.created_at) ? a : b
+        );
 
-        // updateSavingsData({
-        //   savingsGoals: latest.savingsGoals,
-        //   monthlySavings: latest.monthlySavings,
-        // });
+        updateSavingsData({
+          savingsGoals: allCalculations.map((g) => ({
+            id: String(g.id),
+            name: g.name,
+            targetAmount: parseFloat(g.target_amount),
+            currentAmount: parseFloat(g.current_amount),
+            targetDate: g.target_date.split("T")[0], // yyyy-MM-dd
+          })),
+          monthlySavings: latest.monthly_savings || 0,
+        });
 
       } catch (error) {
         console.error("Save failed:", error);
@@ -204,7 +212,7 @@ const resetForm = () => {
             <h3 className="text-lg font-semibold">Savings Goals</h3>
             <Button 
               onClick={() => setShowAddGoalModal(true)}
-              className="bg-primary-500 hover:bg-primary-600 text-white"
+              className="bg-primary-500 hover:bg-primary-600 text-gray-700 dark:text-white"
               size="sm"
             >
               <i className="fas fa-plus mr-2"></i>

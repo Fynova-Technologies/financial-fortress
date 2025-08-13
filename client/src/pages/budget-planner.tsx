@@ -1,17 +1,24 @@
 
 import { BudgetPlanner as BudgetPlannerComponent } from "@/components/calculators/budget-planner";
 import { PageHeader } from "@/components/page-header";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { useAuth0 } from "@auth0/auth0-react";
+import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function BudgetPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);
   const budgetPlannerRef = useRef<HTMLDivElement>(null);
-  const { getAccessTokenSilently, isLoading } = useAuth0();
+  const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
   const { budgetData } = useCalculator();
+  const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
   const handleSaveData = async () => {
+    if(!isAuthenticated) {
+      setShowAuthPopup(true);
+      return;
+    }
+
     if (isLoading) {
       console.warn("Auth0 is still loading—try again later.");
       return;
@@ -57,6 +64,16 @@ export default function BudgetPlanner() {
         onSave={handleSaveData}
       />
       <BudgetPlannerComponent ref={exportRef}/>
+
+      {showAuthPopup && (
+        <AuthPopup
+          visible={showAuthPopup}
+          onClose={() => setShowAuthPopup(false)}
+          // These props are now handled inside AuthPopup with Auth0
+          onLogin={() => {}}
+          onSignup={() => {}}
+        />
+      )}
     </div>
   );
 }

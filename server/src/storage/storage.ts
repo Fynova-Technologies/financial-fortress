@@ -525,6 +525,14 @@ export class DatabaseStorage implements IStorage{
   async getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]> {
     return await db.select().from(savingsGoals).where(eq(savingsGoals.userId, userId));
   }
+
+  async deleteSavingsGoal(id: number): Promise<boolean> {
+    const result = await db
+      .delete(savingsGoals)
+      .where(eq(savingsGoals.id, id))
+      .returning();
+    return result.length > 0;
+  }
 }
 
 // Keep the memory storage for testing

@@ -36,10 +36,12 @@
 //   );
 // };
 
-
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { exportToExcel } from "@/utils/exportToExcel";
 import { RefObject } from "react";
+import AuthPopup from "./auth/AuthPopup";
+import { useAuth0 } from "@auth0/auth0-react";
 
 interface ExportExcelButtonProps {
   targetRef: RefObject<HTMLElement>;
@@ -52,7 +54,14 @@ export const ExportExcelButton: React.FC<ExportExcelButtonProps> = ({
   fileName = "export.xlsx",
   extractData,
 }) => {
+  const { isAuthenticated } = useAuth0();
+  const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
+
   const handleExport = () => {
+    if (!isAuthenticated) {
+      setShowAuthPopup(true);
+      return;
+    }
     const element = targetRef.current;
     if (!element) return;
 
@@ -61,6 +70,7 @@ export const ExportExcelButton: React.FC<ExportExcelButtonProps> = ({
   };
 
   return (
+    <>
     <Button
       variant="outline"
       className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200"
@@ -69,5 +79,15 @@ export const ExportExcelButton: React.FC<ExportExcelButtonProps> = ({
       <i className="fas fa-file-excel mr-2"></i>
       Export to Excel
     </Button>
+
+    {showAuthPopup && (
+      <AuthPopup
+        visible={showAuthPopup}
+        onClose={() => setShowAuthPopup(false)}
+        onLogin={() => {}}
+        onSignup={() => {}}
+      />
+    )}
+  </>
   );
 };

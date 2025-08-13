@@ -156,13 +156,12 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
     { name: 'Property Tax', value: mortgageData.propertyTax / 12 },
     { name: 'Insurance', value: mortgageData.homeInsurance / 12 },
     ...(mortgageData.downPaymentPercent < 20 ? [{ name: 'PMI', value: (results.loanAmount * (mortgageData.pmi / 100)) / 12 }] : [])
-  ] : [];
+  ].filter(item => item.value > 0) : [];
 
   // Get first few years of amortization for the table
   const amortizationSchedule = results?.amortizationSchedule
   ? (viewFullamortizationSchedule ? results.amortizationSchedule : results.amortizationSchedule.slice(0, 5))
   : [];
-
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -210,7 +209,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                 />
                 <span className="text-gray-600 dark:text-gray-400">$</span>
               </div>
-              <div className="mt-2 relative">
+              <div className="mt-4 flex items-center space-x-2 relative">
                 <input 
                   type="range" 
                   min="0" 
@@ -221,7 +220,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                   className="w-full"
                 />
                 <div className="absolute -top-6 right-0">
-                  <span className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded">
+                  <span className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-10">
                     {mortgageData.downPaymentPercent?.toFixed(0)}%
                   </span>
                 </div>

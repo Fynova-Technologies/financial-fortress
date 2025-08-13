@@ -14,6 +14,7 @@ import {
   SavingsGoal
 } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface CalculatorContextType {
   // Budget Planner
@@ -668,7 +669,7 @@ const convertCurrency = async () => {
   try {
     // Convert request
     const res = await fetch(
-      `https://api.fastforex.io/convert?api_key=9b9d7bccf3-6c4f32e619-sy1q7y&from=${fromCurrency}&to=${toCurrency}&amount=${amount}`
+      `https://api.fastforex.io/convert?api_key=18e97278dd-a8ec6d38b4-t0s6ym&from=${fromCurrency}&to=${toCurrency}&amount=${amount}`
     );
 
     if (!res.ok) throw new Error("Failed to fetch conversion data");
@@ -683,7 +684,7 @@ const convertCurrency = async () => {
     const start = startDate.toISOString().split("T")[0];
 
     const historyRes = await fetch(
-      `https://api.fastforex.io/time-series?api_key=9b9d7bccf3-6c4f32e619-sy1q7y&from=${fromCurrency}&to=${toCurrency}&start=${start}&end=${endDate}`
+      `https://api.fastforex.io/time-series?api_key=18e97278dd-a8ec6d38b4-t0s6ym&from=${fromCurrency}&to=${toCurrency}&start=${start}&end=${endDate}`
     );
 
     if (!historyRes.ok) throw new Error("Failed to fetch historical data");
@@ -803,6 +804,8 @@ const convertCurrency = async () => {
 
 
   // Savings Tracker functions
+  const { getAccessTokenSilently } = useAuth0();
+
   const updateSavingsData = (data: Partial<SavingsData>) => {
     setSavingsData(prev => ({ ...prev, ...data }));
   };
@@ -810,7 +813,7 @@ const convertCurrency = async () => {
   const addSavingsGoal = (goal: SavingsGoal) => {
     setSavingsData(prev => ({
       ...prev,
-      savingsGoals: [...(prev.savingsGoals ?? []), goal]
+      savingsGoals: [...prev.savingsGoals, goal]
     }));
   };
 
@@ -823,12 +826,47 @@ const convertCurrency = async () => {
     }));
   };
 
-  const deleteSavingsGoal = (id: string) => {
+  // const deleteSavingsGoal = (id: string) => {
+  //   setSavingsData(prev => ({
+  //     ...prev,
+  //     savingsGoals: prev.savingsGoals.filter(g => g.id !== id)
+  //   }));
+  // };
+
+const deleteSavingsGoal = async (id: string) => {
+  try {
+    console.log('Attempting to delete goal ID:', id); // Debug log
+    
+    const token = await getAccessTokenSilently();
+    console.log('Got access token:', token ? 'Yes' : 'No'); // Debug log
+    
+    const response = await fetch(`http://localhost:5000/api/savings-goals/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+
+    console.log('Response status:', response.status); // Debug log
+    console.log('Response ok:', response.ok); // Debug log
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Backend error response:', errorText); // See the actual error
+      throw new Error(`Failed to delete from database: ${response.status} ${errorText}`);
+    }
+
     setSavingsData(prev => ({
       ...prev,
       savingsGoals: prev.savingsGoals.filter(g => g.id !== id)
     }));
-  };
+
+  } catch (error) {
+    console.error("Delete failed:", error);
+    alert("Failed to delete savings goal: " );
+  }
+};
 
   const calculateSavings = () => {
     const { savingsGoals, monthlySavings } = savingsData;

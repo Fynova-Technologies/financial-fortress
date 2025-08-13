@@ -4,13 +4,21 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/calculator-context";
 import { useRef } from "react";
 import { toast } from "react-toastify";
+import { useState } from "react";
+import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function RetirementPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);
-  const { getAccessTokenSilently, isLoading } = useAuth0();
+  const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
   const { retirementData } = useCalculator();
+  const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
   const handleSaveData = async () => {
+    if (!isAuthenticated) {
+      setShowAuthPopup(true);
+      return;
+    }
+
     if (isLoading) {
       console.warn("Auth0 is still loading—try again later.");
       return;
@@ -61,6 +69,15 @@ export default function RetirementPlanner() {
         onSave={handleSaveData}
       />
       <RetirementPlannerComponent ref={exportRef}/>
+
+      {showAuthPopup && (
+        <AuthPopup
+          visible={showAuthPopup}
+          onClose={() => setShowAuthPopup(false)}
+          onLogin={() => {}}
+          onSignup={() => {}}
+        />
+      )}
     </div>
   );
 }

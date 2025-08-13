@@ -3,6 +3,9 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "../storage/storage.js";
 import { checkJwt } from "../middleware/auth0Middleware.js";
+import { db } from "../utils/db.js";
+import { eq } from "drizzle-orm";
+import { savingsGoals } from "../models/schema.js";
 
 // Auth0 Request Body
 interface Auth0RequestBody {
@@ -150,8 +153,19 @@ interface SavingsGoalArrayRequest extends Request<{}, {}, SavingsGoalArrayReques
   auth?: {
     sub: string;
     [key: string]: any;
+    payload?: any;
+    userId?: string;
   };
 }
+
+// interface AuthenticatedRequest extends Request {
+//   auth?: {
+//     sub: string;
+//     [key: string]: any;
+//     payload?: any;
+//     userId?: string;
+//   };
+// }
 
 // Currency Request Body
 // interface CurrencyRequestBody {
@@ -692,6 +706,30 @@ app.get('/api/savings-goals', checkJwt, async (req: Auth0Request, res) => {
   }
 }
 );
+
+// Backend - Express.js example
+// app.delete('/api/savings-goals/:id', checkJwt, async (req: AuthenticatedRequest, res) => {
+//   try {
+//     const auth0_id = req.auth?.sub;
+//     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
+
+//     const user = await storage.getUserByAuth0Id(auth0_id);
+//     if (!user) return res.status(404).json({ error: "User not found" });
+
+//     const goalId = req.params.id;
+//     const deleted = await storage.deleteSavingsGoal(user.id, goalId);
+
+//     if (!deleted) {
+//       return res.status(404).json({ error: "Goal not found" });
+//     }
+
+//     return res.json({ message: "Deleted" });
+//   } catch (err) {
+//     console.error('Error deleting savings goal:', err);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
+
 
 // // Create currency
 // app.post('/api/currencies', checkJwt, async (req: CurrencyRequest, res) => {

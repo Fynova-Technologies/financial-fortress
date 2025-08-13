@@ -128,7 +128,7 @@ export const EMICalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const chartData = results ? [
     { name: 'Principal', value: emiData.loanAmount },
     { name: 'Interest', value: results.totalInterest }
-  ] : [];
+  ].filter(item => item.value > 0) : [];
 
   // First few payments for the schedule table
   const repaymentSchedule = results?.repaymentSchedule?(viewFullRepaymentSchedule?results.repaymentSchedule : results.repaymentSchedule.slice(0, 5)) : [];

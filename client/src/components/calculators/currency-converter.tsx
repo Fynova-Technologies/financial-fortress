@@ -64,9 +64,9 @@ export function CurrencyConverter() {
   const [results, setResults] = useState<any>(null);
 
   // Calculate on first load and when inputs change
-  useEffect(() => {
-    handleConvert();
-  }, [currencyData]);
+  // useEffect(() => {
+  //   handleConvert();
+  // }, [currencyData]);
 
   const handleConvert = async() => {
     const conversionResults = await convertCurrency();
@@ -181,7 +181,7 @@ export function CurrencyConverter() {
             <div className="pt-2">
               <Button 
                 onClick={handleConvert}
-                className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg"
+                className="block w-36 px-4 py-2 bg-primary-500 hover:bg-primary-400 text-gray-700 dark:text-white rounded-lg shadow-md hover:shadow-lg border border-primary-200 dark:border-gray-800 transition duration-200 mx-auto"
               >
                 Convert
               </Button>

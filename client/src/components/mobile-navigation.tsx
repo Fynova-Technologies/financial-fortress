@@ -18,7 +18,7 @@ export function MobileNavigation() {
             className={cn(
               "flex flex-col items-center justify-center",
               location === item.path
-                ? "text-primary-500 dark:text-primary-400"
+                ? "text-primary-500 font-semibold dark:text-primary-400"
                 : "text-gray-600 dark:text-gray-400"
             )}
           >
