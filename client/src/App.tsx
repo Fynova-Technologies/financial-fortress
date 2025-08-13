@@ -15,19 +15,22 @@ import CurrencyConverter from "@/pages/currency-converter";
 import SavingsTracker from "@/pages/savings-tracker";
 import SalaryManager from "@/pages/salary-manager";
 import AuthPopupManager from "@/components/AuthPopupManager";
+import ProtectedRoute from "./components/ProtectedRoute";
+import VerifyPage from "@/components/VerifyEmailNotic";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/budget-planner" component={BudgetPlanner} />
-      <Route path="/mortgage-calculator" component={MortgageCalculator} />
-      <Route path="/emi-calculator" component={EMICalculator} />
-      <Route path="/retirement-planner" component={RetirementPlanner} />
-      <Route path="/roi-calculator" component={ROICalculator} />
-      <Route path="/currency-converter" component={CurrencyConverter} />
-      <Route path="/savings-tracker" component={SavingsTracker} />
-      <Route path="/salary-manager" component={SalaryManager} />
+      <Route path="/verify" component={VerifyPage} />
+      <ProtectedRoute path="/budget-planner" component={BudgetPlanner} />
+      <ProtectedRoute path="/mortgage-calculator" component={MortgageCalculator} />
+      <ProtectedRoute path="/emi-calculator" component={EMICalculator} />
+      <ProtectedRoute path="/retirement-planner" component={RetirementPlanner} />
+      <ProtectedRoute path="/roi-calculator" component={ROICalculator} />
+      <ProtectedRoute path="/currency-converter" component={CurrencyConverter} />
+      <ProtectedRoute path="/savings-tracker" component={SavingsTracker} />
+      <ProtectedRoute path="/salary-manager" component={SalaryManager} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -91,24 +91,24 @@ function AuthPopupManager() {
   };
 
   // Reset demo for testing
-  // const resetDemo = () => {
-  //   localStorage.removeItem("authPopupDismissed");
-  //   localStorage.removeItem("authPopupDismissedTime");
-  //   setShowPopup(false);
-  //   console.log("Demo reset - popup will show again in 5 seconds");
+  const resetDemo = () => {
+    localStorage.removeItem("authPopupDismissed");
+    localStorage.removeItem("authPopupDismissedTime");
+    setShowPopup(false);
+    console.log("Demo reset - popup will show again in 5 seconds");
     
-  //   if (!isAuthenticated) {
-  //     setTimeout(() => {
-  //       setShowPopup(true);
-  //     }, 5000);
-  //   }
-  // };
+    if (!isAuthenticated) {
+      setTimeout(() => {
+        setShowPopup(true);
+      }, 5000);
+    }
+  };
 
   return (
-    <>
-    {/* <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4"> */}
+    // <>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4"> 
       {/* Demo Controls */}
-      {/* <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+      <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
         
         <button
           onClick={resetDemo}
@@ -116,7 +116,7 @@ function AuthPopupManager() {
         >
           Reset Popup Timer
         </button>
-      </div> */}
+      </div> 
 
       {/* Auth Popup */}
       <AuthPopup
@@ -126,9 +126,9 @@ function AuthPopupManager() {
         onSignup={handleSignup}
         isLoading={isLoading}
       />
-    {/* </div> */}
-    </>
+    </div>
   );
+  
 }
 
 export default AuthPopupManager;

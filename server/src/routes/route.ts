@@ -3,9 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "../storage/storage.js";
 import { checkJwt } from "../middleware/auth0Middleware.js";
-import { db } from "../utils/db.js";
-import { eq } from "drizzle-orm";
-import { savingsGoals } from "../models/schema.js";
+import { sendVerificationEmail } from "../utils/auth0.js";
 
 // Auth0 Request Body
 interface Auth0RequestBody {
@@ -217,6 +215,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const newUser = await storage.createUser({ username, email, auth0_id });
+
+      if (!req.auth?.email_verified) {
+        console.warn("User has not verified email yet:", auth0_id);
+      }
+
+          // Trigger verification email
+    await sendVerificationEmail(auth0_id);
+    console.log("Verification email sent to:", email);
+
       res.status(201).json(newUser);
     } catch (error) {
       console.error('Error creating user:', error);
@@ -706,6 +713,28 @@ app.get('/api/savings-goals', checkJwt, async (req: Auth0Request, res) => {
   }
 }
 );
+
+// app.post('/api/auth/resend-verification', checkJwt, async (req, res) => {
+//   try {
+//     const userId = req.auth && req.auth.sub;
+//     if (!userId) return res.status(401).json({ error: 'Missing user identity' });
+
+//     // Optional rate-limit: implement per-user resend limiting in production
+
+//     const mgmtToken = await getManagementToken();
+
+//     const jobResp = await axios.post(`https://${AUTH0_DOMAIN}/api/v2/jobs/verification-email`,
+//       { user_id: userId },
+//       { headers: { Authorization: `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' } }
+//     );
+
+//     // Auth0 returns a job object (id, type, status)
+//     return res.json({ job: jobResp.data });
+//   } catch (err) {
+//     console.error('resend-verification error', err?.response?.data || err.message || err);
+//     return res.status(500).json({ error: 'Failed to request verification email' });
+//   }
+// });
 
 // Backend - Express.js example
 // app.delete('/api/savings-goals/:id', checkJwt, async (req: AuthenticatedRequest, res) => {
