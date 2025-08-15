@@ -1,103 +1,83 @@
-
-// import React, { useEffect} from "react";
-// import VerifyModal from "@/components/VerifyEmailModel";
-// import { toast } from "react-hot-toast";
-
-// export default function VerifyPage() {
-
-// useEffect(() => {
-//   const urlParams = new URLSearchParams(window.location.search);
-//   if (urlParams.get('verified') === 'true') {
-//     // User clicked verification link
-//     toast.success('Email verified successfully!');
-//     setTimeout(() => {
-//       window.location.href = '/';
-//     }, 1000);
-//   }
-// }, []);
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-black/80 p-4">
-//       <VerifyModal />
-//     </div>
-//   );
-// }
-
-
 import React, { useEffect, useState, useRef } from "react";
 import VerifyModal from "@/components/VerifyEmailModel";
 import { toast } from "react-hot-toast";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export default function VerifyPage() {
-  const { loginWithRedirect } = useAuth0();
+  const { loginWithRedirect, user } = useAuth0();
   const [status, setStatus] = useState("checking"); // "checking" | "verified" | "not-verified" | "error" | "no-userid"
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const attemptsRef = useRef(0);
   const pollTimeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    // quick path: if the email template used ?verified=true (your old flow)
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("verified") === "true") {
-      toast.success("Email verified successfully!");
-      // show success view instead of auto-redirect
-      setStatus("verified");
-      return;
-    }
+ console.log("VerifyPage user:", user);
+ console.log("VerifyPage status:", status);
 
-    // preferred: read user_id from query params => ?user_id=auth0|xxxx
-    const userId = urlParams.get("user_id");
-    if (!userId) {
-      setStatus("no-userid");
-      return;
-    }
+useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
 
-    let cancelled = false;
-    attemptsRef.current = 0;
+  if (urlParams.get("verified") === "true") {
+    toast.success("Email verified successfully!");
+    setStatus(() => "verified");
+    return;
+  }
 
-    const checkOnce = async () => {
-      attemptsRef.current++;
-      try {
-        const resp = await fetch(`http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(userId)}`);
-        if (!resp.ok) {
-          const txt = await resp.text();
-          throw new Error(txt || `Status ${resp.status}`);
-        }
-        const body = await resp.json();
-        if (body.email_verified) {
-          if (!cancelled) {
-            toast.success("Email verified! You can now log in.");
-            setStatus("verified");
-          }
-        } else {
-          if (attemptsRef.current >= 20) { // ~20 * 3s = 60s
-            if (!cancelled) setStatus("not-verified");
-          } else {
-            if (!cancelled) {
-              setStatus("checking");
-              pollTimeoutRef.current = window.setTimeout(checkOnce, 3000);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("check error", err);
+  const userId = urlParams.get("user_id");
+  if (!userId) {
+    setStatus(() => "no-userid");
+    return;
+  }
+
+  let cancelled = false;
+  attemptsRef.current = 0;
+
+  const checkOnce = async () => {
+    if (cancelled) return;
+
+    attemptsRef.current++;
+    try {
+      const resp = await fetch(
+        `http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(userId)}`
+      );
+
+      if (!resp.ok) {
+        throw new Error(await resp.text() || `Status ${resp.status}`);
+      }
+
+      const body = await resp.json();
+
+      if (body.email_verified) {
         if (!cancelled) {
-          const msg = err instanceof Error ? err.message : String(err);
-          setErrorMsg(msg);
-          setStatus("error");
+          toast.success("Email verified! You can now log in.");
+          setStatus(() => "verified");
+        }
+      } else {
+        if (attemptsRef.current >= 20) {
+          if (!cancelled) setStatus(() => "not-verified");
+        } else {
+          if (!cancelled) {
+            setStatus(() => "checking");
+            pollTimeoutRef.current = window.setTimeout(checkOnce, 3000);
+          }
         }
       }
-    };
+    } catch (err) {
+      if (!cancelled) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setErrorMsg(msg);
+        setStatus(() => "error");
+      }
+    }
+  };
 
-    // start polling
-    checkOnce();
+  checkOnce();
 
-    return () => {
-      cancelled = true;
-      if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
-    };
-  }, []);
+  return () => {
+    cancelled = true;
+    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+  };
+}, []);
+
 
   const handleLogin = async () => {
     // prefer Auth0 SDK; fallback to redirecting to your app's login route

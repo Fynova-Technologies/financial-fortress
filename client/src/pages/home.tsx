@@ -12,8 +12,6 @@ export default function Home() {
   const [viewAllActivity, setViewAllActivity] = useState(false);
   const { user, isAuthenticated } = useAuth0();
 
-  console.log("User data:", user);
-
   // Quick access calculators
   const quickAccessCalculators = [
     { 
