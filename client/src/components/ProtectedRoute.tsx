@@ -1,9 +1,9 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { Auth0User } from "@/types/auth";
-import { Redirect } from "wouter";
+import { Route, Redirect } from "wouter";
 
 interface ProtectedRouteProps {
-  component: React.ComponentType;
+  component: React.ComponentType<any>;
   path: string;
 }
 
@@ -24,5 +24,5 @@ export default function ProtectedRoute({ component: Component, path }: Protected
     return <Redirect to="/verify" />;
   }
 
-  return <Component />;
+  return <Route path={path} component={Component} />;
 }

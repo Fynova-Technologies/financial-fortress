@@ -13,7 +13,7 @@ export const checkJwt = expressjwt({
     jwksUri: `https://dev-l0cnkmnrn4reomjc.us.auth0.com/.well-known/jwks.json`
   }),
   // Validate the audience and the issuer
-  audience: ["https://financial-fortress/api", "https://dev-l0cnkmnrn4reomjc.us.auth0.com/userinfo"],
+  audience: ["https://dev-l0cnkmnrn4reomjc.us.auth0.com/api/v2/"],
   issuer: `https://dev-l0cnkmnrn4reomjc.us.auth0.com/`,
   algorithms: ["RS256"]
 });

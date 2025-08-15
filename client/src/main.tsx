@@ -12,7 +12,7 @@ createRoot(document.getElementById("root")!).render(
     clientId="01MHsrRBXd0n3ewDmOLdjjqBpbKdpeNV"
     authorizationParams={{
       redirect_uri: window.location.origin,
-      audience: "https://financial-fortress/api",
+      audience: "https://dev-l0cnkmnrn4reomjc.us.auth0.com/api/v2/",
       scope: "openid profile email",
     }}
   >

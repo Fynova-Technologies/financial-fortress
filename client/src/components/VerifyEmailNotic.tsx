@@ -21,7 +21,7 @@ export default function VerifyNotice() {
     setSentMsg(null);
     try {
       // call your backend endpoint (see server example below)
-      const res = await fetch("/api/resend-verification", {
+      const res = await fetch("http://localhost:5000/api/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: user?.sub }) // user.sub is like "auth0|123..."

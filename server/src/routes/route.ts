@@ -4,6 +4,9 @@ import { createServer, type Server } from "http";
 import { storage } from "../storage/storage.js";
 import { checkJwt } from "../middleware/auth0Middleware.js";
 import { sendVerificationEmail } from "../utils/auth0.js";
+import { getManagementToken } from "../utils/auth.js";
+import verifyRoutes from "./secureRoutes.js";
+import authRoutes from "./secureRoutes.js"
 
 // Auth0 Request Body
 interface Auth0RequestBody {
@@ -121,21 +124,6 @@ interface RoiRequest extends Request<{}, {}, RoiRequestBody> {
   };
 }
 
-// Savings Goal Request Body
-// interface savingsGoalRequestBody {
-//   name: string;
-//   target_amount: string; // Target amount in dollars
-//   current_amount: string; // Current amount saved in dollars
-//   target_date: Date; // Target date for the savings goal (ISO date string)
-// }
-
-// interface SavingsGoalRequest extends Request<{}, {}, savingsGoalRequestBody> {
-//   auth?: {
-//     sub: string;
-//     [key: string]: any;
-//   };
-// }
-
 interface SavingsGoalItem {
   name: string;
   target_amount: string; // Target amount in dollars
@@ -156,31 +144,13 @@ interface SavingsGoalArrayRequest extends Request<{}, {}, SavingsGoalArrayReques
   };
 }
 
-// interface AuthenticatedRequest extends Request {
-//   auth?: {
-//     sub: string;
-//     [key: string]: any;
-//     payload?: any;
-//     userId?: string;
-//   };
-// }
-
-// Currency Request Body
-// interface CurrencyRequestBody {
-//   name: string;
-//   symbol: string;
-//   exchangeRate: string;
-// }
-
-// interface CurrencyRequest extends Request<{}, {}, CurrencyRequestBody> {
-//   auth?: {
-//     sub: string;
-//     [key: string]: any;
-//   };
-// }
-
 export async function registerRoutes(app: Express): Promise<Server> {
     app.use(express.json());
+
+    app.use("/api/auth", verifyRoutes);
+    console.log("verifyroutes", verifyRoutes);
+
+    app.use("/api/auth", authRoutes);
 
   // ✅ Log all requests
   app.use((req, _res, next) => {
@@ -220,9 +190,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.warn("User has not verified email yet:", auth0_id);
       }
 
-          // Trigger verification email
-    await sendVerificationEmail(auth0_id);
-    console.log("Verification email sent to:", email);
+      if(req.auth?.email_verified) {
+        console.log("User email is verified:", auth0_id);
+      }
+
+      // Trigger verification email
+      await sendVerificationEmail(auth0_id);
+      console.log("Verification email sent to:", email);
 
       res.status(201).json(newUser);
     } catch (error) {
@@ -714,160 +688,40 @@ app.get('/api/savings-goals', checkJwt, async (req: Auth0Request, res) => {
 }
 );
 
-// app.post('/api/auth/resend-verification', checkJwt, async (req, res) => {
-//   try {
-//     const userId = req.auth && req.auth.sub;
-//     if (!userId) return res.status(401).json({ error: 'Missing user identity' });
+app.get('/api/auth/check-email-verified-public', async (req, res) => {
+  try {
+    const userId = (req.query.user_id as string) || "";
+    if (!userId) {
+      return res.status(400).json({ error: "Missing user_id query parameter" });
+    }
 
-//     // Optional rate-limit: implement per-user resend limiting in production
+    const mgmtToken = await getManagementToken();
+    if (!mgmtToken) return res.status(500).json({ error: "Failed to get management token" });
 
-//     const mgmtToken = await getManagementToken();
+    const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com";
 
-//     const jobResp = await axios.post(`https://${AUTH0_DOMAIN}/api/v2/jobs/verification-email`,
-//       { user_id: userId },
-//       { headers: { Authorization: `Bearer ${mgmtToken}`, 'Content-Type': 'application/json' } }
-//     );
+    const response = await fetch(
+      `https://${AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(userId)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${mgmtToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-//     // Auth0 returns a job object (id, type, status)
-//     return res.json({ job: jobResp.data });
-//   } catch (err) {
-//     console.error('resend-verification error', err?.response?.data || err.message || err);
-//     return res.status(500).json({ error: 'Failed to request verification email' });
-//   }
-// });
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({ error: text || "Auth0 error" });
+    }
 
-// Backend - Express.js example
-// app.delete('/api/savings-goals/:id', checkJwt, async (req: AuthenticatedRequest, res) => {
-//   try {
-//     const auth0_id = req.auth?.sub;
-//     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
-
-//     const user = await storage.getUserByAuth0Id(auth0_id);
-//     if (!user) return res.status(404).json({ error: "User not found" });
-
-//     const goalId = req.params.id;
-//     const deleted = await storage.deleteSavingsGoal(user.id, goalId);
-
-//     if (!deleted) {
-//       return res.status(404).json({ error: "Goal not found" });
-//     }
-
-//     return res.json({ message: "Deleted" });
-//   } catch (err) {
-//     console.error('Error deleting savings goal:', err);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-
-// // Create currency
-// app.post('/api/currencies', checkJwt, async (req: CurrencyRequest, res) => {
-//   try {
-//     const auth0_id = req.auth?.sub;
-//     console.log('Auth0 ID:', auth0_id);
-//     if (!auth0_id) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const user = await storage.getUserByAuth0Id(auth0_id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const { name, symbol, exchangeRate } = req.body;
-
-//     const currency = await storage.createCurrency({
-//       userId: user.id,
-//       name,
-//       symbol,
-//       exchangeRate
-//     });
-
-//     res.status(201).json(currency);
-//   } catch (error) {
-//     console.error('Error creating currency:', error); 
-//     res.status(500).json({ error: "16.Internal server error" });
-//   } 
-// }
-// );
-
-// // Get user's currencies
-// app.get('/api/currencies', checkJwt, async (req: Auth0Request, res) => {
-//   try {
-//     const auth0_id = req.auth?.sub;
-//     console.log('Auth0 ID:', auth0_id);
-//     if (!auth0_id) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const user = await storage.getUserByAuth0Id(auth0_id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const currencies = await storage.getCurrenciesByUserId(user.id);
-//     res.json(currencies);
-//   } catch (error) {
-//     console.error('Error fetching currencies:', error); 
-//     res.status(500).json({ error: "17.Internal server error" });
-//   }
-// }
-// );
-
-// Create savings tracker
-// app.post('/api/savings-tracker', checkJwt, async (req: SavingsTrackerRequest, res) => {
-//   try {
-//     const auth0_id = req.auth?.sub;
-//     console.log('Auth0 ID:', auth0_id);
-//     if (!auth0_id) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const user = await storage.getUserByAuth0Id(auth0_id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const { name, targetAmount, currentAmount, targetDate } = req.body;
-
-//     const savingsTracker = await storage.createSavingsTracker({
-//       userId: user.id,
-//       name,
-//       targetAmount,
-//       currentAmount,
-//       targetDate
-//     });
-
-//     res.status(201).json(savingsTracker);
-//   } catch (error) {
-//     console.error('Error creating savings tracker:', error); 
-//     res.status(500).json({ error: "18.Internal server error" });
-//   }
-// }
-// );  
-
-// // Get user's savings trackers
-// app.get('/api/savings-tracker', checkJwt, async (req: Auth0Request, res) => { 
-//   try {
-//     const auth0_id = req.auth?.sub;
-//     console.log('Auth0 ID:', auth0_id);
-//     if (!auth0_id) {
-//       return res.status(401).json({ error: "Unauthorized" });
-//     }
-
-//     const user = await storage.getUserByAuth0Id(auth0_id);
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const savingsTrackers = await storage.getSavingsTrackersByUserId(user.id);
-//     res.json(savingsTrackers);
-//   } catch (error) {
-//     console.error('Error fetching savings trackers:', error); 
-//     res.status(500).json({ error: "19.Internal server error" });
-//   }
-// }
-// );
+    const user = await response.json();
+    return res.json({ email_verified: !!user.email_verified });
+  } catch (err) {
+    console.error("check-email-verified-public error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
   const httpServer = createServer(app);
   return httpServer;

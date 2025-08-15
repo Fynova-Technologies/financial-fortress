@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/ui/sidebar";
 import { MobileHeader } from "@/components/mobile-header";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { AuthSync } from "@/components/auth/AuthSync";
-import VerifyNotice from "@/components/VerifyEmailNotic";
+
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -23,7 +23,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
       <AuthSync/>
-      <VerifyNotice />
       <MobileHeader onToggleSidebar={handleToggleSidebar} />
       <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} />
 

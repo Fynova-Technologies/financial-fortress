@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes/route.js";
 import { setupVite, serveStatic, log } from "./vite.js";
 import cors from 'cors';
+import secureRoutes from "./routes/secureRoutes.js";
+import authRoutes from "./routes/secureRoutes.js";
+import verifyRoutes from "./routes/secureRoutes.js";
 
 const app = express();
 app.use(express.json());
@@ -12,6 +15,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, //for session
 }));
+
+app.use("/api/auth", authRoutes);
+app.use("/api", secureRoutes);
+app.use("/api/auth", verifyRoutes);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -42,6 +49,8 @@ app.use((req, res, next) => {
 
   next();
 });
+
+
 
 (async () => {
   const server = await registerRoutes(app);

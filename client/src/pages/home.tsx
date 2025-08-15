@@ -12,6 +12,8 @@ export default function Home() {
   const [viewAllActivity, setViewAllActivity] = useState(false);
   const { user, isAuthenticated } = useAuth0();
 
+  console.log("User data:", user);
+
   // Quick access calculators
   const quickAccessCalculators = [
     { 
@@ -97,7 +99,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-start md:items-center">
             <div className="mb-4 md:mb-0 md:mr-6">
               { isAuthenticated ? (
-              <h2 className="text-xl font-bold mb-2">Welcome {user?.name}</h2>
+              <h2 className="text-xl font-bold mb-2">Welcome {user?.username}</h2>
               ): (
                 <h2 className="text-xl font-bold mb-2">Welcome to FinCalc Pro</h2>
               )

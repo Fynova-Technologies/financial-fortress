@@ -10,7 +10,7 @@ export default function VerifyEmailPage() {
     setStatus('sending');
     try {
       const token = await getAccessTokenSilently({
-        audience: process.env.REACT_APP_API_IDENTIFIER,
+        audience: "https://dev-l0cnkmnrn4reomjc.us.auth0.com/api/v2/",
       });
 
       const res = await fetch('/api/auth/resend-verification', {
