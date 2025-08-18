@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { AboutUs } from "@/components/AboutUs";
-import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function AboutUsPage() {
     const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
@@ -13,16 +12,6 @@ export default function AboutUsPage() {
         />
         
         <AboutUs />
-
-        {showAuthPopup && (
-            <AuthPopup
-                visible={showAuthPopup}
-                onClose={() => setShowAuthPopup(false)}
-                // These props are now handled inside AuthPopup with Auth0
-                onLogin={() => {}}
-                onSignup={() => {}}
-            />
-        )}
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default function ContactUsPage() {
         description="Get in touch with us for any inquiries or support"
       />
       
-      <ContactUsComponent />
+      <ContactUsComponent onRequireLogic={() => setShowAuthPopup(true)}/>
 
       {showAuthPopup && (
         <AuthPopup

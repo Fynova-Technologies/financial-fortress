@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import {Card, CardContent} from "@/components/ui/card";
 import { toast } from "react-toastify"
+import { useAuth0 } from "@auth0/auth0-react";
 
-export const ContactUs = () => {
+interface ContactUsProps {
+    onRequireLogic: () => void;
+}
+
+export const ContactUs: React.FC<ContactUsProps> = ({onRequireLogic}) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAuthenticated } = useAuth0();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -16,6 +22,13 @@ export const ContactUs = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAuthenticated) {
+      onRequireLogic();
+      toast.error("Please log in to send a message.");
+      return;
+    }
+
     try {
         const res = await fetch("http://localhost:5000/api/contact", {
         method: "POST",
@@ -107,7 +120,7 @@ export const ContactUs = () => {
                     className={`mt-4 py-4 px-4 rounded-md text-white transition 
                         ${isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-gray-600 hover:bg-gray-700"}`}
                     >
-                    {isSubmitting ? "Sending..." : "Send Message"}
+                        {isSubmitting ? "Sending..." : "Send Message"}
                     </button>
                 </form>
             </CardContent>

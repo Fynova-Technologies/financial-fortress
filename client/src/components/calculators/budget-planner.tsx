@@ -49,13 +49,6 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
 
-
-  // Add this near the top of your component for debugging
-console.log("Current budget data:", budgetData);
-console.log("Expense categories:", budgetData?.expenseCategories);
-console.log("Categories length:", budgetData?.expenseCategories?.length);
-
-
   const exportRef = useRef<HTMLDivElement>(null);
   const { getAccessTokenSilently, user } = useAuth0();
 
