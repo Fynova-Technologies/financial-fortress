@@ -108,7 +108,9 @@ export default function Home() {
               <div className="flex flex-wrap gap-2">
                 <Button 
                   onClick={() => setLocation("/budget-planner")}
-                  className="bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 hover:bg-primary-200 dark:hover:bg-primary-800 border-0"
+                  className="bg-primary-100 dark:bg-primary-900 
+                  text-primary-800 dark:text-primary-200 
+                  hover:bg-primary-200 dark:hover:bg-primary-800 border-0"
                 >
                   Budget Planner
                 </Button>

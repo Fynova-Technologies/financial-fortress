@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
 import { useTheme } from "@/hooks/use-theme";
 import { routes } from "@/types";
+import { SettingRoutes } from "@/types/settings";
 import { useAuth0 } from "@auth0/auth0-react";
-import AuthPopupManager from "../AuthPopupManager";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -18,6 +18,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { loginWithRedirect, isAuthenticated, logout, user } = useAuth0();
 
   const menuItems = routes;
+  const settingsItems = SettingRoutes;
 
   return (
     <>
@@ -88,18 +89,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
                   </button>
                 </li>
-                {/* <li>
-                  <button className="w-full flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                    <i className="fas fa-user-circle mr-3"></i>
-                    <span>Account</span>
-                  </button>
-                </li> */}
-                {/* <li>
-                  <button className="w-full flex items-center p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
-                    <i className="fas fa-cog mr-3"></i>
-                    <span>Settings</span>
-                  </button>
-                </li> */}
+
+                {settingsItems.map((items) => (
+                  <li key={items.path}>
+                    <Link
+                      href={items.path}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center p-3 rounded-lg cursor-pointer transition-colors",
+                        location === items.path
+                          ? "bg-gray-50 dark:bg-gray-700 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-gray-800"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      )}
+                    >
+                      <i className={`fas ${items.icon} mr-3`}></i>
+                      <span>{items.label}</span>
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </nav>

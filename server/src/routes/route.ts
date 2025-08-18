@@ -7,6 +7,7 @@ import { sendVerificationEmail } from "../utils/auth0.js";
 import { getManagementToken } from "../utils/auth.js";
 import verifyRoutes from "./secureRoutes.js";
 import authRoutes from "./secureRoutes.js"
+import nodemailer from "nodemailer";
 
 // Auth0 Request Body
 interface Auth0RequestBody {
@@ -722,6 +723,41 @@ app.get('/api/auth/check-email-verified-public', async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.post("/api/contact", async (req, res) => {
+  const { name, email, message } = req.body;
+
+  // Create Nodemailer transporter
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com", 
+    // service: "gmail",
+    port: 587,
+    secure: false,
+    auth: {
+      user: "bibashchaudhary330@gmail.com",
+      pass: "twew tjuj shct eije", // app password if Gmail
+    },
+  });
+
+  const mailOptions = {
+    from: email,
+    to: "bibashchaudhary330@gmail.com", 
+    subject: `Contact Form Message from ${name}`,
+    html: `<p><strong>Name:</strong> ${name}</p>
+           <p><strong>Email:</strong> ${email}</p>
+           <p><strong>Message:</strong> ${message}</p>`,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Message sent successfully:", info.response);
+    res.json({ message: "Message sent successfully!" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error sending message" });
+  }
+});
+
 
   const httpServer = createServer(app);
   return httpServer;

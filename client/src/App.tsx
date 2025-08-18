@@ -20,6 +20,10 @@ import AuthPopupManager from "@/components/AuthPopupManager";
 import ProtectedRoute from "./components/ProtectedRoute";
 import VerifyPage from "@/pages/VerifyEmail";
 import VerifyModel from "@/components/VerifyEmailModel";
+import AboutUsPage from "@/pages/AboutUsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import { TermsConditionsPage } from "./pages/TermsConditionsPage";
+import ContactUsPage from "./pages/ContactUsPage";
 
 function Router() {
   return (
@@ -42,6 +46,10 @@ function Router() {
       <Route path="/currency-converter" component={CurrencyConverter} />
       <Route path="/savings-tracker" component={SavingsTracker} />
       <Route path="/salary-manager" component={SalaryManager} />
+      <Route path="/about-us" component={AboutUsPage} />
+      <Route path="/privacy-policy" component={PrivacyPolicyPage} />
+      <Route path="/terms-conditions" component={TermsConditionsPage} />
+      <Route path="/contact-us" component={ContactUsPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -64,7 +64,7 @@ function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
           <button
             onClick={onLogin}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-md hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-4 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -90,7 +90,7 @@ function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
           <button
             onClick={onSignup}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 px-4 rounded-md hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-4 bg-gray-600 text-white py-4 px-4 rounded-md hover:bg-gray-700 transition"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">

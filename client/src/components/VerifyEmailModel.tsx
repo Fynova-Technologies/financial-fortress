@@ -152,13 +152,13 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
   return (
     <div style={{ width: 650, maxWidth: "100%" }} className="bg-white rounded-lg p-8 shadow-lg text-center relative">
       {/* Back button */}
-      <button
+      {/* <button
         onClick={handleBack}
         className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 flex items-center gap-1"
         style={{ background: "none", border: "none", fontSize: 16, cursor: "pointer" }}
       >
         ← Back
-      </button>
+      </button> */}
 
       {/* Header icon */}
       <div style={{ marginBottom: 10 }}>
