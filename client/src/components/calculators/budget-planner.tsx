@@ -16,9 +16,7 @@ import { formatCurrency } from "@/lib/utils";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { ExpenseCategory, Expense } from "@/types";
 import IncomeInput from "../forms/InputIncome";
-import { PageHeader } from "../page-header";
 import { useAuth0 } from "@auth0/auth0-react";
-import { index } from "drizzle-orm/mysql-core";
 
 export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const {

@@ -125,14 +125,14 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
   }
 
   // Handle back button
-  function handleBack() {
-    if (onBack) {
-      onBack();
-    }
-    // Clear tracking and go to home
-    localStorage.removeItem(`user_seen_${user?.sub}`);
-    setLocation("/");
-  }
+  // function handleBack() {
+  //   if (onBack) {
+  //     onBack();
+  //   }
+  //   // Clear tracking and go to home
+  //   localStorage.removeItem(`user_seen_${user?.sub}`);
+  //   setLocation("/");
+  // }
 
   React.useEffect(() => {
   if (!isAuthenticated || !user || user.email_verified) return;

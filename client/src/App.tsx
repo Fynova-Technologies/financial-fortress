@@ -3,8 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuth0 } from '@auth0/auth0-react';
-import { useEffect, useState } from 'react';
+import { useAuth0 } from "@auth0/auth0-react";
+import { useEffect, useState } from "react";
 import NotFound from "@/pages/not-found";
 import MainLayout from "@/layouts/main-layout";
 import Home from "@/pages/home";
@@ -30,14 +30,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/verify" component={VerifyPage} />
-      {/* <ProtectedRoute path="/budget-planner" component={BudgetPlanner} />
-      <ProtectedRoute path="/mortgage-calculator" component={MortgageCalculator} />
-      <ProtectedRoute path="/emi-calculator" component={EMICalculator} />
-      <ProtectedRoute path="/retirement-planner" component={RetirementPlanner} />
-      <ProtectedRoute path="/roi-calculator" component={ROICalculator} />
-      <ProtectedRoute path="/currency-converter" component={CurrencyConverter} />
-      <ProtectedRoute path="/savings-tracker" component={SavingsTracker} />
-      <ProtectedRoute path="/salary-manager" component={SalaryManager} /> */}
       <Route path="/budget-planner" component={BudgetPlanner} />
       <Route path="/mortgage-calculator" component={MortgageCalculator} />
       <Route path="/emi-calculator" component={EMICalculator} />
@@ -63,12 +55,13 @@ function App() {
   useEffect(() => {
     // Check if user just signed up (new user without verified email)
     if (isAuthenticated && user && !user.email_verified) {
-      // Check if this is a fresh signup (you can customize this logic)
+      // Always show verification modal for unverified users
       const isNewUser = !localStorage.getItem(`user_seen_${user.sub}`);
+      setJustSignedUp(isNewUser);
+      setShowVerificationModal(true);
+
       if (isNewUser) {
-        setJustSignedUp(true);
-        setShowVerificationModal(true);
-        localStorage.setItem(`user_seen_${user.sub}`, 'true');
+        localStorage.setItem(`user_seen_${user.sub}`, "true");
       }
     } else if (isAuthenticated && user && user.email_verified) {
       // User is verified, hide modal and allow app access

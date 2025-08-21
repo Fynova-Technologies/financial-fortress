@@ -3,7 +3,6 @@ import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { exportToExcelAmortization } from "@/utils/amortizationSchedule";
 import { useAuth0 } from "@auth0/auth0-react";
