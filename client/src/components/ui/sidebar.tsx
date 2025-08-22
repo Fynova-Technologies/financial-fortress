@@ -130,7 +130,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             ) : (
               <button
                 className="flex items-center text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400"
-                onClick={() => loginWithRedirect()}
+                onClick={() => loginWithRedirect({
+                  authorizationParams: { prompt: 'login' },
+                })}
               >
                 <i className="fas fa-sign-in-alt mr-3"></i>
                 <span>Log in</span>

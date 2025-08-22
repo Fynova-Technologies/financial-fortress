@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useLocation } from "wouter";
 
@@ -7,7 +7,8 @@ interface VerifyModalProps {
 }
 
 export default function VerifyModal({ onBack }: VerifyModalProps) {
-  const { user, isAuthenticated, isLoading, getAccessTokenSilently } = useAuth0();
+  const { user, isAuthenticated, isLoading, getAccessTokenSilently, logout } =
+    useAuth0();
   const [, setLocation] = useLocation();
 
   const [sending, setSending] = useState(false);
@@ -16,30 +17,33 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
   const [cooldown, setCooldown] = useState<number>(0);
   const [checking, setChecking] = useState(false);
 
-  // Small cooldown so users can't spam resend
-  React.useEffect(() => {
+  // Cooldown timer
+  useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown(c => Math.max(0, c - 1)), 1000);
+    const t = setTimeout(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
 
-  // Auto-check verification status every 5 seconds
-  React.useEffect(() => {
+  // Poll verification status every 5 seconds
+  useEffect(() => {
     if (!isAuthenticated || !user || user.email_verified) return;
 
     const interval = setInterval(async () => {
       try {
-        const resp = await fetch(`http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(user?.sub ?? "")}`);
+        const resp = await fetch(
+          `http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(
+            user?.sub ?? ""
+          )}`
+        );
         if (resp.ok) {
           const json = await resp.json();
           if (json.email_verified) {
-            // Clear the "seen" flag and reload to get fresh user data
             localStorage.removeItem(`user_seen_${user.sub}`);
-            window.location.href = '/'; // Full navigation refresh
+            window.location.href = "/";
           }
         }
       } catch (err) {
-        console.log('Auto-check failed:', err);
+        console.log("Auto-check failed:", err);
       }
     }, 5000);
 
@@ -53,162 +57,137 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
     setSending(true);
     setError(null);
     setSentMsg(null);
-    
+
     try {
       const token = await getAccessTokenSilently();
-      
       const res = await fetch("http://localhost:5000/api/resend-verification", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ user_id: user?.sub })
+        body: JSON.stringify({ user_id: user?.sub }),
       });
 
-      // Check if response has content before parsing JSON
       const text = await res.text();
       let json;
-      
       try {
         json = text ? JSON.parse(text) : {};
       } catch (parseError) {
-        console.error('JSON parse error:', parseError, 'Response text:', text);
-        throw new Error('Invalid response from server');
+        throw new Error("Invalid response from server");
       }
 
-      if (!res.ok) {
-        throw new Error(json.error || `Server error: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(json.error || `Server error: ${res.status}`);
 
       setSentMsg("Verification email sent — check your inbox (and spam).");
-      setCooldown(60); // 60s cooldown
+      setCooldown(60);
     } catch (err: any) {
-      console.error('Resend error:', err);
       setError(err?.message || "Failed to send verification email.");
     } finally {
       setSending(false);
     }
   }
 
-  // Ask server to check Auth0 user record for latest email_verified state
   async function checkVerified() {
     setChecking(true);
     setError(null);
     try {
-      const resp = await fetch(`http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(user?.sub ?? "")}`);
-      
+      const resp = await fetch(
+        `http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(
+          user?.sub ?? ""
+        )}`
+      );
       const text = await resp.text();
       let json;
-      
       try {
         json = text ? JSON.parse(text) : {};
-      } catch (parseError) {
-        throw new Error('Invalid response from server');
+      } catch {
+        throw new Error("Invalid response from server");
       }
-
       if (!resp.ok) throw new Error(json.error || JSON.stringify(json));
-      
+
       if (json.email_verified) {
-        // Clear the tracking flag and do full page refresh
         localStorage.removeItem(`user_seen_${user?.sub}`);
-        window.location.href = '/';
+        window.location.href = "/";
       } else {
-        setError("Email still unverified. Click the link in your email, then press 'I verified'.");
+        setError(
+          "Email still unverified. Click the link in your email, then press 'I verified'."
+        );
       }
     } catch (err: any) {
-      console.error('Check verification error:', err);
       setError(err?.message || "Failed to check verification status.");
     } finally {
       setChecking(false);
     }
   }
+  const handleBack = () => {
+    localStorage.removeItem(`user_seen_${user?.sub}`);
 
-  // Handle back button
-  // function handleBack() {
-  //   if (onBack) {
-  //     onBack();
-  //   }
-  //   // Clear tracking and go to home
-  //   localStorage.removeItem(`user_seen_${user?.sub}`);
-  //   setLocation("/");
-  // }
-
-  React.useEffect(() => {
-  if (!isAuthenticated || !user || user.email_verified) return;
-
-  const interval = setInterval(async () => {
-    const resp = await fetch(`http://localhost:5000/api/check-email-verified-public?user_id=${user.sub}`);
-    const data = await resp.json();
-    if (data.email_verified) {
-      window.location.reload(); // refresh user session
-    }
-  }, 5000);
-
-  return () => clearInterval(interval);
-}, [user, isAuthenticated]);
-
+    logout({
+      logoutParams: {
+        returnTo: window.location.origin,
+      },
+    });
+    window.history.replaceState(null, "", "/");
+  };
 
   return (
-    <div style={{ width: 650, maxWidth: "100%" }} className="bg-white rounded-lg p-8 shadow-lg text-center relative">
-      {/* Back button */}
-      {/* <button
-        onClick={handleBack}
-        className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 flex items-center gap-1"
-        style={{ background: "none", border: "none", fontSize: 16, cursor: "pointer" }}
-      >
-        ← Back
-      </button> */}
-
+    <div className="max-w-2xl w-full bg-white rounded-lg p-8 shadow-lg text-center relative">
       {/* Header icon */}
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 48, color: "#6b46c1" }}>🔐</div>
-      </div>
+      <button
+        onClick={handleBack}
+        className="absolute top-4 right-4 text-black hover:text-gray-600 dark:text-gray-900 dark:hover:text-gray-600 text-2xl"
+        aria-label="Close"
+      >
+        ×
+      </button>
 
-      <h2 style={{ fontSize: 22, marginBottom: 6 }}>Verify your email</h2>
+      <div className="mb-3 text-6xl text-purple-700">🔐</div>
 
-      <p style={{ color: "#444", marginBottom: 20 }}>
-        We sent a verification link to <strong>{user?.email}</strong>. Please open the email and click the verification link.
+      <h2 className="text-xl font-semibold mb-2">Verify your email</h2>
+
+      <p className="text-gray-700 mb-5">
+        We sent a verification link to <strong>{user?.email}</strong>. Please
+        open the email and click the verification link.
       </p>
 
-      <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 12 }}>
+      <div className="flex flex-wrap justify-center gap-3 mb-3">
         <button
           onClick={resendVerification}
           disabled={sending || cooldown > 0}
-          style={{
-            padding: "10px 18px",
-            borderRadius: 6,
-            background: "#fff",
-            border: "1px solid #ddd",
-            cursor: sending || cooldown > 0 ? "not-allowed" : "pointer"
-          }}
+          className={`px-4 py-2 rounded-md border ${
+            sending || cooldown > 0
+              ? "border-gray-300 text-gray-400 cursor-not-allowed"
+              : "border-gray-300 text-gray-700 hover:bg-gray-100"
+          }`}
         >
-          {cooldown > 0 ? `Resend (${cooldown}s)` : sending ? "Sending..." : "Resend verification"}
+          {cooldown > 0
+            ? `Resend (${cooldown}s)`
+            : sending
+            ? "Sending..."
+            : "Resend verification"}
         </button>
 
         <button
           onClick={checkVerified}
           disabled={checking}
-          style={{
-            padding: "10px 18px",
-            borderRadius: 6,
-            background: "#5b6cff",
-            color: "white",
-            border: "none",
-            cursor: checking ? "not-allowed" : "pointer"
-          }}
+          className={`px-4 py-2 rounded-md text-white ${
+            checking
+              ? "bg-blue-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
         >
           {checking ? "Checking..." : "I verified — check now"}
         </button>
       </div>
 
-      {sentMsg && <div style={{ color: "green", marginBottom: 8 }}>{sentMsg}</div>}
-      {error && <div style={{ color: "crimson", marginBottom: 8 }}>{error}</div>}
+      {sentMsg && <div className="text-green-600 mb-2">{sentMsg}</div>}
+      {error && <div className="text-red-600 mb-2">{error}</div>}
 
-      <p style={{ fontSize: 13, color: "#666" }}>
-        Didn't receive the email? Check your spam/promotions folder, or ask to resend. After verifying, press "I verified — check now".
+      <p className="text-xs text-gray-500">
+        Didn't receive the email? Check your spam/promotions folder, or ask to
+        resend. After verifying, press "I verified — check now".
       </p>
     </div>
   );
 }
-
