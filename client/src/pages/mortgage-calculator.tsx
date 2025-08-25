@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/calculator-context";
 import { toast } from "react-toastify";
-import AuthPopup from "@/components/auth/AuthPopup";
+import { AuthPopup } from "@/components/auth/AuthPopup";
 
 export default function MortgageCalculator() {
   const exportRef = useRef<HTMLDivElement>(null);

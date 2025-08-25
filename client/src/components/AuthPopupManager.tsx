@@ -132,8 +132,10 @@
 
 // export default AuthPopupManager;
 
+
+
 import React, { useState, useEffect } from "react";
-import AuthPopup from "@/components/auth/AuthPopup"; 
+import { AuthPopup } from "@/components/auth/AuthPopup"; 
 import { useAuth0 } from "@auth0/auth0-react";
 
 interface User {
@@ -211,15 +213,6 @@ function AuthPopupManager() {
     loginWithRedirect({
       authorizationParams: {
         screen_hint: "signup"
-      }
-    });
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    logout({
-      logoutParams: {
-        returnTo: window.location.origin
       }
     });
   };

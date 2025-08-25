@@ -28,7 +28,7 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
 
     if (!isAuthenticated) {
       onRequireLogic();
-      toast.error("Please log in to send a message.");
+      toast.error("Please login | signup to send a message.");
       return;
     }
 

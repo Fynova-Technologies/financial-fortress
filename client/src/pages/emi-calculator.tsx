@@ -5,8 +5,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/calculator-context";
 import { useRef } from "react";
 import { toast } from "react-toastify";
-import AuthPopup from "@/components/auth/AuthPopup";
-import { is } from "drizzle-orm";
+import { AuthPopup } from "@/components/auth/AuthPopup";
 
 export default function EMICalculator() {
   const exportRef = useRef<HTMLDivElement>(null);

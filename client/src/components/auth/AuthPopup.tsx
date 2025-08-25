@@ -10,31 +10,31 @@ interface AuthPopupProps {
 }
 
 // Auth Popup Component
-function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
+export function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const { isAuthenticated, user, loginWithPopup, isLoading } = useAuth0();
+  const { isLoading, loginWithPopup } = useAuth0();
+  const [btnLoading, setBtnLoading] = useState(false);
 
   if (!visible) {
     return null;
   }
 
-  const handleAuth = async () => {
-    try {
-      if (isLogin) {
-        await loginWithPopup();
-      } else {
-        await loginWithPopup({
-          authorizationParams: { screen_hint: "signup" }
-        });
-      }
-      onClose();
-    } catch (err) {
-      console.error("Auth0 login/signup error:", err);
+const handleAuth = async (type: "login" | "signup") => {
+  setBtnLoading(true);
+  try {
+    if (type === "login") {
+      await loginWithPopup(); // normal login
+    } else {
+      await loginWithPopup({ authorizationParams: { screen_hint: "signup" } }); // signup
     }
-  };
+    onClose(); // close popup after successful login/signup
+  } catch (err) {
+    console.error("Auth0 login/signup error:", err);
+  } finally {
+    setBtnLoading(false);
+  }
+};
+
 
   return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -62,8 +62,7 @@ function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
         {/* Action Buttons */}
         <div className="space-y-3">
           <button
-            onClick={onLogin}
-            disabled={isLoading}
+            onClick={() => handleAuth("login")}
             className="w-full mt-4 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition"
           >
             {isLoading ? (
@@ -79,16 +78,10 @@ function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
                 {/* Toggle */}        
         <p className="mt-4 text-sm">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
-          {/* <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-blue-500 ml-1"
-          >
-            {isLogin ? "Sign Up" : "Sign In"}
-          </button> */}
         </p>
 
           <button
-            onClick={onSignup}
+            onClick={() => handleAuth("signup")}
             disabled={isLoading}
             className="w-full mt-4 bg-gray-600 text-white py-4 px-4 rounded-md hover:bg-gray-700 transition"
           >

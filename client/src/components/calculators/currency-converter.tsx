@@ -16,6 +16,8 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth0 } from "@auth0/auth0-react";
+import { toast } from "react-toastify";
 
 const CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
@@ -58,17 +60,25 @@ const CURRENCIES = [
   { code: 'VND', name: 'Vietnamese Dong', symbol: '₫' },
 ];
 
+interface CurrencyConverterProps {
+  onRequireLogic?: () => void;
+}
 
-export function CurrencyConverter() {
+
+export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({onRequireLogic}) => {
   const { currencyData, updateCurrencyData, convertCurrency } = useCalculator();
   const [results, setResults] = useState<any>(null);
+  const { isAuthenticated } = useAuth0();
 
-  // Calculate on first load and when inputs change
-  // useEffect(() => {
-  //   handleConvert();
-  // }, [currencyData]);
+  const handleConvert = async(e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isAuthenticated) {
+      onRequireLogic?.();
+      toast.error("Please login | signup to Convert the currencies.");
+      return;
+    }
 
-  const handleConvert = async() => {
     const conversionResults = await convertCurrency();
     setResults(conversionResults);
     console.log('handleconverted amount data:', conversionResults)

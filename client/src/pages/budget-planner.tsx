@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/page-header";
 import { useRef, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { useAuth0 } from "@auth0/auth0-react";
-import AuthPopup from "@/components/auth/AuthPopup";
+import { AuthPopup } from "@/components/auth/AuthPopup";
 
 export default function BudgetPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);

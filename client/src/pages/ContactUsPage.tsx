@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { ContactUs as ContactUsComponent } from "@/components/ContactUs";
-import AuthPopup from "@/components/auth/AuthPopup";
+import { AuthPopup } from "@/components/auth/AuthPopup";
 
 export default function ContactUsPage() {
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
