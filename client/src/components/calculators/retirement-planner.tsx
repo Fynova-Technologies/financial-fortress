@@ -1,11 +1,11 @@
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { useAuth0 } from "@auth0/auth0-react";
+
 import {
   LineChart,
   Line,
@@ -19,10 +19,9 @@ import {
   AreaChart
 } from "recharts";
 
-export const RetirementPlanner = forwardRef<HTMLDivElement>((_, ref) => {
+export const RetirementPlanner = (() => {
   const { retirementData, updateRetirementData, calculateRetirement } = useCalculator();
   const [results, setResults] = useState<any>(null);
-
   const { getAccessTokenSilently, user } = useAuth0();
 
   useEffect(() => {
@@ -250,7 +249,7 @@ export const RetirementPlanner = forwardRef<HTMLDivElement>((_, ref) => {
       </Card>
       
       {/* Results Card */}
-      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
+      <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Retirement Projection</h3>
           

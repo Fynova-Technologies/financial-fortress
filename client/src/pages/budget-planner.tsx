@@ -5,10 +5,10 @@ import { useRef, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { useAuth0 } from "@auth0/auth0-react";
 import { AuthPopup } from "@/components/auth/AuthPopup";
+import toast from "react-hot-toast";
 
 export default function BudgetPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);
-  const budgetPlannerRef = useRef<HTMLDivElement>(null);
   const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
   const { budgetData } = useCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
@@ -50,11 +50,13 @@ export default function BudgetPlanner() {
         console.error("Response error:", errorData);
         throw new Error(errorData.error || "Failed to save budget");
       }
+      toast.success("Budget saved successfully.");
     } catch (error) {
       console.error("Save failed:", error);
       alert("Failed to save budget");
     }
   };
+  
   return (
     <div>
       <PageHeader 

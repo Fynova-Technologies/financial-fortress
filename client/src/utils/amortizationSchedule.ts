@@ -1,4 +1,4 @@
-// utils/export-to-excel.ts
+
 import * as XLSX from "xlsx";
 
 export function exportToExcelAmortization(data: any[], filename: string) {

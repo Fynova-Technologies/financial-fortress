@@ -164,45 +164,6 @@ export default function Home() {
           </CardContent>
         </Card>
       ))}
-      
-      {/* Recent Activity Card */}
-      {isAuthenticated && (
-      <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md col-span-1 md:col-span-2 lg:col-span-3">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead>
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Calculator</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Result</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {recentActivity.map((activity, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{activity.date}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{activity.calculator}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{activity.action}</td>
-                    <td className={`px-4 py-3 whitespace-nowrap text-sm ${activity.resultClass}`}>{activity.result}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Button 
-            variant="link"
-            className="mt-4 text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 px-0 text-sm flex items-center"
-            onClick={() => setViewAllActivity(prev => !prev)}
-          >
-            View All Activity
-            <i className="fas fa-chevron-right ml-1 text-xs"></i>
-          </Button>
-        </CardContent>
-      </Card>
-      )}
     </div>
   );
 }

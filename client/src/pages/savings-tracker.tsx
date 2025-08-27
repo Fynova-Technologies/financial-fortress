@@ -2,12 +2,11 @@ import { SavingsTracker as SavingsTrackerComponent } from "@/components/calculat
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/calculator-context";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function SavingsTracker() {
-  const exportRef = useRef<HTMLDivElement>(null);
   const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
   const { savingsData } = useCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
@@ -63,10 +62,9 @@ export default function SavingsTracker() {
       <PageHeader 
         title="Savings Tracker" 
         description="Track your savings goals"
-        exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <SavingsTrackerComponent ref={exportRef}/>
+      <SavingsTrackerComponent />
 
       {showAuthPopup && (
         <AuthPopup

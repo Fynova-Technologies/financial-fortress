@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function ROICalculator() {
-  const exportRef = useRef<HTMLDivElement>(null);
   const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
   const { roiData } = useCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
@@ -63,10 +62,9 @@ export default function ROICalculator() {
       <PageHeader 
         title="ROI Calculator" 
         description="Calculate investment returns"
-        exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <ROICalculatorComponent ref={exportRef}/>
+      <ROICalculatorComponent />
 
       {showAuthPopup && (
         <AuthPopup

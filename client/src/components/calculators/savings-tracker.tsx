@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,10 +27,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { SavingsGoal } from "@/types";
-import { savingsGoals } from "server/src/models/schema";
-import { use } from "passport";
 
-export const SavingsTracker = forwardRef<HTMLDivElement>((_, ref) => {
+export const SavingsTracker = (() => {
   const { savingsData, updateSavingsData, addSavingsGoal, updateSavingsGoal, deleteSavingsGoal, calculateSavings } = useCalculator();
   const [results, setResults] = useState<any>(null);
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
@@ -204,7 +202,7 @@ const resetForm = () => {
 };
 
   return (
-    <div ref={ref} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Goals Summary Card */}
       <Card className="bg-white dark:bg-gray-800 shadow-md">
         <CardContent className="p-6">
@@ -420,7 +418,7 @@ const resetForm = () => {
               <p className="text-gray-500 dark:text-gray-500 mb-4">Add a savings goal to see your projections here.</p>
               <Button 
                 onClick={() => setShowAddGoalModal(true)}
-                className="bg-primary-500 hover:bg-primary-600 text-white"
+                className="bg-primary-500 hover:bg-primary-600 text-black dark:text-white"
               >
                 <i className="fas fa-plus mr-2"></i>
                 Add Your First Goal

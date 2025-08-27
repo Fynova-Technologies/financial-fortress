@@ -45,6 +45,7 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
         const data = await res.json();
         toast.success(data.message || "Message sent successfully!");
         setFormData({ name: "", email: "", message: "" });
+        setSubmitted(true); 
       } else {
         toast.error("Failed to send message. Please try again later.");
       }
@@ -54,7 +55,6 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
     } finally {
       setIsSubmitting(false);
     }
-    setSubmitted(true);
   };
 
   return (

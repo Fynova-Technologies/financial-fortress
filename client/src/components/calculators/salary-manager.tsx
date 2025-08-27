@@ -17,20 +17,22 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid
+  CartesianGrid,
 } from "recharts";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { use } from "passport";
+import { useWindowWidth } from "@/hooks/useWindowWidth";
 
 export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
   const { salaryData, updateSalaryData, calculateSalary } = useCalculator();
   const [results, setResults] = useState<any>(null);
+  const width = useWindowWidth();
+  const outerRadius = window.innerWidth >= 768 ? 80 : 50;
 
   const { getAccessTokenSilently, user } = useAuth0();
 
@@ -45,10 +47,10 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          credentials: 'include',
+          credentials: "include",
         });
 
-       const payload = await res.json();     
+        const payload = await res.json();
 
         if (!res.ok) {
           console.error("Server responded", res.status, payload);
@@ -64,11 +66,14 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
           period?: "monthly" | "annual";
           createdAt: string;
         }>;
-        
+
         // If no data, return early
         if (allCalculations.length === 0) return;
         const initialData = allCalculations.reduce((a, b) =>
-          new Date(a.createdAt || '').getTime() > new Date(b.createdAt || '').getTime() ? a : b
+          new Date(a.createdAt || "").getTime() >
+          new Date(b.createdAt || "").getTime()
+            ? a
+            : b
         );
 
         updateSalaryData({
@@ -76,14 +81,14 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
           taxRate: initialData.taxRate,
           deductions: initialData.deductions,
           bonuses: initialData.bonuses,
-          period: initialData.period || 'monthly'
+          period: initialData.period || "monthly",
         });
       } catch (error) {
         console.error("Error fetching salary data:", error);
       }
-    }
+    };
 
-    if(user){
+    if (user) {
       fetchSalaryData();
     }
   }, [getAccessTokenSilently, user]);
@@ -99,29 +104,29 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   const handleInputChange = (field: string, value: number | string) => {
-    if (field === 'period') {
-      updateSalaryData({ period: value as 'monthly' | 'annual' });
+    if (field === "period") {
+      updateSalaryData({ period: value as "monthly" | "annual" });
     } else {
-      updateSalaryData({ [field]: typeof value === 'string' ? 0 : value });
+      updateSalaryData({ [field]: typeof value === "string" ? 0 : value });
     }
   };
 
   // Format data for the pie chart
   const getBreakdownChartData = () => {
     if (!results) return [];
-    
+
     return results.chartData;
   };
 
   // Format data for the bar chart
   const getPayFrequencyData = () => {
     if (!results) return [];
-    
+
     return [
-      { name: 'Annual', value: results.annualNetSalary },
-      { name: 'Monthly', value: results.monthlyNetSalary },
-      { name: 'Bi-Weekly', value: results.biweeklyNetPay },
-      { name: 'Weekly', value: results.weeklyNetPay }
+      { name: "Annual", value: results.annualNetSalary },
+      { name: "Monthly", value: results.monthlyNetSalary },
+      { name: "Bi-Weekly", value: results.biweeklyNetPay },
+      { name: "Weekly", value: results.weeklyNetPay },
     ];
   };
 
@@ -131,13 +136,17 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
       <Card className="bg-white dark:bg-gray-800 shadow-md">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Salary Details</h3>
-          
+
           <div className="space-y-4">
             <div>
-              <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Salary Period</Label>
-              <Select 
-                value={salaryData.period} 
-                onValueChange={(value: 'monthly' | 'annual') => handleInputChange('period', value)}
+              <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Salary Period
+              </Label>
+              <Select
+                value={salaryData.period}
+                onValueChange={(value: "monthly" | "annual") =>
+                  handleInputChange("period", value)
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={salaryData.period} />
@@ -148,30 +157,45 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Gross Salary ({salaryData.period === 'monthly' ? 'monthly' : 'annual'})
+                Gross Salary (
+                {salaryData.period === "monthly" ? "monthly" : "annual"})
               </Label>
               <div className="flex items-center">
-                <Input 
-                  type="number" 
-                  value={salaryData.grossSalary || ""} 
-                  onChange={(e) => handleInputChange('grossSalary', parseFloat(e.target.value) || 0)}
-                  placeholder={salaryData.period === 'monthly' ? "5,000" : "60,000"}
+                <Input
+                  type="number"
+                  value={salaryData.grossSalary || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "grossSalary",
+                      parseFloat(e.target.value) || 0
+                    )
+                  }
+                  placeholder={
+                    salaryData.period === "monthly" ? "5,000" : "60,000"
+                  }
                   className="w-full"
                 />
                 <span className="text-gray-600 dark:text-gray-400 ml-2">$</span>
               </div>
             </div>
-            
+
             <div>
-              <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax Rate (%)</Label>
+              <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Tax Rate (%)
+              </Label>
               <div className="flex items-center">
-                <Input 
-                  type="number" 
-                  value={salaryData.taxRate || ""} 
-                  onChange={(e) => handleInputChange('taxRate', parseFloat(e.target.value) || 0)}
+                <Input
+                  type="number"
+                  value={salaryData.taxRate || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "taxRate",
+                      parseFloat(e.target.value) || 0
+                    )
+                  }
                   min="0"
                   max="50"
                   step="0.1"
@@ -181,50 +205,71 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
                 <span className="text-gray-600 dark:text-gray-400 ml-2">%</span>
               </div>
               <div className="mt-2">
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="50" 
-                  step="0.5" 
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  step="0.5"
                   value={salaryData.taxRate || 0}
-                  onChange={(e) => handleInputChange('taxRate', parseFloat(e.target.value) || 0)}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "taxRate",
+                      parseFloat(e.target.value) || 0
+                    )
+                  }
                   className="w-full"
                 />
               </div>
             </div>
-            
+
             <div>
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Deductions ({salaryData.period === 'monthly' ? 'monthly' : 'annual'})
+                Deductions (
+                {salaryData.period === "monthly" ? "monthly" : "annual"})
               </Label>
               <div className="flex items-center">
-                <Input 
-                  type="number" 
-                  value={salaryData.deductions || ""} 
-                  onChange={(e) => handleInputChange('deductions', parseFloat(e.target.value) || 0)}
-                  placeholder={salaryData.period === 'monthly' ? "500" : "6,000"}
+                <Input
+                  type="number"
+                  value={salaryData.deductions || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "deductions",
+                      parseFloat(e.target.value) || 0
+                    )
+                  }
+                  placeholder={
+                    salaryData.period === "monthly" ? "500" : "6,000"
+                  }
                   className="w-full"
                 />
                 <span className="text-gray-600 dark:text-gray-400 ml-2">$</span>
               </div>
             </div>
-            
+
             <div>
               <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Bonuses ({salaryData.period === 'monthly' ? 'monthly' : 'annual'})
+                Bonuses (
+                {salaryData.period === "monthly" ? "monthly" : "annual"})
               </Label>
               <div className="flex items-center">
-                <Input 
-                  type="number" 
-                  value={salaryData.bonuses || ""} 
-                  onChange={(e) => handleInputChange('bonuses', parseFloat(e.target.value) || 0)}
-                  placeholder={salaryData.period === 'monthly' ? "200" : "2,400"}
+                <Input
+                  type="number"
+                  value={salaryData.bonuses || ""}
+                  onChange={(e) =>
+                    handleInputChange(
+                      "bonuses",
+                      parseFloat(e.target.value) || 0
+                    )
+                  }
+                  placeholder={
+                    salaryData.period === "monthly" ? "200" : "2,400"
+                  }
                   className="w-full"
                 />
                 <span className="text-gray-600 dark:text-gray-400 ml-2">$</span>
               </div>
             </div>
-            
+
             {/* <div className="pt-2">
               <Button 
                 onClick={handleCalculate}
@@ -236,38 +281,50 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Results Card */}
-      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
+      <Card
+        ref={ref}
+        className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2"
+      >
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Salary Breakdown</h3>
-          
+
           {results && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div className="p-4 bg-primary-50 dark:bg-gray-700 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Annual Net Salary</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Annual Net Salary
+                  </p>
                   <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
                     {formatCurrency(results.annualNetSalary)}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">After tax and deductions</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    After tax and deductions
+                  </p>
                 </div>
-                
+
                 <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly Take-Home Pay</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    Monthly Take-Home Pay
+                  </p>
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {formatCurrency(results.monthlyNetSalary)}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {formatCurrency(results.biweeklyNetPay)} bi-weekly | {formatCurrency(results.weeklyNetPay)} weekly
+                    {formatCurrency(results.biweeklyNetPay)} bi-weekly |{" "}
+                    {formatCurrency(results.weeklyNetPay)} weekly
                   </p>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-6">
                 {/* Salary Distribution Chart */}
                 <div>
-                  <h4 className="text-md font-semibold mb-3">Salary Distribution</h4>
+                  <h4 className="text-md font-semibold mb-3">
+                    Salary Distribution
+                  </h4>
                   <div className="h-60">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -276,25 +333,39 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          outerRadius={80}
+                          outerRadius={outerRadius}
                           fill="#8884d8"
                           dataKey="value"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          // label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => 
+                              window.innerWidth >= 768
+                                ? `${name}: ${(percent * 100).toFixed(0)}%`
+                                : `${(percent * 100).toFixed(0)}%`
+                          }
                         >
-                          {/* {getBreakdownChartData().map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />
-                          ))} */}
+                          {getBreakdownChartData().map(
+                            (entry: any, index: number) => (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={`hsl(var(--chart-${index + 1}))`}
+                              />
+                            )
+                          )}
                         </Pie>
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                        <Tooltip
+                          formatter={(value: number) => formatCurrency(value)}
+                        />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
-                
+
                 {/* Pay Frequency Chart */}
                 <div>
-                  <h4 className="text-md font-semibold mb-3">Pay by Frequency</h4>
+                  <h4 className="text-md font-semibold mb-3">
+                    Pay by Frequency
+                  </h4>
                   <div className="h-60">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
@@ -303,32 +374,39 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
+                        <XAxis
                           type="number"
                           tickFormatter={(value) => formatCurrency(value)}
                         />
-                        <YAxis 
-                          type="category"
-                          dataKey="name"
+                        <YAxis type="category" dataKey="name" />
+                        <Tooltip
+                          formatter={(value: number) => formatCurrency(value)}
                         />
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
                         <Bar dataKey="value" fill="hsl(var(--chart-1))" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
               </div>
-              
+
               {/* Detailed Breakdown */}
               <div>
-                <h4 className="text-md font-semibold mb-3">Detailed Breakdown</h4>
+                <h4 className="text-md font-semibold mb-3">
+                  Detailed Breakdown
+                </h4>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead>
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Annual</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Monthly</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Annual
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Monthly
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -337,14 +415,26 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                             {item.category}
                           </td>
-                          <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-medium ${
-                            item.amount < 0 ? 'text-error' : item.category === 'Net Salary' ? 'text-success' : 'text-gray-900 dark:text-white'
-                          }`}>
+                          <td
+                            className={`px-4 py-3 whitespace-nowrap text-sm text-right font-medium ${
+                              item.amount < 0
+                                ? "text-error"
+                                : item.category === "Net Salary"
+                                ? "text-success"
+                                : "text-gray-900 dark:text-white"
+                            }`}
+                          >
                             {formatCurrency(item.amount)}
                           </td>
-                          <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-medium ${
-                            item.amount < 0 ? 'text-error' : item.category === 'Net Salary' ? 'text-success' : 'text-gray-900 dark:text-white'
-                          }`}>
+                          <td
+                            className={`px-4 py-3 whitespace-nowrap text-sm text-right font-medium ${
+                              item.amount < 0
+                                ? "text-error"
+                                : item.category === "Net Salary"
+                                ? "text-success"
+                                : "text-gray-900 dark:text-white"
+                            }`}
+                          >
                             {formatCurrency(item.amount / 12)}
                           </td>
                         </tr>
@@ -353,15 +443,22 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
                   </table>
                 </div>
               </div>
-              
+
               {/* Tax Info */}
               <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2">Tax Information</h4>
+                <h4 className="font-medium text-blue-700 dark:text-blue-400 mb-2">
+                  Tax Information
+                </h4>
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  <p className="mb-2">Your effective tax rate is approximately {salaryData.taxRate}%.</p>
+                  <p className="mb-2">
+                    Your effective tax rate is approximately{" "}
+                    {salaryData.taxRate}%.
+                  </p>
                   <p>
-                    Note: This is a simplified calculation. Actual tax rates vary based on your location, filing status, deductions, and other factors. 
-                    Consult a tax professional for personalized advice.
+                    Note: This is a simplified calculation. Actual tax rates
+                    vary based on your location, filing status, deductions, and
+                    other factors. Consult a tax professional for personalized
+                    advice.
                   </p>
                 </div>
               </div>
@@ -371,4 +468,4 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
       </Card>
     </div>
   );
-})
+});

@@ -19,13 +19,15 @@ import {
   PieChart,
   Pie
 } from "recharts";
+import { useWindowWidth } from "@/hooks/useWindowWidth";
 
 export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { mortgageData, updateMortgageData, calculateMortgage } = useCalculator();
   const [results, setResults] = useState<any>(null);
   const [viewFullamortizationSchedule, setViewFullamortizationSchedule] = useState(false);
-
+  const width = useWindowWidth();
   const { user, getAccessTokenSilently } = useAuth0();
+  const outerRadius = window.innerWidth >= 768 ? 80 : 50;
 
   useEffect(() => {
     const loadMOrtgageData = async () => {
@@ -135,7 +137,11 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   const handleExportSchedule = () => {
-  if (!results?.amortizationSchedule) return;
+  if (!results?.amortizationSchedule) {
+    console.log("results: ", amortizationSchedule);
+    return;
+  }
+
 
   // Format the data for export (only show year, principal, interest, balance)
   const dataToExport = results.amortizationSchedule.map((year: any) => ({
@@ -361,10 +367,14 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        outerRadius={80}
+                        outerRadius={outerRadius}
                         fill="#8884d8"
                         dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => 
+                          window.innerHeight >= 768 
+                          ? `${name}: ${(percent * 100).toFixed(0)}%`
+                          : `${(percent * 100).toFixed(0)}%`
+                      }
                       >
                         {paymentBreakdownData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={`hsl(var(--chart-${index + 1}))`} />

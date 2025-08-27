@@ -1,4 +1,4 @@
-import { useState, useRef, forwardRef, useEffect } from "react";
+import { useState, forwardRef, useEffect, useMemo } from "react";
 import { useCalculator } from "@/store/calculator-context";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,6 +17,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { ExpenseCategory, Expense } from "@/types";
 import IncomeInput from "../forms/InputIncome";
 import { useAuth0 } from "@auth0/auth0-react";
+import { useWindowWidth } from "@/hooks/useWindowWidth";
 
 export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const {
@@ -30,6 +31,33 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     deleteExpense,
   } = useCalculator();
 
+  // Calculate category totals from actual expenses
+  const calculatedCategories = useMemo(() => {
+    const categoryTotals = new Map<string, number>();
+    
+    // Initialize with base categories
+    budgetData.expenseCategories.forEach(cat => {
+      categoryTotals.set(cat.name, 0);
+    });
+    
+    // Sum up expenses by category
+    budgetData.expenses.forEach(expense => {
+      const current = categoryTotals.get(expense.category) || 0;
+      categoryTotals.set(expense.category, current + expense.amount);
+    });
+    
+    // Return categories with calculated amounts
+    return budgetData.expenseCategories.map(cat => ({
+      ...cat,
+      amount: categoryTotals.get(cat.name) || 0
+    }));
+  }, [budgetData.expenseCategories, budgetData.expenses]);
+
+  // Calculate total expenses from actual expense items
+  const totalExpenses = useMemo(() => {
+    return budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  }, [budgetData.expenses]);
+
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [newExpense, setNewExpense] = useState<Partial<Expense>>({
     id: "",
@@ -38,75 +66,68 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     date: new Date().toISOString().split("T")[0],
     amount: 0,
   });
-  console.log("New Expense State:", newExpense);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
-  const [income, setIncome] =useState<number | "">("");
+  const [income, setIncome] = useState<number | "">("");
   const [submittedIncome, setSubmittedIncome] = useState<number>(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
+  const windowWidth = useWindowWidth();
+  const outerRadius = window.innerWidth >=768 ? 80 : 50;
 
-  const exportRef = useRef<HTMLDivElement>(null);
   const { getAccessTokenSilently, user } = useAuth0();
 
-  // load budget data from server when component mounts
-  // and when user changes (to ensure we have the latest budget for the authenticated user)
+  // Load budget data from server
   useEffect(() => {
-  const loadBudget = async () => {
-    try {
-      // Wait for Auth0 to be ready
-      if (!user || !getAccessTokenSilently) {
-        return;
-      }
+    const loadBudget = async () => {
+      try {
+        if (!user || !getAccessTokenSilently) {
+          return;
+        }
 
-      const token = await getAccessTokenSilently();
-      const res = await fetch("http://localhost:5000/api/budgets", {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const budgets = await res.json(); 
-      console.log("Loaded budgets:", budgets);
-
-      // Check if user has any budgets
-      if (budgets && budgets.length > 0) {
-        // Load the first/most recent budget
-        const latestBudget = budgets[0];
-        
-        updateBudgetData({
-          totalIncome: Number(latestBudget.total_income) || 0,
-          expenseCategories: latestBudget.expense_categories || [],
-          expenses: latestBudget.expenses || []
+        const token = await getAccessTokenSilently();
+        const res = await fetch("http://localhost:5000/api/budgets", {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
-        
-        console.log("Budget data loaded successfully");
-      } else {
-        console.log("No existing budgets found");
-        // Optionally reset to default state
-        updateBudgetData({
-          totalIncome: 0,
-          expenseCategories: [],
-          expenses: []
-        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const budgets = await res.json(); 
+        console.log("Loaded budgets:", budgets);
+
+        if (budgets && budgets.length > 0) {
+          const latestBudget = budgets[0];
+          
+          updateBudgetData({
+            totalIncome: Number(latestBudget.total_income) || 0,
+            expenseCategories: latestBudget.expense_categories || [],
+            expenses: latestBudget.expenses || []
+          });
+          
+          console.log("Budget data loaded successfully");
+        } else {
+          console.log("No existing budgets found");
+          updateBudgetData({
+            totalIncome: 0,
+            expenseCategories: [],
+            expenses: []
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load saved budget:", error);
       }
-    } catch (error) {
-      console.error("Failed to load saved budget:", error);
     }
-  }
 
-  // Only run when user is authenticated and available
-  if (user) {
-    loadBudget();
-  }
-}, [user, getAccessTokenSilently]); 
+    if (user) {
+      loadBudget();
+    }
+  }, [user, getAccessTokenSilently]); 
 
   const handleAddExpense = () => {
-    console.log("Adding new expense:", newExpense.description, newExpense.category, newExpense.date, newExpense.amount);
     if (
       !newExpense.description ||
       !newExpense.category ||
@@ -114,8 +135,8 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
       !newExpense.amount
     ) {
       return alert("Please fill in all fields.");
-
     }
+    
     const newId = Date.now().toString();
     addExpense({
       id: newId,
@@ -159,23 +180,20 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     return category ? category.color : "#718096";
   };
 
-  // function for submitting the total income
   const handleSubmit = () => {
     if (income !== "") {
       const numericIncome = Number(income);
       setSubmittedIncome(numericIncome);
-      updateBudgetData({ totalIncome: numericIncome }); //update context
+      updateBudgetData({ totalIncome: numericIncome });
       setIncome("");
     }
   };
 
-  // fileter function for not rendering the categories when categories is not avaliable in pie chart
-  const filteredCategories = budgetData?.expenseCategories?.filter(
-    (cat) => cat.amount > 0
-  )
+  // Filter categories for pie chart (only show categories with expenses)
+  const filteredCategories = calculatedCategories.filter(cat => cat.amount > 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div ref={ref} className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-1">
         <CardContent className="p-6">
           <IncomeInput income={income} setIncome={setIncome} onSubmit={handleSubmit} />
@@ -203,7 +221,6 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatCurrency(budgetData.totalIncome)}
-                {/* {formatCurrency(submittedIncome)} */}
               </p>
             </div>
             <div className="mb-4 md:mb-0">
@@ -212,12 +229,12 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               </p>
               <p
                 className={`text-2xl font-bold ${
-                  budgetData.totalExpenses > budgetData.totalIncome
+                  totalExpenses > budgetData.totalIncome
                     ? "text-error"
                     : "text-gray-900 dark:text-white"
                 }`}
               >
-                {formatCurrency(budgetData.totalExpenses)}
+                {formatCurrency(totalExpenses)}
               </p>
             </div>
             <div>
@@ -226,17 +243,17 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               </p>
               <p
                 className={`text-2xl font-bold ${
-                  budgetData.totalIncome - budgetData.totalExpenses < 0
-                    ? "text-error"
+                  (budgetData.totalIncome - budgetData.totalExpenses) < 0
+                    ? "text-red-500"
                     : "text-success"
                 }`}
               >
-                {formatCurrency(budgetData.totalIncome - budgetData.totalExpenses)}
+                {formatCurrency(budgetData.totalIncome - totalExpenses)}
               </p>
             </div>
           </div>
 
-          {/* Budget Chart */}
+          {/* Budget Chart - now uses calculated categories */}
           <div className="h-64 mb-6">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -245,12 +262,14 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  outerRadius={80}
+                  outerRadius={outerRadius}
                   fill="#8884d8"
                   dataKey="amount"
                   nameKey="name"
                   label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
+                    window.innerWidth >= 768
+                    ? `${name}: ${(percent * 100).toFixed(0)}%`
+                    : `${(percent * 100).toFixed(0)}%`
                   }
                 >
                   {filteredCategories?.map((entry, index) => (
@@ -268,7 +287,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
           <div className="flex justify-end">
             <Button
               onClick={() => setShowAddExpenseModal(true)}
-              className="bg-primary-500 hover:bg-primary-600 text-white"
+              className="bg-primary-500 hover:bg-primary-600 text-black dark:text-gray-300 hover:bg-primary-200"
             >
               <i className="fas fa-plus mr-2"></i>
               Add More Expense
@@ -277,12 +296,12 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
         </CardContent>
       </Card>
 
-      {/* Expense Categories */}
+      {/* Expense Categories - now uses calculated categories */}
       <Card className="bg-white dark:bg-gray-800 shadow-md">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Expense Categories</h3>
           <div className="space-y-4">
-            {budgetData?.expenseCategories?.map((category, index) => (
+            {calculatedCategories?.map((category, index) => (
               <div
                 key={category.id}
                 className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
@@ -304,8 +323,8 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                     className="h-2 rounded-full"
                     style={{
                       width: `${
-                        budgetData.totalExpenses > 0 ?
-                        (category.amount / budgetData.totalExpenses) * 100
+                        totalExpenses > 0 ?
+                        (category.amount / totalExpenses) * 100
                         : 0
                       }%`,
                       backgroundColor: category.color,
@@ -315,15 +334,15 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
                   <span>
                     {Math.round(
-                      budgetData.totalExpenses > 0 ?
-                      (category.amount / budgetData.totalExpenses) * 100
+                      totalExpenses > 0 ?
+                      (category.amount / totalExpenses) * 100
                       : 0
                     )}
                     % of expenses
                   </span>
                   <span>
                     {Math.round(
-                      budgetData.totalExpenses > 0 ?
+                      budgetData.totalIncome > 0 ?
                       (category.amount / budgetData.totalIncome) * 100
                       : 0
                     )}
@@ -387,46 +406,6 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {/* {filteredExpenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                      {expense.description}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm">
-                      <span
-                        className="px-2 py-1 rounded-full text-xs"
-                        style={{
-                          backgroundColor: `${getExpenseCategoryColor(
-                            expense.category
-                          )}20`,
-                          color: getExpenseCategoryColor(expense.category),
-                        }}
-                      >
-                        {expense.category}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                      {new Date(expense.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(expense.amount)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
-                      <button 
-                        className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-                      >
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button
-                        className="ml-3 text-gray-600 dark:text-gray-400 hover:text-error"
-                        onClick={() => deleteExpense(expense.id)}
-                      >
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
-                ))} */}
-                
                 {filteredExpenses?.map((expense) => {
                   const isEditing = editingId === expense.id;
                   return (
@@ -552,7 +531,6 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
             </table>
           </div>
 
-          {/* Pagination */}
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Showing {filteredExpenses?.length} of {budgetData?.expenses?.length}{" "}

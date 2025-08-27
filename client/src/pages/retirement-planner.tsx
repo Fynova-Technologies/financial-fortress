@@ -2,13 +2,11 @@ import { RetirementPlanner as RetirementPlannerComponent } from "@/components/ca
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/calculator-context";
-import { useRef } from "react";
 import { toast } from "react-toastify";
 import { useState } from "react";
 import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function RetirementPlanner() {
-  const exportRef = useRef<HTMLDivElement>(null);
   const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
   const { retirementData } = useCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
@@ -59,16 +57,16 @@ export default function RetirementPlanner() {
       console.error("Save failed:", error);
       alert("Failed to save Retirement Planner data");
     }
-  }
+  };
+
   return (
     <div>
       <PageHeader 
         title="Retirement Planner" 
         description="Plan for your retirement"
-        exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <RetirementPlannerComponent ref={exportRef}/>
+      <RetirementPlannerComponent />
 
       {showAuthPopup && (
         <AuthPopup

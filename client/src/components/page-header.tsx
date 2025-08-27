@@ -14,7 +14,9 @@ export function PageHeader({ title, description, exportTargetRef, onSave }: Page
   const { isAuthenticated } = useAuth0();
 
   const extractData = (element: HTMLElement): Record<string, string>[] => {
+    console.log("Exporting from element:", element);
     const rows = Array.from(element.querySelectorAll("table tr"));
+    console.log("Rows found:", rows.length);
     return rows.map((row) => {
       const cells = row.querySelectorAll("th, td");
       const rowData: Record<string, string> = {};
