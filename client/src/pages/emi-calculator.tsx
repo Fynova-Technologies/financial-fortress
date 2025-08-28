@@ -2,7 +2,7 @@ import { useState } from "react";
 import { EMICalculator as EMICalculatorComponent } from "@/components/calculators/emi-calculator";
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useCalculator } from "@/store/calculator-context";
+import { useCalculator } from "@/store/Calculator/index";
 import { useRef } from "react";
 import { toast } from "react-toastify";
 import { AuthPopup } from "@/components/auth/AuthPopup";

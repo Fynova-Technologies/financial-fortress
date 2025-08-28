@@ -55,9 +55,9 @@ export const routes = [
   },
   {
     path: "/savings-tracker",
-    label: "Savings Tracker",
+    label: "Goal Tracker",
     icon: "fa-piggy-bank",
-    description: "Track your savings goals",
+    description: "Track your savings and goals",
   },
 ];
 
@@ -143,11 +143,38 @@ export interface SavingsGoal {
   targetAmount: number;
   currentAmount: number;
   targetDate: string;
+  contributionType: 'daily' | 'monthly' | 'quarterly' | 'annually';
 }
 
 export interface SavingsData {
   savingsGoals: SavingsGoal[];
   monthlySavings: number;
+}
+
+export interface CalculatedGoalResult extends SavingsGoal {
+  monthsRemaining: number;
+  periodsRemaining: number;
+  monthlyNeeded: number; // Monthly equivalent for display
+  neededContribution: number; // Actual contribution needed per period
+  userContribution: number; // User's contribution per period
+  monthlyUserContribution: number; // Monthly equivalent of user's contribution
+  isAchievable: boolean;
+  expectedCompletionDate: string;
+  progressPercentage: number;
+  isOnTrack: boolean;
+  isCompleted: boolean;
+}
+
+export interface SavingsCalculationResult {
+  goalResults: CalculatedGoalResult[];
+  totalSaved: number;
+  totalTarget: number;
+  totalMonthlyNeeded: number; // Total monthly equivalent needed across all goals
+  chartData: Array<{
+    month: number;
+    date: string;
+    goals: Array<{ id: string; name: string; amount: number }>;
+  }>;
 }
 
 export interface CalculationResult {
@@ -173,8 +200,4 @@ export interface YearlyAmortizationRow {
   principal: number;
   interest: number;
   balance: number;
-}
-
-export interface RepaymentRow {
-  
 }

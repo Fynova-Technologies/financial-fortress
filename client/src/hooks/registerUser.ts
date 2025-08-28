@@ -4,6 +4,7 @@ export const useRegisterUser = () => {
   const { getAccessTokenSilently, user, isAuthenticated, isLoading } = useAuth0();
 
   const registerUser = async () => {
+    console.log("bibash");
     if (isLoading) {
       console.warn("Auth0 is still loading—try again later.");
       return;

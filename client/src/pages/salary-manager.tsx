@@ -1,7 +1,7 @@
 import { SalaryManager as SalaryManagerComponent } from "@/components/calculators/salary-manager";
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useCalculator } from "@/store/calculator-context";
+import { useCalculator } from "@/store/Calculator/index";
 import { useRef, useState } from "react";
 import {  toast } from "react-toastify";
 import AuthPopup from "@/components/auth/AuthPopup";

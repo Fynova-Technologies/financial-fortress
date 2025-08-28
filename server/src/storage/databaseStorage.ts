@@ -57,6 +57,11 @@ export class DatabaseStorage implements IStorage {
     return rows[0];
   }
 
+  async getUserbyEmail(email: string): Promise<User | undefined> {
+    const rows = await db.select().from(users).where(eq(users.email, email));
+    return rows[0];
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(users).values(insertUser).returning();
     if (!result || result.length === 0) throw new Error("Failed to create user");

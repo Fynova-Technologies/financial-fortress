@@ -1,5 +1,5 @@
 import { useState, forwardRef, useEffect, useMemo } from "react";
-import { useCalculator } from "@/store/calculator-context";
+import { useCalculator } from "@/store/Calculator/index.js";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -13,8 +13,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { ExpenseCategory, Expense } from "@/types";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from "recharts";
+import { Expense } from "@/types";
 import IncomeInput from "../forms/InputIncome";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useWindowWidth } from "@/hooks/useWindowWidth";
@@ -34,28 +41,31 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   // Calculate category totals from actual expenses
   const calculatedCategories = useMemo(() => {
     const categoryTotals = new Map<string, number>();
-    
+
     // Initialize with base categories
-    budgetData.expenseCategories.forEach(cat => {
+    budgetData.expenseCategories.forEach((cat) => {
       categoryTotals.set(cat.name, 0);
     });
-    
+
     // Sum up expenses by category
-    budgetData.expenses.forEach(expense => {
+    budgetData.expenses.forEach((expense) => {
       const current = categoryTotals.get(expense.category) || 0;
       categoryTotals.set(expense.category, current + expense.amount);
     });
-    
+
     // Return categories with calculated amounts
-    return budgetData.expenseCategories.map(cat => ({
+    return budgetData.expenseCategories.map((cat) => ({
       ...cat,
-      amount: categoryTotals.get(cat.name) || 0
+      amount: categoryTotals.get(cat.name) || 0,
     }));
   }, [budgetData.expenseCategories, budgetData.expenses]);
 
   // Calculate total expenses from actual expense items
   const totalExpenses = useMemo(() => {
-    return budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    return budgetData.expenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0
+    );
   }, [budgetData.expenses]);
 
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
@@ -74,7 +84,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
   const windowWidth = useWindowWidth();
-  const outerRadius = window.innerWidth >=768 ? 80 : 50;
+  const outerRadius = window.innerWidth >= 768 ? 80 : 50;
 
   const { getAccessTokenSilently, user } = useAuth0();
 
@@ -89,43 +99,43 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
         const token = await getAccessTokenSilently();
         const res = await fetch("http://localhost:5000/api/budgets", {
           headers: { Authorization: `Bearer ${token}` },
-          credentials: 'include',
+          credentials: "include",
         });
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
 
-        const budgets = await res.json(); 
+        const budgets = await res.json();
         console.log("Loaded budgets:", budgets);
 
         if (budgets && budgets.length > 0) {
           const latestBudget = budgets[0];
-          
+
           updateBudgetData({
             totalIncome: Number(latestBudget.total_income) || 0,
             expenseCategories: latestBudget.expense_categories || [],
-            expenses: latestBudget.expenses || []
+            expenses: latestBudget.expenses || [],
           });
-          
+
           console.log("Budget data loaded successfully");
         } else {
           console.log("No existing budgets found");
           updateBudgetData({
             totalIncome: 0,
             expenseCategories: [],
-            expenses: []
+            expenses: [],
           });
         }
       } catch (error) {
         console.error("Failed to load saved budget:", error);
       }
-    }
+    };
 
     if (user) {
       loadBudget();
     }
-  }, [user, getAccessTokenSilently]); 
+  }, [user, getAccessTokenSilently]);
 
   const handleAddExpense = () => {
     if (
@@ -136,7 +146,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     ) {
       return alert("Please fill in all fields.");
     }
-    
+
     const newId = Date.now().toString();
     addExpense({
       id: newId,
@@ -156,7 +166,9 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     setShowAddExpenseModal(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setNewExpense({
       ...newExpense,
@@ -165,11 +177,12 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   const filteredExpenses = budgetData?.expenses?.filter((expense) => {
-    const matchesSearch = expense.description
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const matchesSearch =
+      expense.description?.trim() ??
+      "".toLowerCase().includes(search.toLowerCase());
     const matchesCategory =
-      categoryFilter === "All Categories" || expense.category === categoryFilter;
+      categoryFilter === "All Categories" ||
+      expense.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
@@ -190,14 +203,23 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   // Filter categories for pie chart (only show categories with expenses)
-  const filteredCategories = calculatedCategories.filter(cat => cat.amount > 0);
+  const filteredCategories = calculatedCategories.filter(
+    (cat) => cat.amount > 0
+  );
 
   return (
     <div ref={ref} className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-1">
         <CardContent className="p-6">
-          <IncomeInput income={income} setIncome={setIncome} onSubmit={handleSubmit} />
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4"> Add Your All expenses </p>
+          <IncomeInput
+            income={income}
+            setIncome={setIncome}
+            onSubmit={handleSubmit}
+          />
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {" "}
+            Add Your All expenses{" "}
+          </p>
           <div className="flex justify-start">
             <Button
               onClick={() => setShowAddExpenseModal(true)}
@@ -211,9 +233,14 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
       </Card>
 
       {/* Budget Summary Card */}
-      <Card ref={ref} className="bg-white dark:bg-gray-800 shadow-md lg:col-span-3">
+      <Card
+        ref={ref}
+        className="bg-white dark:bg-gray-800 shadow-md lg:col-span-3"
+      >
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Monthly Budget Overview</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            Monthly Budget Overview
+          </h3>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div className="mb-4 md:mb-0">
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -243,7 +270,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               </p>
               <p
                 className={`text-2xl font-bold ${
-                  (budgetData.totalIncome - budgetData.totalExpenses) < 0
+                  budgetData.totalIncome - budgetData.totalExpenses < 0
                     ? "text-red-500"
                     : "text-success"
                 }`}
@@ -268,17 +295,15 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                   nameKey="name"
                   label={({ name, percent }) =>
                     window.innerWidth >= 768
-                    ? `${name}: ${(percent * 100).toFixed(0)}%`
-                    : `${(percent * 100).toFixed(0)}%`
+                      ? `${name}: ${(percent * 100).toFixed(0)}%`
+                      : `${(percent * 100).toFixed(0)}%`
                   }
                 >
                   {filteredCategories?.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
-                />
+                <Tooltip formatter={(value: number) => formatCurrency(value)} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -323,9 +348,9 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                     className="h-2 rounded-full"
                     style={{
                       width: `${
-                        totalExpenses > 0 ?
-                        (category.amount / totalExpenses) * 100
-                        : 0
+                        totalExpenses > 0
+                          ? (category.amount / totalExpenses) * 100
+                          : 0
                       }%`,
                       backgroundColor: category.color,
                     }}
@@ -334,17 +359,17 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
                   <span>
                     {Math.round(
-                      totalExpenses > 0 ?
-                      (category.amount / totalExpenses) * 100
-                      : 0
+                      totalExpenses > 0
+                        ? (category.amount / totalExpenses) * 100
+                        : 0
                     )}
                     % of expenses
                   </span>
                   <span>
                     {Math.round(
-                      budgetData.totalIncome > 0 ?
-                      (category.amount / budgetData.totalIncome) * 100
-                      : 0
+                      budgetData.totalIncome > 0
+                        ? (category.amount / budgetData.totalIncome) * 100
+                        : 0
                     )}
                     % of income
                   </span>
@@ -414,113 +439,143 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                         {isEditing ? (
                           <input
                             type="text"
-                            value={editedExpense.description ?? expense.description}
+                            value={
+                              editedExpense.description ?? expense.description
+                            }
                             onChange={(e) =>
-                              setEditedExpense({ ...editedExpense, description: e.target.value })
+                              setEditedExpense({
+                                ...editedExpense,
+                                description: e.target.value,
+                              })
                             }
                             className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
                           />
-                          ) : (
-                            expense.description
+                        ) : (
+                          expense.description
                         )}
-                    </td>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {isEditing ? (
                           <select
                             value={editedExpense.category ?? expense.category}
                             onChange={(e) =>
-                              setEditedExpense({ ...editedExpense, category: e.target.value })
+                              setEditedExpense({
+                                ...editedExpense,
+                                category: e.target.value,
+                              })
                             }
                             className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
                           >
                             {budgetData.expenseCategories.map((cat) => (
-                              <option key={cat.id} value={cat.name}>{cat.name}</option>
+                              <option key={cat.id} value={cat.name}>
+                                {cat.name}
+                              </option>
                             ))}
                           </select>
                         ) : (
                           <span
                             className="px-2 py-1 rounded-full text-xs"
                             style={{
-                              backgroundColor: `${getExpenseCategoryColor(expense.category)}20`,
+                              backgroundColor: `${getExpenseCategoryColor(
+                                expense.category
+                              )}20`,
                               color: getExpenseCategoryColor(expense.category),
                             }}
                           >
                             {expense.category}
                           </span>
                         )}
-                    </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                      </td>
+                      <td>
                         {isEditing ? (
                           <input
                             type="date"
                             value={
+                              // Prefer the edited value when present; if not, fall back to expense.date if present;
+                              // otherwise provide an empty string (valid for <input type="date">).
                               editedExpense.date
-                              ? new Date(editedExpense.date).toISOString().split("T")[0]
-                              : new Date(expense.date).toISOString().split("T")[0]
+                                ? new Date(editedExpense.date)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : expense.date
+                                ? new Date(expense.date)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : ""
                             }
                             onChange={(e) =>
-                              setEditedExpense({ ...editedExpense, date: e.target.value })
+                              setEditedExpense({
+                                ...editedExpense,
+                                date: e.target.value,
+                              })
                             }
                             className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
                           />
-                        ) : (
+                        ) : // When not editing, only call new Date(...) if expense.date exists.
+                        expense.date ? (
                           new Date(expense.date).toLocaleDateString()
+                        ) : (
+                          "—"
                         )}
-                    </td>
+                      </td>
+
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         {isEditing ? (
                           <input
                             type="number"
                             value={editedExpense.amount ?? expense.amount}
                             onChange={(e) =>
-                              setEditedExpense({ ...editedExpense, amount: parseFloat(e.target.value) })
+                              setEditedExpense({
+                                ...editedExpense,
+                                amount: parseFloat(e.target.value),
+                              })
                             }
                             className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
                           />
                         ) : (
                           formatCurrency(expense.amount)
                         )}
-                    </td>
+                      </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
                         {isEditing ? (
                           <>
-                          <button
-                            onClick={() => {
-                              updateExpense(expense.id, editedExpense);
-                              setEditingId(null);
-                              setEditedExpense({});
-                            }}
-                            className="text-green-500 hover:text-green-600 mr-2"
-                          >
-                            <i className="fas fa-check"></i>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingId(null);
-                              setEditedExpense({});
-                            }}
-                            className="text-gray-400 hover:text-gray-500"
-                          >
-                            <i className="fas fa-times"></i>
-                          </button>
+                            <button
+                              onClick={() => {
+                                updateExpense(expense.id, editedExpense);
+                                setEditingId(null);
+                                setEditedExpense({});
+                              }}
+                              className="text-green-500 hover:text-green-600 mr-2"
+                            >
+                              <i className="fas fa-check"></i>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingId(null);
+                                setEditedExpense({});
+                              }}
+                              className="text-gray-400 hover:text-gray-500"
+                            >
+                              <i className="fas fa-times"></i>
+                            </button>
                           </>
                         ) : (
                           <>
-                          <button
-                          className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
-                          onClick={() => {
-                            setEditingId(expense.id);
-                            setEditedExpense(expense);
-                          }}
-                          >
-                            <i className="fas fa-edit"></i>
-                          </button>
-                          <button
-                            className="ml-3 text-gray-600 dark:text-gray-400 hover:text-error"
-                            onClick={() => deleteExpense(expense.id)}
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
+                            <button
+                              className="text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400"
+                              onClick={() => {
+                                setEditingId(expense.id);
+                                setEditedExpense(expense);
+                              }}
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button
+                              className="ml-3 text-gray-600 dark:text-gray-400 hover:text-error"
+                              onClick={() => deleteExpense(expense.id)}
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
                           </>
                         )}
                       </td>
@@ -533,10 +588,10 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
 
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {filteredExpenses?.length} of {budgetData?.expenses?.length}{" "}
-              expenses
+              Showing {filteredExpenses?.length} of{" "}
+              {budgetData?.expenses?.length} expenses
             </p>
-            <div className="flex space-x-2">
+            {/* <div className="flex space-x-2">
               <Button
                 variant="outline"
                 className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -549,7 +604,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               >
                 Next
               </Button>
-            </div>
+            </div> */}
           </div>
         </CardContent>
       </Card>
@@ -584,12 +639,13 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 value={newExpense.category || ""}
                 onChange={handleInputChange}
               >
-
                 {budgetData?.expenseCategories?.length === 0 && (
                   <option disabled>No categories available</option>
                 )}
                 {budgetData?.expenseCategories?.map((category) => (
-                  <option key={category.id} value={category.name}>{category.name}</option>
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -630,4 +686,4 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
       </Dialog>
     </div>
   );
-})
+});

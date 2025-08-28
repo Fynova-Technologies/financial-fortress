@@ -14,7 +14,7 @@ router.post("/budgets", checkJwt, async (req: BudgetRequest, res) => {
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
 
     const user = await storage.getUserByAuth0Id(auth0_id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "Post User not found" });
 
     const { name, total_income, expenseCategories, expenses } = req.body;
 
@@ -25,6 +25,8 @@ router.post("/budgets", checkJwt, async (req: BudgetRequest, res) => {
       expense_categories: expenseCategories,
       expenses,
     });
+
+    console.log("Budget data: ", budget);
 
     res.status(201).json(budget);
   } catch (error: any) {

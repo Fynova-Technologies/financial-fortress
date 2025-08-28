@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { CalculatorProvider } from "@/store/calculator-context";
+import { CalculatorProvider } from "@/store/Calculator/index";
 import { Auth0Provider } from '@auth0/auth0-react'
 import { ToastContainer } from "react-toastify";
 

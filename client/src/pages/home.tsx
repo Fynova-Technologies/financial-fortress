@@ -1,4 +1,4 @@
-import { useCalculator } from "@/store/calculator-context";
+import { useCalculator } from "@/store/Calculator/index";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
@@ -62,31 +62,6 @@ export default function Home() {
       description: "Convert between currencies",
       path: "/currency-converter"
     },
-  ];
-
-  // Recent activity data (static for now)
-  const recentActivity = [
-    {
-      date: "Today, 2:30 PM",
-      calculator: "Budget Planner",
-      action: "Created new budget",
-      result: "Saved Successfully",
-      resultClass: "text-success"
-    },
-    {
-      date: "Yesterday",
-      calculator: "Mortgage Calculator",
-      action: "Calculated 30-year fixed rate",
-      result: "$1,250/month",
-      resultClass: "text-primary-500"
-    },
-    {
-      date: "Jul 15, 2023",
-      calculator: "Retirement Planner",
-      action: "Updated retirement goal",
-      result: "Goal Updated",
-      resultClass: "text-warning"
-    }
   ];
 
   return (

@@ -27,6 +27,11 @@ router.post("/register", checkJwt, async (req: Auth0Request, res) => {
       return res.status(400).json({ message: "Username already taken" });
     }
 
+    const existingUserByEmail = await storage.getUserbyEmail(email);
+    if ( existingUserByEmail) {
+      return res.status(400).json({ message: "Mail alreadt taken"});
+    }
+
     const newUser = await storage.createUser({ username, email, auth0_id });
 
     if (!req.auth?.email_verified) {
