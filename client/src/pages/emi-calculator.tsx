@@ -15,7 +15,7 @@ export default function EMICalculator() {
   const { isAuthenticated } = useAuth0();
 
   const handleSaveData = async () => {
-    if(!isAuthenticated) {
+    if (!isAuthenticated) {
       setShowAuthPopup(true);
       return;
     }
@@ -24,7 +24,7 @@ export default function EMICalculator() {
       console.warn("Auth0 is still loading—try again later.");
       return;
     }
-    
+
     try {
       const token = await getAccessTokenSilently();
       console.log("access token granted EMI: ", token);
@@ -44,7 +44,7 @@ export default function EMICalculator() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -61,21 +61,25 @@ export default function EMICalculator() {
 
   return (
     <div>
-      <PageHeader 
-        title="EMI Calculator" 
+      <PageHeader
+        title="EMI Calculator"
         description="Calculate loan EMI payments"
         exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <EMICalculatorComponent ref={exportRef}/>
+      <EMICalculatorComponent ref={exportRef} />
 
       {showAuthPopup && (
-        <AuthPopup
-          visible={showAuthPopup}
-          onClose={() => setShowAuthPopup(false)}
-          onLogin={() => {}}
-          onSignup={() => {}}
-        />
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

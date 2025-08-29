@@ -1,4 +1,3 @@
-
 import { BudgetPlanner as BudgetPlannerComponent } from "@/components/calculators/budget-planner";
 import { PageHeader } from "@/components/page-header";
 import { useRef, useState } from "react";
@@ -14,7 +13,7 @@ export default function BudgetPlanner() {
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
   const handleSaveData = async () => {
-    if(!isAuthenticated) {
+    if (!isAuthenticated) {
       setShowAuthPopup(true);
       return;
     }
@@ -23,7 +22,7 @@ export default function BudgetPlanner() {
       console.warn("Auth0 is still loading—try again later.");
       return;
     }
-    
+
     try {
       const token = await getAccessTokenSilently();
       console.log("access token granted: ", token);
@@ -32,7 +31,7 @@ export default function BudgetPlanner() {
         name: "My Budget",
         total_income: budgetData.totalIncome,
         expenseCategories: budgetData.expenseCategories,
-        expenses: budgetData.expenses
+        expenses: budgetData.expenses,
       };
 
       const res = await fetch("http://localhost:5000/api/budgets", {
@@ -42,7 +41,7 @@ export default function BudgetPlanner() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -56,25 +55,28 @@ export default function BudgetPlanner() {
       alert("Failed to save budget");
     }
   };
-  
+
   return (
     <div>
-      <PageHeader 
-        title="Budget Planner" 
+      <PageHeader
+        title="Budget Planner"
         description="Track your income and expenses"
         exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <BudgetPlannerComponent ref={exportRef}/>
-
+      <BudgetPlannerComponent ref={exportRef} />
+      
       {showAuthPopup && (
-        <AuthPopup
-          visible={showAuthPopup}
-          onClose={() => setShowAuthPopup(false)}
-          // These props are now handled inside AuthPopup with Auth0
-          onLogin={() => {}}
-          onSignup={() => {}}
-        />
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -19,7 +19,6 @@ export default function ContactUsPage() {
         <AuthPopup
           visible={showAuthPopup}
           onClose={() => setShowAuthPopup(false)}
-          // These props are now handled inside AuthPopup with Auth0
           onLogin={() => {}}
           onSignup={() => {}}
         />

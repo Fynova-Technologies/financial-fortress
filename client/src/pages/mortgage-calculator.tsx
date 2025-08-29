@@ -23,7 +23,7 @@ export default function MortgageCalculator() {
       console.warn("Auth0 is still loading—try again later.");
       return;
     }
-    
+
     try {
       const token = await getAccessTokenSilently();
       console.log("access token granted mortgage: ", token);
@@ -36,48 +36,57 @@ export default function MortgageCalculator() {
         interestRate: mortgageData.interestRate,
         propertyTax: mortgageData.propertyTax,
         homeInsurance: mortgageData.homeInsurance,
-        pmi: mortgageData.pmi
+        pmi: mortgageData.pmi,
       };
 
-      const res = await fetch("http://localhost:5000/api/mortgage-calculations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-        credentials: 'include',
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/mortgage-calculations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
         console.error("Response error:", errorData);
-        throw new Error(errorData.error || "Failed to save mortgage calculation");
+        throw new Error(
+          errorData.error || "Failed to save mortgage calculation"
+        );
       }
       toast.success("Mortgage calculation saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);
       alert("Failed to save mortgage calculation");
     }
-  }
+  };
 
   return (
     <div>
-      <PageHeader 
-        title="Mortgage Calculator" 
+      <PageHeader
+        title="Mortgage Calculator"
         description="Calculate your mortgage payments"
         exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <MortgageCalculatorComponent ref={exportRef}/>
+      <MortgageCalculatorComponent ref={exportRef} />
 
       {showAuthPopup && (
-        <AuthPopup
-          visible={showAuthPopup}
-          onClose={() => setShowAuthPopup(false)}
-          onLogin={() => {}}
-          onSignup={() => {}}
-        />
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

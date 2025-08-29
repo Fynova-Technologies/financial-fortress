@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/Calculator/index";
 import { useRef, useState } from "react";
-import {  toast } from "react-toastify";
+import { toast } from "react-toastify";
 import AuthPopup from "@/components/auth/AuthPopup";
 
 export default function SalaryManager() {
@@ -42,38 +42,44 @@ export default function SalaryManager() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!res.ok) {
         const errorData = await res.json();
         console.error("Response error:", errorData);
-        throw new Error(errorData.error || "Failed to save Salary Manager data");
+        throw new Error(
+          errorData.error || "Failed to save Salary Manager data"
+        );
       }
       toast.success("Salary Manager data saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);
       alert("Failed to save Salary Manager data");
     }
-  }
+  };
 
   return (
     <div>
-      <PageHeader 
-        title="Salary Manager" 
+      <PageHeader
+        title="Salary Manager"
         description="Analyze your salary and taxes"
         exportTargetRef={exportRef}
         onSave={handleSaveData}
       />
-      <SalaryManagerComponent ref={exportRef}/>
+      <SalaryManagerComponent ref={exportRef} />
 
       {showAuthPopup && (
-        <AuthPopup
-          visible={showAuthPopup}
-          onClose={() => setShowAuthPopup(false)}
-          onLogin={() => {}}
-          onSignup={() => {}}
-        />
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

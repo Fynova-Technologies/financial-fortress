@@ -294,27 +294,31 @@ export const SavingsTracker = () => {
                             {formatCurrency(goal.currentAmount)} of{" "}
                             {formatCurrency(goal.targetAmount)}
                           </span>
-                          <span
-                            className={`font-medium ${
-                              goal.isCompleted
-                                ? "text-green-500"
-                                : goal.isOnTrack 
-                                ? "text-success" 
-                                : "text-error"
-                            }`}
-                          >
+                        <span
+                          className={`font-medium ${
+                            goal.status === "completed"
+                              ? "text-green-500"
+                              : goal.status === "onTrack"
+                              ? "text-success"
+                              : goal.status === "offTrack"
+                              ? "text-yellow-500"
+                              : "text-red-500"
+                          }`}
+                        >
                             {goal.progressPercentage.toFixed(0)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${
-                              goal.isCompleted
-                                ? "bg-green-500"
-                                : goal.isOnTrack 
-                                ? "bg-success" 
-                                : "bg-primary-500"
-                            }`}
+                          className={`h-2 rounded-full ${
+                            goal.status === "completed"
+                              ? "bg-green-500"
+                              : goal.status === "onTrack"
+                              ? "bg-success"
+                              : goal.status === "offTrack"
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                          }`}
                             style={{ 
                               width: `${Math.min(100, goal.progressPercentage)}%` 
                             }}
@@ -343,21 +347,24 @@ export const SavingsTracker = () => {
                         </div>
                         <div>
                           <span className="block">Status:</span>
-                          <span
-                            className={`font-medium ${
-                              goal.isCompleted
-                                ? "text-green-500"
-                                : goal.isOnTrack 
-                                ? "text-success" 
-                                : "text-error"
-                            }`}
-                          >
-                            {goal.isCompleted 
-                              ? "Completed" 
-                              : goal.isOnTrack 
-                              ? "On track" 
-                              : "Off track"
-                            }
+                        <span
+                          className={`font-medium ${
+                            goal.status === "completed"
+                              ? "text-green-500"
+                              : goal.status === "onTrack"
+                              ? "text-success"
+                              : goal.status === "offTrack"
+                              ? "text-yellow-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {goal.status === "completed"
+                            ? "Completed"
+                            : goal.status === "onTrack"
+                            ? "On track"
+                            : goal.status === "offTrack"
+                            ? "Off track"
+                            : "Overdue"}
                           </span>
                         </div>
                         <div>

@@ -25,16 +25,19 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import { TermsConditionsPage } from "./pages/TermsConditionsPage";
 import ContactUsPage from "./pages/ContactUsPage";
 
+
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/verify" component={VerifyPage} />
       <Route path="/budget-planner" component={BudgetPlanner} />
-      <Route path="/mortgage-calculator" component={MortgageCalculator} />
+      {/* <Route path="/mortgage-calculator" component={MortgageCalculator} /> */}
+      <ProtectedRoute path="/mortgage-calculator" component={MortgageCalculator} />
       <Route path="/emi-calculator" component={EMICalculator} />
       <Route path="/retirement-planner" component={RetirementPlanner} />
-      <Route path="/roi-calculator" component={ROICalculator} />
+      {/* <Route path="/roi-calculator" component={ROICalculator} /> */}
+      <ProtectedRoute path="/roi-calculator" component={ROICalculator} />
       <Route path="/currency-converter" component={CurrencyConverter} />
       <Route path="/savings-tracker" component={SavingsTracker} />
       <Route path="/salary-manager" component={SalaryManager} />

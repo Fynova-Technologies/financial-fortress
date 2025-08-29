@@ -4,7 +4,6 @@ import { MobileHeader } from "@/components/mobile-header";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { AuthSync } from "@/components/auth/AuthSync";
 
-
 interface MainLayoutProps {
   children: React.ReactNode;
 }
@@ -27,7 +26,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <Sidebar isOpen={sidebarOpen} onClose={handleCloseSidebar} />
 
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen pb-16 lg:pb-0">
-        <div className="p-4 lg:p-8">{children}</div>
+        <div className="p-4 lg:p-8">
+          {children}
+        </div>
       </main>
 
       <MobileNavigation />

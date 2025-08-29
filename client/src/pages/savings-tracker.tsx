@@ -27,7 +27,7 @@ export default function SavingsTracker() {
       console.log("access token granted Savings Tracker: ", token);
 
       const payload = {
-        savingsGoals: savingsData.savingsGoals.map(goal => ({
+        savingsGoals: savingsData.savingsGoals.map((goal) => ({
           name: goal.name,
           target_amount: goal.targetAmount, // Ensure this matches your backend schema
           current_amount: goal.currentAmount, // Ensure this matches your backend schema
@@ -42,37 +42,43 @@ export default function SavingsTracker() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!res.ok) {
         const errorData = await res.json();
         console.error("Response error:", errorData);
-        throw new Error(errorData.error || "Failed to save Savings Tracker data");
+        throw new Error(
+          errorData.error || "Failed to save Savings Tracker data"
+        );
       }
       toast.success("Savings Tracker data saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);
       alert("Failed to save Savings Tracker data");
     }
-  }
+  };
 
   return (
     <div>
-      <PageHeader 
-        title="Goal Tracker" 
+      <PageHeader
+        title="Goal Tracker"
         description="Track your savings and goals"
         onSave={handleSaveData}
       />
       <SavingsTrackerComponent />
 
       {showAuthPopup && (
-        <AuthPopup
-          visible={showAuthPopup}
-          onClose={() => setShowAuthPopup(false)}
-          onLogin={() => {}}
-          onSignup={() => {}}
-        />
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

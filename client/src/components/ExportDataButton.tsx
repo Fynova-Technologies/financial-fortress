@@ -80,14 +80,18 @@ export const ExportExcelButton: React.FC<ExportExcelButtonProps> = ({
       Export to Excel
     </Button>
 
-    {showAuthPopup && (
-      <AuthPopup
-        visible={showAuthPopup}
-        onClose={() => setShowAuthPopup(false)}
-        onLogin={() => {}}
-        onSignup={() => {}}
-      />
-    )}
+      {showAuthPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
+      )}
   </>
   );
 };

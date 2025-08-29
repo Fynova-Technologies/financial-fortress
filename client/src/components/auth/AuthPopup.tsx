@@ -7,10 +7,15 @@ interface AuthPopupProps {
   onLogin: () => void;
   onSignup: () => void;
   isLoading?: boolean;
+  Closeable?: boolean;
 }
 
 // Auth Popup Component
-export function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProps) {
+export function AuthPopup({
+  visible,
+  onClose,
+  Closeable = true,
+}: AuthPopupProps) {
   const [isLogin, setIsLogin] = useState(true);
   const { isLoading, loginWithPopup } = useAuth0();
   const [btnLoading, setBtnLoading] = useState(false);
@@ -19,39 +24,42 @@ export function AuthPopup({ visible, onClose, onLogin, onSignup }: AuthPopupProp
     return null;
   }
 
-const handleAuth = async (type: "login" | "signup") => {
-  setBtnLoading(true);
-  try {
-    if (type === "login") {
-      await loginWithPopup(); // normal login
-    } else {
-      await loginWithPopup({ authorizationParams: { screen_hint: "signup" } }); // signup
+  const handleAuth = async (type: "login" | "signup") => {
+    setBtnLoading(true);
+    try {
+      if (type === "login") {
+        await loginWithPopup(); // normal login
+      } else {
+        await loginWithPopup({
+          authorizationParams: { screen_hint: "signup" },
+        }); // signup
+      }
+      onClose(); // close popup after successful login/signup
+    } catch (err) {
+      console.error("Auth0 login/signup error:", err);
+    } finally {
+      setBtnLoading(false);
     }
-    onClose(); // close popup after successful login/signup
-  } catch (err) {
-    console.error("Auth0 login/signup error:", err);
-  } finally {
-    setBtnLoading(false);
-  }
-};
-
+  };
 
   return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-85">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Welcome to Financial Fortress
           </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
-            aria-label="Close"
-            disabled={isLoading}
-          >
-            ×
-          </button>
+          {Closeable && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
+              aria-label="Close"
+              disabled={isLoading}
+            >
+              ×
+            </button>
+          )}
         </div>
 
         {/* Subtitle */}
@@ -75,10 +83,10 @@ const handleAuth = async (type: "login" | "signup") => {
             )}
           </button>
 
-                {/* Toggle */}        
-        <p className="mt-4 text-sm">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}
-        </p>
+          {/* Toggle */}
+          <p className="mt-4 text-sm">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+          </p>
 
           <button
             onClick={() => handleAuth("signup")}
@@ -97,14 +105,17 @@ const handleAuth = async (type: "login" | "signup") => {
         </div>
 
         {/* Close link */}
+
         <div className="mt-6 text-center">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline disabled:opacity-50"
-          >
-            Maybe later
-          </button>
+          {Closeable && (
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline disabled:opacity-50"
+            >
+              Maybe later
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -112,4 +123,3 @@ const handleAuth = async (type: "login" | "signup") => {
 }
 
 export default AuthPopup;
-

@@ -17,8 +17,6 @@ import {
   SavingsGoal,
 } from "./types";
 
-import { formatCurrency } from "./utils";
-
 /* defaults & impls */
 import {
   defaultBudgetData,
@@ -37,6 +35,7 @@ import { defaultSalaryData, calculateSalary } from "./services/salary";
 import { defaultROIData, calculateROI } from "./services/roi";
 import { defaultCurrencyData, convertCurrency } from "./services/currency";
 import { defaultSavingsData, calculateSavings } from "./services/savings";
+
 
 interface CalculatorContextType {
   // Budget
@@ -101,7 +100,7 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
   const [savingsData, setSavingsData] = useState<SavingsData>(defaultSavingsData);
 
   // Auth0 token (used in savings delete example)
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, user } = useAuth0();
 
   // ---------- Budget ----------
   const updateBudgetData = (data: Partial<BudgetData>) => setBudgetData((p) => ({ ...p, ...data }));
@@ -155,6 +154,18 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     setSavingsData((prev) => ({ ...prev, savingsGoals: prev.savingsGoals.map((g) => (g.id === id ? { ...g, ...goal } : g)) }));
 
   const deleteSavingsGoal = async (id: string) => {
+      // Check if user is logged in
+  if (!user) {
+    console.warn("User not logged in for deletion");
+    
+    // Optional: remove locally for offline mode
+    setSavingsData((prev) => ({
+      ...prev,
+      savingsGoals: prev.savingsGoals.filter((g) => g.id !== id),
+    }));
+    
+    return; // stop here
+  }
     // original had a backend call; we keep the async behavior and optimistic update on success
     try {
       const token = await getAccessTokenSilently();

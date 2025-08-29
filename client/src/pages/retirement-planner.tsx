@@ -37,20 +37,25 @@ export default function RetirementPlanner() {
         desiredMonthlyIncome: retirementData.desiredMonthlyIncome,
       };
 
-      const res = await fetch("http://localhost:5000/api/retirement-calculations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-        credentials: 'include',
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/retirement-calculations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
         console.error("Response error:", errorData);
-        throw new Error(errorData.error || "Failed to save Retirement Planner data");
+        throw new Error(
+          errorData.error || "Failed to save Retirement Planner data"
+        );
       }
       toast.success("Retirement Planner data saved successfully!");
     } catch (error) {
@@ -61,20 +66,24 @@ export default function RetirementPlanner() {
 
   return (
     <div>
-      <PageHeader 
-        title="Retirement Planner" 
+      <PageHeader
+        title="Retirement Planner"
         description="Plan for your retirement"
         onSave={handleSaveData}
       />
       <RetirementPlannerComponent />
 
       {showAuthPopup && (
-        <AuthPopup
-          visible={showAuthPopup}
-          onClose={() => setShowAuthPopup(false)}
-          onLogin={() => {}}
-          onSignup={() => {}}
-        />
+        <div className="fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+          <div className="pointer-events-auto max-w-lg w-full px-4">
+            <AuthPopup
+              visible={showAuthPopup}
+              onClose={() => setShowAuthPopup(false)}
+              onLogin={() => {}}
+              onSignup={() => {}}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
