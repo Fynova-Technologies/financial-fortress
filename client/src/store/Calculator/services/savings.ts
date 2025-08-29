@@ -6,7 +6,10 @@ export const defaultSavingsData: SavingsData = {
 };
 
 // Helper function to normalize savings to monthly equivalent for projections
-function normalizeMonthlySavings(amount: number, contributionType: string): number {
+function normalizeMonthlySavings(
+  amount: number,
+  contributionType: string
+): number {
   switch (contributionType) {
     case "daily":
       return amount * 30.44; // Average days per month
@@ -22,7 +25,10 @@ function normalizeMonthlySavings(amount: number, contributionType: string): numb
 }
 
 // Helper function to denormalize monthly savings to specific contribution type
-function denormalizeSavings(monthlyAmount: number, contributionType: string): number {
+function denormalizeSavings(
+  monthlyAmount: number,
+  contributionType: string
+): number {
   switch (contributionType) {
     case "daily":
       return monthlyAmount / 30.44; // Average days per month
@@ -45,9 +51,10 @@ export function calculateSavings(savingsData: SavingsData) {
     const current_date = new Date();
 
     // Calculate months remaining (for display purposes)
-    const monthsRemaining = Math.max(0,
+    const monthsRemaining = Math.max(
+      0,
       (target_date.getFullYear() - current_date.getFullYear()) * 12 +
-      (target_date.getMonth() - current_date.getMonth())
+        (target_date.getMonth() - current_date.getMonth())
     );
 
     const remainingAmount = Math.max(0, goal.targetAmount - goal.currentAmount);
@@ -68,34 +75,37 @@ export function calculateSavings(savingsData: SavingsData) {
         periodsRemaining = Math.max(1, monthsRemaining);
         break;
       case "quarterly":
-        periodsRemaining = Math.max(
-          1,
-          Math.ceil(monthsRemaining / 3)
-        );
+        periodsRemaining = Math.max(1, Math.ceil(monthsRemaining / 3));
         break;
       case "annually":
-        periodsRemaining = Math.max(
-          1,
-          Math.ceil(monthsRemaining / 12)
-        );
+        periodsRemaining = Math.max(1, Math.ceil(monthsRemaining / 12));
         break;
     }
 
     // Calculate needed contribution per period based on contribution type
-    const neededContribution = periodsRemaining > 0 ? remainingAmount / periodsRemaining : 0;
-    
+    const neededContribution =
+      periodsRemaining > 0 ? remainingAmount / periodsRemaining : 0;
+
     // User's actual contribution (already in the selected type)
     const userContribution = moneySavings;
     const isAchievable = userContribution >= neededContribution;
 
     // Calculate monthly equivalent for projection calculations
-    const monthlyNeeded = denormalizeSavings(neededContribution, goal.contributionType);
-    const monthlyUserContribution = normalizeMonthlySavings(userContribution, goal.contributionType);
+    const monthlyNeeded = denormalizeSavings(
+      neededContribution,
+      goal.contributionType
+    );
+    const monthlyUserContribution = normalizeMonthlySavings(
+      userContribution,
+      goal.contributionType
+    );
 
     // Calculate expected completion date based on current contribution rate
     let expectedCompletionDate = new Date(current_date);
     if (monthlyUserContribution > 0 && remainingAmount > 0) {
-      const monthsToCompletion = Math.ceil(remainingAmount / monthlyUserContribution);
+      const monthsToCompletion = Math.ceil(
+        remainingAmount / monthlyUserContribution
+      );
       expectedCompletionDate.setMonth(
         current_date.getMonth() + monthsToCompletion
       );
@@ -105,8 +115,29 @@ export function calculateSavings(savingsData: SavingsData) {
       expectedCompletionDate = new Date("2099-12-31");
     }
 
-    const progressPercentage = goal.targetAmount > 0 ? 
-      Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
+    const progressPercentage =
+      goal.targetAmount > 0
+        ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100)
+        : 0;
+
+    let status: "completed" | "onTrack" | "offTrack" | "overdue" = "offTrack";
+
+    // If fully funded
+    if (remainingAmount <= 0) {
+      status = "completed";
+    }
+    // If still time left, user contribution is enough
+    else if (isAchievable && monthsRemaining > 0) {
+      status = "onTrack";
+    }
+    // If target date has passed and goal not completed
+    else if (monthsRemaining <= 0 && remainingAmount > 0) {
+      status = "overdue";
+    }
+    // Otherwise not achievable with current savings rate
+    else {
+      status = "offTrack";
+    }
 
     return {
       ...goal,
@@ -117,10 +148,13 @@ export function calculateSavings(savingsData: SavingsData) {
       userContribution,
       monthlyUserContribution,
       isAchievable,
-      expectedCompletionDate: expectedCompletionDate.toISOString().split("T")[0],
+      expectedCompletionDate: expectedCompletionDate
+        .toISOString()
+        .split("T")[0],
       progressPercentage,
       isOnTrack: isAchievable && monthsRemaining > 0 && remainingAmount > 0,
       isCompleted: remainingAmount <= 0,
+      status,
     };
   });
 
@@ -136,24 +170,25 @@ export function calculateSavings(savingsData: SavingsData) {
     const date = new Date(today);
     date.setMonth(today.getMonth() + month);
 
-    const goalsData = goalResults?.map((goal) => {
-      let projectedAmount = goal.currentAmount;
-      
-      if (month > 0 && !goal.isCompleted) {
-        // Calculate projected amount based on monthly contribution
-        const monthlyContrib = goal.monthlyUserContribution;
-        projectedAmount = Math.min(
-          goal.targetAmount,
-          goal.currentAmount + (monthlyContrib * month)
-        );
-      }
-      
-      return { 
-        id: goal.id, 
-        name: goal.name, 
-        amount: Math.round(projectedAmount * 100) / 100 
-      };
-    }) || [];
+    const goalsData =
+      goalResults?.map((goal) => {
+        let projectedAmount = goal.currentAmount;
+
+        if (month > 0 && !goal.isCompleted) {
+          // Calculate projected amount based on monthly contribution
+          const monthlyContrib = goal.monthlyUserContribution;
+          projectedAmount = Math.min(
+            goal.targetAmount,
+            goal.currentAmount + monthlyContrib * month
+          );
+        }
+
+        return {
+          id: goal.id,
+          name: goal.name,
+          amount: Math.round(projectedAmount * 100) / 100,
+        };
+      }) || [];
 
     chartData.push({
       month,
@@ -163,14 +198,20 @@ export function calculateSavings(savingsData: SavingsData) {
   }
 
   // Calculate totals
-  const totalSaved = savingsGoals?.reduce((sum, goal) => sum + goal.currentAmount, 0) || 0;
-  const totalTarget = savingsGoals?.reduce((sum, goal) => sum + goal.targetAmount, 0) || 0;
-  
+  const totalSaved =
+    savingsGoals?.reduce((sum, goal) => sum + goal.currentAmount, 0) || 0;
+  const totalTarget =
+    savingsGoals?.reduce((sum, goal) => sum + goal.targetAmount, 0) || 0;
+
   // Calculate total monthly needed across all goals
-  const totalMonthlyNeeded = goalResults?.reduce((sum, goal) => {
-    if (goal.isCompleted) return sum;
-    return sum + normalizeMonthlySavings(goal.neededContribution, goal.contributionType);
-  }, 0) || 0;
+  const totalMonthlyNeeded =
+    goalResults?.reduce((sum, goal) => {
+      if (goal.isCompleted) return sum;
+      return (
+        sum +
+        normalizeMonthlySavings(goal.neededContribution, goal.contributionType)
+      );
+    }, 0) || 0;
 
   return {
     goalResults,

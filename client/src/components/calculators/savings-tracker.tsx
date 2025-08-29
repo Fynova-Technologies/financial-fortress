@@ -27,6 +27,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { SavingsGoal } from "@/types";
+import toast from "react-hot-toast";
 
 export const SavingsTracker = () => {
   const {
@@ -123,6 +124,7 @@ export const SavingsTracker = () => {
 
   const handleAddGoal = () => {
     if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -132,7 +134,11 @@ export const SavingsTracker = () => {
       targetAmount: newGoal.targetAmount || 0,
       currentAmount: newGoal.currentAmount || 0,
       targetDate: newGoal.targetDate || "",
-      contributionType: newGoal.contributionType as 'daily' | 'monthly' | 'quarterly' | 'annually',
+      contributionType: newGoal.contributionType as
+        | "daily"
+        | "monthly"
+        | "quarterly"
+        | "annually",
     };
 
     if (editingGoalId) {
@@ -165,11 +171,21 @@ export const SavingsTracker = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === "targetDate") {
+      const today = new Date().toISOString().split("T")[0];
+      const validDate = value < today ? today : value; // clamp to today
+      setNewGoal({ ...newGoal, [name]: validDate });
+      return;
+    }
+
     setNewGoal({
       ...newGoal,
       [name]:
         name === "targetAmount" || name === "currentAmount"
-          ? parseFloat(value) || 0
+          ? value === ""
+            ? ""
+            : parseFloat(value)
           : value,
     });
   };
@@ -209,11 +225,16 @@ export const SavingsTracker = () => {
 
   const getContributionLabel = (contributionType: string) => {
     switch (contributionType) {
-      case "daily": return "Daily";
-      case "monthly": return "Monthly";
-      case "quarterly": return "Quarterly";
-      case "annually": return "Annual";
-      default: return "Monthly";
+      case "daily":
+        return "Daily";
+      case "monthly":
+        return "Monthly";
+      case "quarterly":
+        return "Quarterly";
+      case "annually":
+        return "Annual";
+      default:
+        return "Monthly";
     }
   };
 
@@ -274,10 +295,12 @@ export const SavingsTracker = () => {
                           <button
                             className="mt-2 py-1.5 px-1.5 rounded-md bg-gray-300 dark:text-white dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
                             onClick={() => {
-                              const extra = parseFloat(prompt("How much did you save?") || "0");
-                              if (extra > 0){
+                              const extra = parseFloat(
+                                prompt("How much did you save?") || "0"
+                              );
+                              if (extra > 0) {
                                 updateSavingsGoal(goal.id, {
-                                  ...goal, 
+                                  ...goal,
                                   currentAmount: goal.currentAmount + extra,
                                 });
                               }
@@ -294,33 +317,36 @@ export const SavingsTracker = () => {
                             {formatCurrency(goal.currentAmount)} of{" "}
                             {formatCurrency(goal.targetAmount)}
                           </span>
-                        <span
-                          className={`font-medium ${
-                            goal.status === "completed"
-                              ? "text-green-500"
-                              : goal.status === "onTrack"
-                              ? "text-success"
-                              : goal.status === "offTrack"
-                              ? "text-yellow-500"
-                              : "text-red-500"
-                          }`}
-                        >
+                          <span
+                            className={`font-medium ${
+                              goal.status === "completed"
+                                ? "text-green-500"
+                                : goal.status === "onTrack"
+                                ? "text-success"
+                                : goal.status === "offTrack"
+                                ? "text-yellow-500"
+                                : "text-red-500"
+                            }`}
+                          >
                             {goal.progressPercentage.toFixed(0)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                           <div
-                          className={`h-2 rounded-full ${
-                            goal.status === "completed"
-                              ? "bg-green-500"
-                              : goal.status === "onTrack"
-                              ? "bg-success"
-                              : goal.status === "offTrack"
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                          }`}
-                            style={{ 
-                              width: `${Math.min(100, goal.progressPercentage)}%` 
+                            className={`h-2 rounded-full ${
+                              goal.status === "completed"
+                                ? "bg-green-500"
+                                : goal.status === "onTrack"
+                                ? "bg-success"
+                                : goal.status === "offTrack"
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{
+                              width: `${Math.min(
+                                100,
+                                goal.progressPercentage
+                              )}%`,
                             }}
                           ></div>
                         </div>
@@ -335,7 +361,8 @@ export const SavingsTracker = () => {
                         </div>
                         <div>
                           <span className="block">
-                            {getContributionLabel(goal.contributionType)} Needed:
+                            {getContributionLabel(goal.contributionType)}{" "}
+                            Needed:
                           </span>
                           <span
                             className={`font-medium ${
@@ -347,30 +374,32 @@ export const SavingsTracker = () => {
                         </div>
                         <div>
                           <span className="block">Status:</span>
-                        <span
-                          className={`font-medium ${
-                            goal.status === "completed"
-                              ? "text-green-500"
+                          <span
+                            className={`font-medium ${
+                              goal.status === "completed"
+                                ? "text-green-500"
+                                : goal.status === "onTrack"
+                                ? "text-success"
+                                : goal.status === "offTrack"
+                                ? "text-yellow-500"
+                                : "text-red-500"
+                            }`}
+                          >
+                            {goal.status === "completed"
+                              ? "Completed"
                               : goal.status === "onTrack"
-                              ? "text-success"
+                              ? "On track"
                               : goal.status === "offTrack"
-                              ? "text-yellow-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {goal.status === "completed"
-                            ? "Completed"
-                            : goal.status === "onTrack"
-                            ? "On track"
-                            : goal.status === "offTrack"
-                            ? "Off track"
-                            : "Overdue"}
+                              ? "Off track"
+                              : "Overdue"}
                           </span>
                         </div>
                         <div>
                           <span className="block">Expected Completion:</span>
                           <span className="font-medium text-gray-800 dark:text-gray-200">
-                            {new Date(goal.expectedCompletionDate).toLocaleDateString()}
+                            {new Date(
+                              goal.expectedCompletionDate
+                            ).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -414,9 +443,12 @@ export const SavingsTracker = () => {
                   </p>
                   <p className="text-2xl font-bold text-success">
                     {results.totalTarget > 0
-                      ? ((results.totalSaved / results.totalTarget) * 100).toFixed(0)
-                      : 0
-                    }%
+                      ? (
+                          (results.totalSaved / results.totalTarget) *
+                          100
+                        ).toFixed(0)
+                      : 0}
+                    %
                   </p>
                 </div>
               </div>
@@ -476,18 +508,22 @@ export const SavingsTracker = () => {
                       </span>
                     </li>
                   )}
-                  {results.goalResults?.some((goal: any) => !goal.isOnTrack && !goal.isCompleted) && (
+                  {results.goalResults?.some(
+                    (goal: any) => !goal.isOnTrack && !goal.isCompleted
+                  ) && (
                     <li className="flex items-start">
                       <i className="fas fa-exclamation-triangle text-warning mt-1 mr-2"></i>
                       <span>
-                        Some goals are off track. Consider adjusting target dates or increasing contributions.
+                        Some goals are off track. Consider adjusting target
+                        dates or increasing contributions.
                       </span>
                     </li>
                   )}
                   <li className="flex items-start">
                     <i className="fas fa-lightbulb text-blue-500 mt-1 mr-2"></i>
                     <span>
-                      Automating your savings can help ensure consistent progress toward your goals.
+                      Automating your savings can help ensure consistent
+                      progress toward your goals.
                     </span>
                   </li>
                 </ul>
@@ -527,103 +563,119 @@ export const SavingsTracker = () => {
               Enter your savings goal details below.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Goal Name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="e.g., Emergency Fund, Vacation, New Car"
-                value={newGoal.name}
-                onChange={handleInputChange}
-              />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAddGoal();
+            }}
+          >
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Goal Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="e.g., Emergency Fund, Vacation, New Car"
+                  value={newGoal.name}
+                  onChange={handleInputChange}
+                  maxLength={28}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="targetAmount">Target Amount ($)</Label>
+                <Input
+                  id="targetAmount"
+                  name="targetAmount"
+                  type="number"
+                  placeholder="10000"
+                  value={newGoal.targetAmount || ""}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="contributionType">Contribution Type</Label>
+                <select
+                  id="contributionType"
+                  name="contributionType"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  value={newGoal.contributionType || "monthly"}
+                  onChange={(e) =>
+                    setNewGoal({
+                      ...newGoal,
+                      contributionType: e.target.value as
+                        | "daily"
+                        | "monthly"
+                        | "quarterly"
+                        | "annually",
+                    })
+                  }
+                >
+                  <option value="daily">Daily</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="annually">Annually</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="contributionAmount">
+                  {getContributionLabel(newGoal.contributionType || "monthly")}{" "}
+                  Contribution ($)
+                </Label>
+                <Input
+                  id="contributionAmount"
+                  type="number"
+                  value={contributionAmount || ""}
+                  onChange={(e) =>
+                    setContributionAmount(parseFloat(e.target.value) || 0)
+                  }
+                  placeholder="800"
+                  className="w-full"
+                  min={0}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="currentAmount">Current Savings ($)</Label>
+                <Input
+                  id="currentAmount"
+                  name="currentAmount"
+                  type="number"
+                  placeholder="0"
+                  value={newGoal.currentAmount || ""}
+                  onChange={handleInputChange}
+                  min={0}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="targetDate">Target Date</Label>
+                <Input
+                  id="targetDate"
+                  name="targetDate"
+                  type="date"
+                  value={newGoal.targetDate}
+                  onChange={handleInputChange}
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                />
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="targetAmount">Target Amount ($)</Label>
-              <Input
-                id="targetAmount"
-                name="targetAmount"
-                type="number"
-                placeholder="10000"
-                value={newGoal.targetAmount || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="contributionType">Contribution Type</Label>
-              <select
-                id="contributionType"
-                name="contributionType"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={newGoal.contributionType || "monthly"}
-                onChange={(e) =>
-                  setNewGoal({
-                    ...newGoal,
-                    contributionType: e.target.value as
-                      | "daily"
-                      | "monthly"
-                      | "quarterly"
-                      | "annually",
-                  })
-                }
-              >
-                <option value="daily">Daily</option>
-                <option value="monthly">Monthly</option>
-                <option value="quarterly">Quarterly</option>
-                <option value="annually">Annually</option>
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="contributionAmount">
-                {getContributionLabel(newGoal.contributionType || "monthly")} Contribution ($)
-              </Label>
-              <Input
-                id="contributionAmount"
-                type="number"
-                value={contributionAmount || ""}
-                onChange={(e) => setContributionAmount(parseFloat(e.target.value) || 0)}
-                placeholder="800"
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="currentAmount">Current Savings ($)</Label>
-              <Input
-                id="currentAmount"
-                name="currentAmount"
-                type="number"
-                placeholder="0"
-                value={newGoal.currentAmount || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="targetDate">Target Date</Label>
-              <Input
-                id="targetDate"
-                name="targetDate"
-                type="date"
-                value={newGoal.targetDate}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
           <DialogFooter className="flex justify-end space-x-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-            >
+            <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button onClick={handleAddGoal}>
+            <Button onClick={handleAddGoal} type="submit">
               {editingGoalId ? "Save Changes" : "Add Goal"}
             </Button>
           </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
