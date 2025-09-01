@@ -8,7 +8,7 @@ import type {
 
 const router = express.Router();
 
-router.post("/emi-calculations", checkJwt, async (req: EmiRequest, res) => {
+router.post("/", checkJwt, async (req: EmiRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
@@ -33,7 +33,7 @@ router.post("/emi-calculations", checkJwt, async (req: EmiRequest, res) => {
   }
 });
 
-router.get("/emi-calculations", checkJwt, async (req: Auth0Request, res) => {
+router.get("/", checkJwt, async (req: Auth0Request, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });

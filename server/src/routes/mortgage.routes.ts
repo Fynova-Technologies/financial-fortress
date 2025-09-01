@@ -9,7 +9,7 @@ import type {
 const router = express.Router();
 
 /* Mortgage create/get */
-router.post("/mortgage-calculations", checkJwt, async (req: MortgageRequest, res) => {
+router.post("/", checkJwt, async (req: MortgageRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
@@ -46,7 +46,7 @@ router.post("/mortgage-calculations", checkJwt, async (req: MortgageRequest, res
   }
 });
 
-router.get("/mortgage-calculations", checkJwt, async (req: Auth0Request, res) => {
+router.get("/", checkJwt, async (req: Auth0Request, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });

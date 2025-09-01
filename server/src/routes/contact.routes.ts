@@ -16,7 +16,7 @@ const router = express.Router();
  *  - SMTP_PASS
  *  - CONTACT_RECEIVER (where to receive contact form emails)
  */
-router.post("/contact", async (req, res) => {
+router.post("/", async (req, res) => {
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {

@@ -8,7 +8,7 @@ import type {
 
 const router = express.Router();
 
-router.post("/salary-management", checkJwt, async (req: SalaryManagementRequest, res) => {
+router.post("/", checkJwt, async (req: SalaryManagementRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
@@ -33,7 +33,7 @@ router.post("/salary-management", checkJwt, async (req: SalaryManagementRequest,
   }
 });
 
-router.get("/salary-management", checkJwt, async (req: Auth0Request, res) => {
+router.get("/", checkJwt, async (req: Auth0Request, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });

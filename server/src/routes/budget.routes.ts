@@ -7,7 +7,7 @@ import storage from "../storage/index.js";
 const router = express.Router();
 
 /* Create budget */
-router.post("/budgets", checkJwt, async (req: BudgetRequest, res) => {
+router.post("/", checkJwt, async (req: BudgetRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     console.log("post auth0 id: ", auth0_id);
@@ -36,7 +36,7 @@ router.post("/budgets", checkJwt, async (req: BudgetRequest, res) => {
 });
 
 /* Get budgets for user */
-router.get("/budgets", checkJwt, async (req: Auth0Request, res) => {
+router.get("/", checkJwt, async (req: Auth0Request, res) => {
   try {
     const auth0_id = req.auth?.sub;
     console.log("get auth0 id:", auth0_id);

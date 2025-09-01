@@ -870,15 +870,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount routers under /api
   // Keep route paths consistent with previous implementation (e.g., /api/register => /api/auth/register)
   app.use("/api", authRouter); // register, protected, profile
-  app.use("/api", budgetsRouter);
-  app.use("/api", mortgageRouter);
-  app.use("/api", emiRouter);
-  app.use("/api", retirementRouter);
-  app.use("/api", roiRouter);
-  app.use("/api", SalaryManagementRouter);
-  app.use("/api", savingsRouter);
-  app.use("/api", contactRouter);
-  app.use("/api", checkEmailRouter);
+  app.use("/api/budgets", budgetsRouter);
+  app.use("/api/mortgage-calculations", mortgageRouter);
+  app.use("/api/emi-calculations", emiRouter);
+  app.use("/api/retirement-calculations", retirementRouter);
+  app.use("/api/roi-calculations", roiRouter);
+  app.use("/api/salary-management", SalaryManagementRouter);
+  app.use("/api/savings-goals", savingsRouter);
+  app.use("/api/contact", contactRouter);
+  app.use("/api/auth", checkEmailRouter);
 
   // catch-all for 404 on /api
   app.use("/api/*", (_req, res) => {

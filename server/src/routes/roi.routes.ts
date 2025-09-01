@@ -8,7 +8,7 @@ import type {
 
 const router = express.Router();
 
-router.post("/roi-calculations", checkJwt, async (req: RoiRequest, res) => {
+router.post("/", checkJwt, async (req: RoiRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
@@ -41,7 +41,7 @@ router.post("/roi-calculations", checkJwt, async (req: RoiRequest, res) => {
   }
 });
 
-router.get("/roi-calculations", checkJwt, async (req: Auth0Request, res) => {
+router.get("/", checkJwt, async (req: Auth0Request, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });

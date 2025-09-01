@@ -2,15 +2,13 @@ import pkg from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from '../models/index.js';
 
+console.log("bibash");
+
 const { Pool } = pkg;
 
-// setup postgresql connection pool
 const pool = new Pool ({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'financial-fortress',
-    password: 'bibash',
-    port: 5432,
+    connectionString:'postgresql://financial_table_2mo1_user:UwWuXTlkkIpIIM37RU9tJeqEZD9wBiDC@dpg-d2qnnuv5r7bs73avmuq0-a.oregon-postgres.render.com/financial_table_2mo1',
+    ssl: { rejectUnauthorized: false},
 })
 
 // test connection
@@ -23,3 +21,4 @@ pool.on('error', (err)=>{
 })
 
 export const db = drizzle(pool, { schema });    
+

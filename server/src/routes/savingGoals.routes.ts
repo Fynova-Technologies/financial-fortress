@@ -6,7 +6,7 @@ import type { SavingsGoalArrayRequest, Auth0Request } from "../types";
 
 const router = express.Router();
 
-router.post("/savings-goals", checkJwt, async (req: SavingsGoalArrayRequest, res) => {
+router.post("/", checkJwt, async (req: SavingsGoalArrayRequest, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });
@@ -49,7 +49,7 @@ router.post("/savings-goals", checkJwt, async (req: SavingsGoalArrayRequest, res
   }
 });
 
-router.get("/savings-goals", checkJwt, async (req: Auth0Request, res) => {
+router.get("/", checkJwt, async (req: Auth0Request, res) => {
   try {
     const auth0_id = req.auth?.sub;
     if (!auth0_id) return res.status(401).json({ error: "Unauthorized" });

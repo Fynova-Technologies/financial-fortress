@@ -52,8 +52,9 @@ export class DatabaseStorage implements IStorage {
     return rows[0];
   }
 
-  async getUserByAuth0Id(auth0Id: string): Promise<User | undefined> {
-    const rows = await db.select().from(users).where(eq(users.auth0_id, auth0Id));
+  async getUserByAuth0Id(auth0_id: string): Promise<User | undefined> {
+    console.log("Looking for user in DB:", auth0_id);
+    const rows = await db.select().from(users).where(eq(users.auth0_id, auth0_id));
     return rows[0];
   }
 
@@ -63,7 +64,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    console.log("Inserting user:", insertUser);
     const result = await db.insert(users).values(insertUser).returning();
+    console.log("Insert result:", result);
     if (!result || result.length === 0) throw new Error("Failed to create user");
     return result[0];
   }

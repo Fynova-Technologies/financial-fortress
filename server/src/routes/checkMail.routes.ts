@@ -4,7 +4,7 @@ import { getManagementToken } from "../utils/auth.js";
 
 const router = express.Router();
 
-router.get("/auth/check-email-verified-public", async (req, res) => {
+router.get("/check-email-verified-public", async (req, res) => {
   try {
     const userId = (req.query.user_id as string) || "";
     if (!userId) {
