@@ -44,7 +44,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
 
     // Initialize with base categories
     budgetData.expenseCategories.forEach((cat) => {
-      categoryTotals.set(cat.name, 0);
+      categoryTotals.set(cat.category_id, 0);
     });
 
     // Sum up expenses by category
@@ -56,7 +56,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     // Return categories with calculated amounts
     return budgetData.expenseCategories.map((cat) => ({
       ...cat,
-      amount: categoryTotals.get(cat.name) || 0,
+      amount: categoryTotals.get(cat.category_id) || 0,
     }));
   }, [budgetData.expenseCategories, budgetData.expenses]);
 
@@ -72,7 +72,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [newExpense, setNewExpense] = useState<Partial<Expense>>({
     id: "",
     description: "",
-    category: budgetData.expenseCategories[0]?.name || "",
+    category: budgetData.expenseCategories[0]?.category_id || "",
     date: new Date().toISOString().split("T")[0],
     amount: 0,
   });
@@ -85,68 +85,85 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
   const windowWidth = useWindowWidth();
   const outerRadius = window.innerWidth >= 768 ? 80 : 50;
-
   const { getAccessTokenSilently, user } = useAuth0();
 
-  // Load budget data from server
+  useEffect(() => {
+    if (budgetData.expenseCategories.length > 0) {
+      setNewExpense((prev) => ({
+        ...prev,
+        category: prev.category || budgetData.expenseCategories[0].category_id,
+      }));
+    }
+  }, [budgetData.expenseCategories]);
+
   useEffect(() => {
     const loadBudget = async () => {
       try {
-        if (!user || !getAccessTokenSilently) {
-          return;
-        }
-
+        if (!user || !getAccessTokenSilently) return;
         const token = await getAccessTokenSilently();
         const res = await fetch("http://localhost:5000/api/budgets", {
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include",
         });
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const budgets = await res.json();
-        console.log("Loaded budgets:", budgets);
-
         if (budgets && budgets.length > 0) {
-          const latestBudget = budgets[0];
+          const latest = budgets[0];
 
-          updateBudgetData({
-            totalIncome: Number(latestBudget.total_income) || 0,
-            expenseCategories: latestBudget.expense_categories || [],
-            expenses: latestBudget.expenses || [],
+          // Map server categories to frontend shape
+          const categories = (latest.expense_categories || []).map(
+            (c: any) => ({
+              id: c.category_id || String(c.id),
+              category_id: c.category_id || String(c.id),
+              name: c.name || "",
+              color: c.color || "#3B82F6",
+              amount: Number(c.amount) || 0,
+            })
+          );
+
+          // Map DB numeric category FK -> category_id for expenses if needed
+          const dbIdToUuid = new Map<number, string>();
+          (latest.expense_categories || []).forEach((c: any) => {
+            if (c.id != null)
+              dbIdToUuid.set(Number(c.id), c.category_id || String(c.id));
           });
 
-          console.log("Budget data loaded successfully");
+          const expenses = (latest.expenses || []).map((e: any) => ({
+            id: e.expense_id || String(e.id),
+            category: dbIdToUuid.get(Number(e.category_id)) || e.category || "",
+            amount: Number(e.amount) || 0,
+            date: e.date ? new Date(e.date).toISOString() : "",
+            description: e.description || "",
+          }));
+
+          updateBudgetData({
+            totalIncome: Number(latest.total_income) || 0,
+            expenseCategories: categories.length
+              ? categories
+              : budgetData.expenseCategories,
+            expenses,
+          });
         } else {
-          console.log("No existing budgets found");
+          // nothing on server -> keep defaults (already seeded by provider)
           updateBudgetData({
             totalIncome: 0,
-            expenseCategories: [],
+            expenseCategories: budgetData.expenseCategories.length
+              ? budgetData.expenseCategories
+              : [],
             expenses: [],
           });
         }
-      } catch (error) {
-        console.error("Failed to load saved budget:", error);
+      } catch (err) {
+        console.error("Failed to load budget:", err);
       }
     };
-
-    if (user) {
-      loadBudget();
-    }
-  }, [user, getAccessTokenSilently]);
+    if (user) loadBudget();
+  }, [user, getAccessTokenSilently]); // eslint-disable-line
 
   const handleAddExpense = () => {
-    if (
-      !newExpense.description ||
-      !newExpense.category ||
-      !newExpense.date ||
-      !newExpense.amount
-    ) {
+    if (!newExpense.description || !newExpense.category || !newExpense.amount) {
       return alert("Please fill in all fields.");
     }
-
     const newId = Date.now().toString();
     addExpense({
       id: newId,
@@ -155,11 +172,10 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
       date: newExpense.date || "",
       amount: newExpense.amount || 0,
     });
-
     setNewExpense({
       id: "",
       description: "",
-      category: budgetData.expenseCategories[0]?.name || "",
+      category: budgetData.expenseCategories[0]?.category_id || "",
       date: new Date().toISOString().split("T")[0],
       amount: 0,
     });
@@ -172,23 +188,28 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     const { name, value } = e.target;
     setNewExpense({
       ...newExpense,
-      [name]: name === "amount" ? parseFloat(value) : value,
+      [name]:
+        name === "amount" ? (value === "" ? 0 : parseFloat(value)) : value,
     });
   };
 
   const filteredExpenses = budgetData?.expenses?.filter((expense) => {
-    const matchesSearch =
-      expense.description?.trim() ??
-      "".toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (expense.description?.trim() || "")
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
     const matchesCategory =
       categoryFilter === "All Categories" ||
-      expense.category === categoryFilter;
+      budgetData.expenseCategories.find(
+        (cat) => cat.category_id === expense.category
+      )?.name === categoryFilter;
+
     return matchesSearch && matchesCategory;
   });
 
-  const getExpenseCategoryColor = (categoryName: string) => {
+  const getExpenseCategoryColor = (categoryId: string) => {
     const category = budgetData.expenseCategories.find(
-      (cat) => cat.name === categoryName
+      (cat) => cat.category_id === categoryId
     );
     return category ? category.color : "#718096";
   };
@@ -636,17 +657,22 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 id="category"
                 name="category"
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                value={newExpense.category || ""}
+                value={
+                  newExpense.category ||
+                  budgetData.expenseCategories[0]?.category_id ||
+                  ""
+                }
                 onChange={handleInputChange}
               >
-                {budgetData?.expenseCategories?.length === 0 && (
+                {budgetData.expenseCategories.length === 0 ? (
                   <option disabled>No categories available</option>
+                ) : (
+                  budgetData.expenseCategories.map((cat) => (
+                    <option key={cat.id} value={cat.category_id}>
+                      {cat.name}
+                    </option>
+                  ))
                 )}
-                {budgetData?.expenseCategories?.map((category) => (
-                  <option key={category.id} value={category.name}>
-                    {category.name}
-                  </option>
-                ))}
               </select>
             </div>
 

@@ -29,12 +29,12 @@ import type {
 export interface CreateBudgetRequest {
   user_id: number;
   name: string;
-  total_income: string;
+  total_income: number;
   expense_categories?: Array<{
     id: string; // frontend category id
     name: string;
     color: string;
-    amount: string;
+    amount: number;
   }>;
   expenses?: Array<{
     id: string; // frontend expense id

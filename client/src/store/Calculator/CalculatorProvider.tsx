@@ -104,18 +104,12 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
 
   // ---------- Budget ----------
   const updateBudgetData = (data: Partial<BudgetData>) => setBudgetData((p) => ({ ...p, ...data }));
-
   const addExpenseCategory = (category: ExpenseCategory) => setBudgetData((prev) => addExpenseCategoryImpl(prev, category));
-
   const updateExpenseCategory = (id: string, category: Partial<ExpenseCategory>) =>
     setBudgetData((prev) => updateExpenseCategoryImpl(prev, id, category));
-
   const deleteExpenseCategory = (id: string) => setBudgetData((prev) => deleteExpenseCategoryImpl(prev, id));
-
   const addExpense = (expense: Expense) => setBudgetData((prev) => addExpenseImpl(prev, expense));
-
   const updateExpense = (id: string, expense: Partial<Expense>) => setBudgetData((prev) => updateExpenseImpl(prev, id, expense));
-
   const deleteExpense = (id: string) => setBudgetData((prev) => deleteExpenseImpl(prev, id));
 
   // ---------- Mortgage ----------

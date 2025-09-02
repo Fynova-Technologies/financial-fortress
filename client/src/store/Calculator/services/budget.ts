@@ -5,19 +5,24 @@ import {
   ExpenseCategory,
 } from "../types";
 
+// services/budget.ts (or a new constants file)
+export const DEFAULT_CATEGORIES: ExpenseCategory[] = [
+  { id: "cat-housing",       category_id: "cat-housing",       name: "Housing",        amount: 0, color: "#3B82F6" },
+  { id: "cat-food",          category_id: "cat-food",          name: "Food",           amount: 0, color: "#10B981" },
+  { id: "cat-transport",     category_id: "cat-transport",     name: "Transportation", amount: 0, color: "#F59E0B" },
+  { id: "cat-utilities",     category_id: "cat-utilities",     name: "Utilities",      amount: 0, color: "#EF4444" },
+  { id: "cat-entertainment", category_id: "cat-entertainment", name: "Entertainment",  amount: 0, color: "#8B5CF6" },
+  { id: "cat-other",         category_id: "cat-other",         name: "Other",          amount: 0, color: "#EC4899" },
+];
+
+// defaultBudgetData
 export const defaultBudgetData: BudgetData = {
   totalIncome: 0,
   totalExpenses: 0,
-  expenseCategories: [
-    { id: "1", name: "Housing", amount: 0, color: "#3B82F6" },
-    { id: "2", name: "Food", amount: 0, color: "#10B981" },
-    { id: "3", name: "Transportation", amount: 0, color: "#F59E0B" },
-    { id: "4", name: "Utilities", amount: 0, color: "#EF4444" },
-    { id: "5", name: "Entertainment", amount: 0, color: "#8B5CF6" },
-    { id: "6", name: "Other", amount: 0, color: "#EC4899" },
-  ],
+  expenseCategories: DEFAULT_CATEGORIES.slice(), // ✅ put them back, as IDs (strings)
   expenses: [],
 };
+
 
 /* Mutation helpers used inside the provider */
 export const addExpenseCategoryImpl = (
@@ -50,26 +55,10 @@ export const deleteExpenseCategoryImpl = (
 
 export const addExpenseImpl = (prev: BudgetData, expense: Expense): BudgetData => {
   const updatedExpenses = [...prev.expenses, expense];
-  const existingCategory = prev.expenseCategories.find(
-    (cat) => cat.name === expense.category
-  );
-
-  let updatedCategories = prev.expenseCategories;
-  if (existingCategory) {
-    updatedCategories = updatedCategories.map((cat) =>
-      cat.name === expense.category ? { ...cat, amount: cat.amount + expense.amount } : cat
-    );
-  } else {
-    updatedCategories = [
-      ...updatedCategories,
-      { id: crypto.randomUUID(), name: expense.category, amount: expense.amount, color: "#3B82F6" },
-    ];
-  }
-
   return {
     ...prev,
     expenses: updatedExpenses,
-    expenseCategories: updatedCategories,
+
     totalExpenses: prev.totalExpenses + expense.amount,
   };
 };

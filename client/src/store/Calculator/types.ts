@@ -4,6 +4,7 @@ export interface ExpenseCategory {
   name: string;
   amount: number;
   color?: string;
+  category_id: string;
 }
 
 export interface Expense {

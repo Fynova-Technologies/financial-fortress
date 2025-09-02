@@ -1,13 +1,4 @@
-// import dotenv from "dotenv";
-// dotenv.config();
-
 export async function getManagementToken(): Promise<string> {
-  
-  // if (!process.env.AUTH0_M2M_CLIENT_ID || !process.env.AUTH0_M2M_CLIENT_SECRET) {
-  //   throw new Error(
-  //     "Missing AUTH0_M2M_CLIENT_ID or AUTH0_M2M_CLIENT_SECRET in environment variables"
-  //   );
-  // }
 
   const response = await fetch(`https://dev-l0cnkmnrn4reomjc.us.auth0.com/oauth/token`,
     {

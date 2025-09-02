@@ -4,7 +4,6 @@ export const useRegisterUser = () => {
   const { getAccessTokenSilently, user, isAuthenticated, isLoading } = useAuth0();
 
   const registerUser = async () => {
-    console.log("bibash");
     if (isLoading) {
       console.warn("Auth0 is still loading—try again later.");
       return;
@@ -17,7 +16,7 @@ export const useRegisterUser = () => {
     try {
       const token = await getAccessTokenSilently();
 
-      const res = await fetch("http://localhost:5000/api/register", {
+      const res = await fetch("http://localhost:5000/api/users", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
