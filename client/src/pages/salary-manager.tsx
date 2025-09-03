@@ -35,7 +35,7 @@ export default function SalaryManager() {
         period: salaryData.period,
       };
 
-      const res = await fetch("http://localhost:5000/api/salary-management", {
+      const res = await fetch("http://financial-fortress.onrender.com/api/salary-management", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -101,7 +101,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
       try {
         if (!user || !getAccessTokenSilently) return;
         const token = await getAccessTokenSilently();
-        const res = await fetch("http://localhost:5000/api/budgets", {
+        const res = await fetch("http://financial-fortress.onrender.com/api/budgets", {
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include",
         });

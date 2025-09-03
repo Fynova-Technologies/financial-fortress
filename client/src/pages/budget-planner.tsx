@@ -34,7 +34,7 @@ export default function BudgetPlanner() {
         expenses: budgetData.expenses,
       };
 
-      const res = await fetch("http://localhost:5000/api/budgets", {
+      const res = await fetch("http://financial-fortress.onrender.com/api/budgets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

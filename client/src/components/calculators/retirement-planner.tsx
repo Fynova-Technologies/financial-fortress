@@ -30,7 +30,7 @@ export const RetirementPlanner = (() => {
         const token = await getAccessTokenSilently();
         console.log("access token granted Retirement Planner: ", token);
 
-        const res = await fetch("http://localhost:5000/api/retirement-calculations", {
+        const res = await fetch("http://financial-fortress.onrender.com/api/retirement-calculations", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

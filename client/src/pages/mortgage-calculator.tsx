@@ -40,7 +40,7 @@ export default function MortgageCalculator() {
       };
 
       const res = await fetch(
-        "http://localhost:5000/api/mortgage-calculations",
+        "http://financial-fortress.onrender.com/api/mortgage-calculations",
         {
           method: "POST",
           headers: {

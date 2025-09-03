@@ -44,7 +44,7 @@ export const EMICalculator = forwardRef<HTMLDivElement>((_, ref) => {
         const token = await getAccessTokenSilently();
         console.log("access token granted EMI: ", token);
 
-        const res = await fetch("http://localhost:5000/api/emi-calculations", {
+        const res = await fetch("http://financial-fortress.onrender.com/api/emi-calculations", {
           // method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,

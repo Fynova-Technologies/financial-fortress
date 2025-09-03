@@ -37,7 +37,7 @@ export default function VerifyPage() {
       attemptsRef.current++;
       try {
         const resp = await fetch(
-          `http://localhost:5000/api/check-email-verified-public?user_id=${encodeURIComponent(
+          `http://financial-fortress.onrender.com/api/check-email-verified-public?user_id=${encodeURIComponent(
             userId
           )}`
         );

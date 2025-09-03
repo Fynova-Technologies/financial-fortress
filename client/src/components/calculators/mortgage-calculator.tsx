@@ -39,7 +39,7 @@ export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
         const token = await getAccessTokenSilently();
         console.log("access token granted Mortgage Calculator: ", token);
         const res = await fetch(
-          "http://localhost:5000/api/mortgage-calculations",
+          "http://financial-fortress.onrender.com/api/mortgage-calculations",
           {
             headers: {
               "Content-Type": "application/json",

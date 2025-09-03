@@ -31,7 +31,7 @@ export const ROICalculator = (() => {
         const token = await getAccessTokenSilently();
         console.log("access token granted ROI: ", token);
 
-        const res = await fetch("http://localhost:5000/api/roi-calculations", {
+        const res = await fetch("http://financial-fortress.onrender.com/api/roi-calculations", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

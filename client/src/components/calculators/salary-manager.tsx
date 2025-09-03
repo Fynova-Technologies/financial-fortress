@@ -42,7 +42,7 @@ export const SalaryManager = forwardRef<HTMLDivElement>((_, ref) => {
         const token = await getAccessTokenSilently();
         console.log("access token granted Salary Manager: ", token);
 
-        const res = await fetch("http://localhost:5000/api/salary-management", {
+        const res = await fetch("http://financial-fortress.onrender.com/api/salary-management", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

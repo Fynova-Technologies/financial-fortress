@@ -38,7 +38,7 @@ export default function RetirementPlanner() {
       };
 
       const res = await fetch(
-        "http://localhost:5000/api/retirement-calculations",
+        "http://financial-fortress.onrender.com/api/retirement-calculations",
         {
           method: "POST",
           headers: {
