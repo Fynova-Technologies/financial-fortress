@@ -17,4 +17,5 @@ export default defineConfig({
     database: "fynova_db",
     ssl: { rejectUnauthorized: false },
   },
+  strict: false,
 });
