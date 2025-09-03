@@ -20,7 +20,7 @@ const { Pool } = pkg;
 
 const pool = new Pool({
   user: 'fynova_db_user',
-  host: 'dpg-d2rtainfte5s739atuvg-a.onrender.com',
+  host: 'dpg-d2rtainfte5s739atuvg-a.oregon-postgres.render.com',
   database: 'fynova_db',
   password: 'mj2r0eglsJDd6N3OOk89REIc2fWXTIgU',
   port: 5432,
