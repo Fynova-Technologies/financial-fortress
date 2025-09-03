@@ -14,22 +14,23 @@ const testPool = new Pool ({
 })
 
 
-testPool.query("SELECT NOW()")
-  .then(res => console.log("DB reachable, time:", res.rows[0]))
-  .catch(err => console.error("Cannot connect to DB:", err));
-// const pool = new Pool ({
-//     connectionString:'postgresql://financial_table_2mo1_user:UwWuXTlkkIpIIM37RU9tJeqEZD9wBiDC@dpg-d2qnnuv5r7bs73avmuq0-a.oregon-postgres.render.com/financial_table_2mo1',
-//     ssl: { rejectUnauthorized: false},
-// })
+// testPool.query("SELECT NOW()")
+//   .then(res => console.log("DB reachable, time:", res.rows[0]))
+//   .catch(err => console.error("Cannot connect to DB:", err));
+
+const pool = new Pool ({
+    connectionString:'postgresql://fynova_db_user:mj2r0eglsJDd6N3OOk89REIc2fWXTIgU@dpg-d2rtainfte5s739atuvg-a/fynova_db',
+    ssl: { rejectUnauthorized: false},
+})
 
 // test connection
-// pool.on('connect', () =>{
-//     console.log('Connected to database.');
-// })
+pool.on('connect', () =>{
+    console.log('Connected to database.');
+})
 
-// pool.on('error', (err)=>{
-//     console.log('Database connection error.', err);
-// })
+pool.on('error', (err)=>{
+    console.log('Database connection error.', err);
+})
 
 export const db = drizzle(testPool, { schema });    
 
