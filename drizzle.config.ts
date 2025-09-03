@@ -15,6 +15,6 @@ export default defineConfig({
     user: "fynova_db_user",
     password: "mj2r0eglsJDd6N3OOk89REIc2fWXTIgU",
     database: "fynova_db",
-    ssl: true,
+    ssl: { rejectUnauthorized: false },
   },
 });
