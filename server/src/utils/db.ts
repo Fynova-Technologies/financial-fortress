@@ -13,15 +13,17 @@ const testPool = new Pool ({
     port: 5432,
 })
 
-
-// testPool.query("SELECT NOW()")
-//   .then(res => console.log("DB reachable, time:", res.rows[0]))
-//   .catch(err => console.error("Cannot connect to DB:", err));
-
 const pool = new Pool ({
     connectionString:'postgresql://fynova_db_user:mj2r0eglsJDd6N3OOk89REIc2fWXTIgU@dpg-d2rtainfte5s739atuvg-a/fynova_db',
     ssl: { rejectUnauthorized: false},
 })
+
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: process.env.NODE_ENV === 'production'
+//     ? { rejectUnauthorized: false }
+//     : false,
+// });
 
 // test connection
 pool.on('connect', () =>{

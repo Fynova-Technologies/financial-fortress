@@ -9,6 +9,7 @@ export default defineConfig({
   schema: "./server/src/models/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: `postgresql://postgres:bibash@localhost:5432/financial-fortress`,
+    // url: `postgresql://postgres:bibash@localhost:5432/financial-fortress`,
+    url: `postgresql://fynova_db_user:mj2r0eglsJDd6N3OOk89REIc2fWXTIgU@dpg-d2rtainfte5s739atuvg-a/fynova_db`,
   },
 });
