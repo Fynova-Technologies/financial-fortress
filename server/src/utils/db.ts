@@ -5,13 +5,13 @@ import * as schema from '../models/index.js';
 const { Pool } = pkg;
 
 // setup postgresql connection pool
-const testPool = new Pool ({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'financial-fortress',
-    password: 'bibash',
-    port: 5432,
-})
+// const testPool = new Pool ({
+//     user: 'postgres',
+//     host: 'localhost',
+//     database: 'financial-fortress',
+//     password: 'bibash',
+//     port: 5432,
+// })
 
 const pool = new Pool ({
     connectionString:'postgresql://fynova_db_user:mj2r0eglsJDd6N3OOk89REIc2fWXTIgU@dpg-d2rtainfte5s739atuvg-a/fynova_db',
@@ -34,5 +34,5 @@ pool.on('error', (err)=>{
     console.log('Database connection error.', err);
 })
 
-export const db = drizzle(testPool, { schema });    
+export const db = drizzle(pool, { schema });    
 

@@ -31,7 +31,7 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
     const interval = setInterval(async () => {
       try {
         const resp = await fetch(
-          `http://financial-fortress.onrender.com/api/check-email-verified-public?user_id=${encodeURIComponent(
+          `https://financial-fortress.onrender.com/api/check-email-verified-public?user_id=${encodeURIComponent(
             user?.sub ?? ""
           )}`
         );
@@ -60,7 +60,7 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
 
     try {
       const token = await getAccessTokenSilently();
-      const res = await fetch("http://financial-fortress.onrender.com/api/resend-verification", {
+      const res = await fetch("https://financial-fortress.onrender.com/api/resend-verification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
