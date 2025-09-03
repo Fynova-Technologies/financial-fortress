@@ -16,7 +16,7 @@ export const useRegisterUser = () => {
     try {
       const token = await getAccessTokenSilently();
 
-      const res = await fetch("https://financial-fortress.onrender.com/api/users /api/users", {
+      const res = await fetch("https://financial-fortress.onrender.com/api/users", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
