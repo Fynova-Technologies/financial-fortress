@@ -163,7 +163,7 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     // original had a backend call; we keep the async behavior and optimistic update on success
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch(`http://financial-fortress.onrender.com/api/savings-goals/${id}`, {
+      const response = await fetch(`https://financial-fortress.onrender.com/api/savings-goals/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",

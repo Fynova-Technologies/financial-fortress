@@ -35,7 +35,7 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://financial-fortress.onrender.com/api/contact", {
+      const res = await fetch("https://financial-fortress.onrender.com/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

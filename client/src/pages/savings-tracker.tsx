@@ -35,7 +35,7 @@ export default function SavingsTracker() {
         })),
       };
 
-      const res = await fetch("http://financial-fortress.onrender.com/api/savings-goals", {
+      const res = await fetch("https://financial-fortress.onrender.com/api/savings-goals", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

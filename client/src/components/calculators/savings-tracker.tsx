@@ -70,7 +70,7 @@ export const SavingsTracker = () => {
         const token = await getAccessTokenSilently();
         console.log("access token granted Savings Tracker: ", token);
 
-        const res = await fetch("http://financial-fortress.onrender.com/api/savings-goals", {
+        const res = await fetch("https://financial-fortress.onrender.com/api/savings-goals", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

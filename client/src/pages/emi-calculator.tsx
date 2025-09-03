@@ -37,7 +37,7 @@ export default function EMICalculator() {
         startDate: emiData.startDate,
       };
 
-      const res = await fetch("http://financial-fortress.onrender.com/api/emi-calculations", {
+      const res = await fetch("https://financial-fortress.onrender.com/api/emi-calculations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

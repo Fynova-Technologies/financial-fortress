@@ -35,7 +35,7 @@ export default function ROICalculator() {
         investmentTerm: roiData.investmentTerm,
       };
 
-      const res = await fetch("http://financial-fortress.onrender.com/api/roi-calculations", {
+      const res = await fetch("https://financial-fortress.onrender.com/api/roi-calculations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

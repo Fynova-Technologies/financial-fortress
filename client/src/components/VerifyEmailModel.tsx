@@ -93,7 +93,7 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
     setError(null);
     try {
       const resp = await fetch(
-        `http://financial-fortress.onrender.com/api/check-email-verified-public?user_id=${encodeURIComponent(
+        `https://financial-fortress.onrender.com/api/check-email-verified-public?user_id=${encodeURIComponent(
           user?.sub ?? ""
         )}`
       );
