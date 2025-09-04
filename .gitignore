@@ -1,3 +1,5 @@
+attached_assets
 node_modules
 dist
+migration
 .env
