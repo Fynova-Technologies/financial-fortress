@@ -6,9 +6,11 @@ import { CalculatorProvider } from "@/store/Calculator/index";
 import { Auth0Provider } from '@auth0/auth0-react'
 import { ToastContainer } from "react-toastify";
 
+console.log("domain: ", import.meta.env.VITE_AUTH0_DOMAIN)
+
 createRoot(document.getElementById("root")!).render(
   <Auth0Provider
-    domain={import.meta.env.VITE_AUTH0_DOMAIN}
+  domain={import.meta.env.VITE_AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com"}
     clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
     authorizationParams={{
       redirect_uri: window.location.origin,
