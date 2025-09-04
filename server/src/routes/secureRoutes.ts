@@ -2,6 +2,9 @@ import { Router, Request, Response, NextFunction } from "express";
 import { checkJwt } from "../middleware/auth0Middleware.js";
 import { checkEmailVerified } from "../middleware/checkEmailVerified.js";
 import { getManagementToken } from "../utils/auth.js";
+import dotenv from 'dotenv'
+
+dotenv.config();
 
 // Define the interface locally in this file
 interface AuthRequest extends Request {
@@ -34,7 +37,7 @@ router.post("/resend-verification", checkJwt, async (req: AuthRequest, res: Resp
       console.log("mgmtToken", mgmtToken);
 
       const response = await fetch(
-        `https://dev-l0cnkmnrn4reomjc.us.auth0.com/api/v2/jobs/verification-email`,
+        `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/verification-email`,
         {
           method: "POST",
           headers: {
@@ -81,7 +84,7 @@ router.get("/check-email-verified-public", async (req: AuthRequest, res: Respons
 
     const mgmtToken = await getManagementToken();
     const response = await fetch(
-      `https://dev-l0cnkmnrn4reomjc.us.auth0.com/api/v2/users/${encodeURIComponent(userId)}`,
+      `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(userId)}`,
       {
         headers: {
           Authorization: `Bearer ${mgmtToken}`,

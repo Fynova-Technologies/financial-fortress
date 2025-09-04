@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useCalculator } from "@/store/Calculator/index";
 import { useAuth0 } from "@auth0/auth0-react";
 import { AuthPopup } from "@/components/auth/AuthPopup";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 export default function BudgetPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);

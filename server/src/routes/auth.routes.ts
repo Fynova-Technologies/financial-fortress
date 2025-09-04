@@ -4,7 +4,9 @@ import { checkJwt } from "../middleware/auth0Middleware.js";
 import { sendVerificationEmail } from "../utils/auth0.js";
 import type { Auth0Request } from "../types";
 import { getManagementToken } from "../utils/auth.js";
+import dotenv from 'dotenv';
 
+dotenv.config();
 const router = express.Router();
 
 interface Auth0User {
@@ -15,9 +17,7 @@ interface Auth0User {
 
 // --- Helper: fetch full Auth0 user info ---
 async function getAuth0User(auth0_id: string): Promise<Auth0User> {
-  const domain =
-    process.env.AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com";
-  if (!domain) throw new Error("AUTH0_DOMAIN not set");
+  if (!process.env.AUTH0_DOMAIN) throw new Error("AUTH0_DOMAIN not set");
 
   const token = await getManagementToken();
 
@@ -27,7 +27,7 @@ async function getAuth0User(auth0_id: string): Promise<Auth0User> {
   let res;
   try {
     const encodedId = encodeURIComponent(auth0_id);
-    res = await fetch(`https://${domain}/api/v2/users/${encodedId}`, {
+    res = await fetch(`https://${process.env.AUTH0_DOMAIN}/api/v2/users/${encodedId}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

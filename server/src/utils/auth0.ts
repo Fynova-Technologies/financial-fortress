@@ -1,50 +1,24 @@
-// import { useAuth0 } from "@auth0/auth0-react";
+import dotenv from 'dotenv';
 
-// export async function sendVerificationEmail(userId: string) {
-//   const { getAccessTokenSilently } = useAuth0();
-//   const token = await getAccessTokenSilently();
-//   //   const domain = "dev-l0cnkmnrn4reomjc.us.auth0.com";
-
-//   if (!token) {
-//     throw new Error("Auth0 credentials not configured");
-//   }
-
-//   const response = await fetch(
-//     `https://dev-l0cnkmnrn4reomjc.us.auth0.com/api/v2/jobs/verification-email`,
-//     {
-//       method: "POST",
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ user_id: userId }),
-//     }
-//   );
-
-//   if (!response.ok) {
-//     const errorText = await response.text();
-//     throw new Error(`Failed to send verification email: ${errorText}`);
-//   }
-// }
-
+dotenv.config();
 
 async function triggerAuth0VerificationEmail(userId: string) {
-  const domain = process.env.AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com"; 
-  const clientId = process.env.AUTH0_CLIENT_ID || "Qp7Jge12QOLRPVmfofHhfTtfqB7wQWVo";
-  const clientSecret = process.env.AUTH0_CLIENT_SECRET || "Jp8KZDpX-1w6UidKcytuUmymxySWy1RaY1IMjtoiiFpKipzlwkVmRDGQdcAHeYr5";
+  // const domain = process.env.AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com"; 
+  // const clientId = process.env.AUTH0_CLIENT_ID || "Qp7Jge12QOLRPVmfofHhfTtfqB7wQWVo";
+  // const clientSecret = process.env.AUTH0_CLIENT_SECRET || "Jp8KZDpX-1w6UidKcytuUmymxySWy1RaY1IMjtoiiFpKipzlwkVmRDGQdcAHeYr5";
 
-  if (!domain || !clientId || !clientSecret) {
+  if (!process.env.DOMAIN || !process.env.AUTH0_M2M_CLIENT_ID || !process.env.AUTH0_M2M_CLIENT_SECRET) {
     throw new Error("Auth0 credentials not configured in environment variables");
   }
 
   // 1. Get Management API token
-  const tokenResponse = await fetch(`https://${domain}/oauth/token`, {
+  const tokenResponse = await fetch(`https://${process.env.AUTH0_DOMAIN}/oauth/token`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
-      audience: `https://${domain}/api/v2/`,
+      client_id: process.env.AUTH0_M2M_CLIENT_ID,
+      client_secret: process.env.AUTH0_M2M_CLIENT_SECRET,
+      audience: `https://${process.env.AUTH0_DOMAIN}/api/v2/`,
       grant_type: "client_credentials",
     }),
   });
@@ -58,7 +32,7 @@ async function triggerAuth0VerificationEmail(userId: string) {
 
   // 2. Trigger verification email
   const emailResponse = await fetch(
-    `https://${domain}/api/v2/jobs/verification-email`,
+    `https://${process.env.AUTH0_DOMAIN}/api/v2/jobs/verification-email`,
     {
       method: "POST",
       headers: {

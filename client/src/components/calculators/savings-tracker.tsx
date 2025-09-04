@@ -27,7 +27,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { SavingsGoal } from "@/types";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 export const SavingsTracker = () => {
   const {

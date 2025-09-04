@@ -45,7 +45,7 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
       } catch (err) {
         console.log("Auto-check failed:", err);
       }
-    }, 5000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, user]);
@@ -60,14 +60,17 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
 
     try {
       const token = await getAccessTokenSilently();
-      const res = await fetch("https://financial-fortress.onrender.com/api/resend-verification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ user_id: user?.sub }),
-      });
+      const res = await fetch(
+        "https://financial-fortress.onrender.com/api/resend-verification",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ user_id: user?.sub }),
+        }
+      );
 
       const text = await res.text();
       let json;
@@ -109,17 +112,17 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
       if (json.email_verified) {
         localStorage.removeItem(`user_seen_${user?.sub}`);
         window.location.href = "/";
-      } else {
-        setError(
-          "Email still unverified. Click the link in your email, then press 'I verified'."
-        );
       }
+      setError(
+        "Email still unverified. Click the link in your email, then press 'I verified'."
+      );
     } catch (err: any) {
       setError(err?.message || "Failed to check verification status.");
     } finally {
       setChecking(false);
     }
   }
+
   const handleBack = () => {
     localStorage.removeItem(`user_seen_${user?.sub}`);
 

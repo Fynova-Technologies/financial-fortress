@@ -1,9 +1,9 @@
-export * from "./user.js";
-export * from "./budget.js";
-export * from "./savingsGoal.js";
-export * from "./mortgageCalculation.js";
-export * from "./emiCalculation.js";
-export * from "./retirementCalculation.js";
-export * from "./salaryManagement.js";
-export * from "./roiCalculation.js";
+export * from "./user";
+export * from "./budget";
+export * from "./savingsGoal";
+export * from "./mortgageCalculation";
+export * from "./emiCalculation";
+export * from "./retirementCalculation";
+export * from "./salaryManagement";
+export * from "./roiCalculation";
 

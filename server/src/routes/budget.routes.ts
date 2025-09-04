@@ -3,7 +3,6 @@ import express from "express";
 import type { BudgetRequest, Auth0Request } from "../types";
 import { checkJwt } from "../middleware/auth0Middleware.js";
 import storage from "../storage/index.js";
-import { ExpenseCategory } from "../models";
 
 const router = express.Router();
 

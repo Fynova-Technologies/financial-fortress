@@ -1,7 +1,9 @@
 
 import express from "express";
 import { getManagementToken } from "../utils/auth.js";
+import dotenv from 'dotenv'
 
+dotenv.config();
 const router = express.Router();
 
 router.get("/check-email-verified-public", async (req, res) => {
@@ -15,10 +17,8 @@ router.get("/check-email-verified-public", async (req, res) => {
     if (!mgmtToken) {
       return res.status(500).json({ error: "Failed to get management token" });
     }
-
-    const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com";
     const response = await fetch(
-      `https://${AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(userId)}`,
+      `https://${process.env.AUTH0_DOMAIN}/api/v2/users/${encodeURIComponent(userId)}`,
       {
         headers: {
           Authorization: `Bearer ${mgmtToken}`,

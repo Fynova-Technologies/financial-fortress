@@ -52,7 +52,7 @@ export default function SavingsTracker() {
           errorData.error || "Failed to save Savings Tracker data"
         );
       }
-      toast.success("Savings Tracker data saved successfully!");
+      toast.success("Goal Tracker data saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);
       alert("Failed to save Savings Tracker data");
