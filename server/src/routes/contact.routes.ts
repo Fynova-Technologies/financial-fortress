@@ -6,6 +6,8 @@ dotenv.config();
 
 const router = express.Router();
 
+console.log("receiver: ", process.env.CONTACT_RECEIVER);
+
 router.post("/", async (req, res) => {
   const { name, email, message } = req.body;
 
