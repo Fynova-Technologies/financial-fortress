@@ -358,9 +358,9 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                       className="w-3 h-3 rounded-full mr-2"
                       style={{ backgroundColor: category.color }}
                     ></div>
-                    <span className="font-medium">{category.name}</span>
+                    <span className="font-medium lg:text-[10px]">{category.name}</span>
                   </div>
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-gray-700 dark:text-gray-300 lg:hidden xl:flex">
                     {formatCurrency(category.amount)}
                   </span>
                 </div>
@@ -418,7 +418,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 <i className="fas fa-search absolute left-3 top-3 text-gray-400"></i>
               </div>
               <select
-                className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-2 py-1"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >

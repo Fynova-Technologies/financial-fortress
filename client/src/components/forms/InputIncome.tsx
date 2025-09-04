@@ -27,7 +27,7 @@ const IncomeInput: React.FC<IncomeInputProps> = ({ income, setIncome, onSubmit }
             onChange={(e) =>
               setIncome(e.target.value === "" ? "" : Number(e.target.value))
             }
-            className="px-3 md:px-6 lg:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full sm:w-3/4 md:w-3/4 lg:w-5/6 xl:w-100 md:px-6 lg:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             style={{ color: "black" }}
             placeholder="Enter income"
           />

@@ -7,6 +7,8 @@ dotenv.config();
 const router = express.Router();
 
 console.log("receiver: ", process.env.CONTACT_RECEIVER);
+  console.log("user", process.env.SMTP_USER);
+  console.log("pass: ", process.env.SMTP_PASSWORD)
 
 router.post("/", async (req, res) => {
   const { name, email, message } = req.body;
@@ -16,6 +18,9 @@ router.post("/", async (req, res) => {
   }
 
   const receiver = process.env.CONTACT_RECEIVER;
+  console.log("receiver: ", process.env.CONTACT_RECEIVER);
+  console.log("user", process.env.SMTP_USER);
+  console.log("pass: ", process.env.SMTP_PASSWORD)
 
   // Check env vars
 if (!process.env.CONTACT_RECEIVER || !process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {

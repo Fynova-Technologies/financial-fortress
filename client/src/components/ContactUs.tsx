@@ -58,7 +58,7 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 text-base">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4 text-base">
       {submitted ? (
         <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-2">
           <CardContent>
@@ -76,17 +76,17 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
         <>
           <Card className="bg-white dark:bg-gray-800 shadow-md lg:col-span-1">
             <CardContent>
-              <h2 className="text-4xl xs:text-2xl text-gray-700 dark:text-gray-300 py-6">
+              <h2 className="text-xl sm:text-2xl md:text-3xl text-gray-700 dark:text-gray-300 py-4">
                 <strong>Got questions or ideas?</strong>
               </h2>
-              <p className="text-2xl text-gray-700 dark:text-gray-300 mb-6">
+              <p className="text-l text-gray-700 dark:text-gray-300 mb-6">
                 We’re here to help! Whether you’re exploring Financial Fortress
                 for the first time, looking for guidance on managing your
                 finances, or have feedback to help us improve, we want to hear
                 from you. Our team is committed to providing fast, friendly
                 support and making sure your experience is seamless.
               </p>
-              <p className="text-2xl text-gray-700 dark:text-gray-300">
+              <p className="text-l text-gray-700 dark:text-gray-300">
                 Fill out the form below, and we’ll get back to you promptly.
                 Your insights help us build better tools to empower your
                 financial journey.
@@ -94,9 +94,9 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+          <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-2">
             <CardContent>
-              <h2 className="text-4xl font-bold mb-5">
+              <h2 className="text-xl font-bold mb-5">
                 <strong>Send Message</strong>
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -157,7 +157,7 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`mt-4 py-4 px-4 rounded-md text-white transition 
+                  className={`mt-4 py-2 px-2 rounded-md text-white transition 
                                 ${
                                   isSubmitting
                                     ? "bg-gray-400 cursor-not-allowed"
@@ -172,7 +172,7 @@ export const ContactUs: React.FC<ContactUsProps> = ({ onRequireLogic }) => {
         </>
       )}
 
-      <Card className=" text-2xl bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 lg:col-span-2">
+      <Card className=" text-l bg-white dark:bg-gray-800 rounded-xl shadow-md lg:col-span-2">
         <CardContent>
           <div className="mt-8 text-gray-700 dark:text-gray-300">
             <p>

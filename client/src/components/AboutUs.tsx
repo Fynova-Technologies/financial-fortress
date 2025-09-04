@@ -4,10 +4,11 @@ import vision from "@/assets/vision.jpg";
 
 export const AboutUs = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
         <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md md:col-span-2">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Welcome to Financial Fortress</h2>
+            <h2 className="text-xl md:text-3xl font-bold mb-4">Welcome to Financial Fortress</h2>
+            <div className="text-[13px]">
             <p className="text-gray-700 dark:text-gray-300">
               your comprehensive digital companion for mastering personal finance. We understand that managing money can feel overwhelming, which is why we've created an intuitive platform that transforms complex financial decisions into simple, actionable steps.
             </p>
@@ -23,21 +24,23 @@ export const AboutUs = () => {
             <p className="mt-4 text-gray-700 dark:text-gray-300">
                 Join thousands of users who have already discovered the peace of mind that comes from having their finances organized, planned, and under control. Your journey to financial empowerment starts here.
             </p>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md">
-            <CardContent className="p-6">
-                <img src={mission} alt="Our Mission" className="w-full h-[465px] object-cover rounded-lg mb-6" />
+        <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md hidden md:block">
+            <CardContent className="p-3 md:p-6">
+                <img src={mission} alt="Our Mission" className="w-full h-[465px] object-cover rounded-lg mb-2" />
             </CardContent>
         </Card>
 
         <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md">
             <CardContent className="p-6">
-                <section className="max-w-3xl mx-auto px-6 py-12">
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                <section className="max-w-3xl mx-auto py-3">
+                    <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                         Our Mission
                     </h2>
+                    <div className="text-[13px]">
                     <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
                         To democratize financial planning by providing accessible, intuitive, and powerful
                         tools that enable individuals to make informed financial decisions, achieve their
@@ -74,17 +77,19 @@ export const AboutUs = () => {
                         – Delivering professional-grade tools that anyone can use, anywhere, anytime
                         </li>
                     </ol>
+                    </div>
                 </section>
             </CardContent>
         </Card>
 
         <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md">
             <CardContent className="p-6">
-                <section className="max-w-3xl mx-auto px-6 py-12">
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                <section className="max-w-3xl mx-auto py-2">
+                    <h2 className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                         Our Vision
                     </h2>
-
+                    
+                    <div className="text-[13px]">
                     <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
                         To become the world's most trusted digital financial companion, empowering
                         millions of people globally to achieve financial freedom through intelligent
@@ -121,13 +126,14 @@ export const AboutUs = () => {
                         becomes the foundation for prosperous communities worldwide
                         </li>
                     </ol>
+                    </div>
                 </section>
             </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md">
-            <CardContent className="p-6">
-                <img src={vision} alt="Our vision" className="w-full h-[465px] object-cover rounded-lg mb-6" />
+        <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-md hidden md:block">
+            <CardContent className="p-3 md:p-6">
+                <img src={vision} alt="Our vision" className="w-full h-[465px] object-cover rounded-lg mb-2" />
             </CardContent>
         </Card>
     </div>
