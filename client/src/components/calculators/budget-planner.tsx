@@ -424,7 +424,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               >
                 <option>All Categories</option>
                 {budgetData?.expenseCategories?.map((category) => (
-                  <option key={category.id}>{category.name}</option>
+                  <option key={category.id} value={category.name}>{category.name}</option>
                 ))}
               </select>
             </div>

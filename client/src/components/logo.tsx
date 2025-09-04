@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Link } from "wouter";
 
 interface LogoProps {
   className?: string;
@@ -13,11 +14,11 @@ export function Logo({ className, size = "md" }: LogoProps) {
   };
 
   return (
-    <div className={cn("flex items-center space-x-2", className)}>
+    <Link to='/' className={cn("flex items-center space-x-2", className)}>
       <i className="fas fa-calculator text-primary text-xl"></i>
-      <h1 className={cn("font-bold text-primary-600 dark:text-primary-400", sizeClasses[size])}>
+      <span className={cn("font-bold text-primary-600 dark:text-primary-400", sizeClasses[size])}>
         FinCalc Pro
-      </h1>
-    </div>
+      </span>
+    </Link>
   );
 }

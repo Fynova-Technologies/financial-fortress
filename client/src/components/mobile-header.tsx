@@ -36,13 +36,6 @@ export function MobileHeader({ onToggleSidebar }: MobileHeaderProps) {
               }`}
             ></i>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <i className="fas fa-user-circle text-gray-600 dark:text-gray-300 text-xl"></i>
-          </Button>
         </div>
       </div>
     </header>

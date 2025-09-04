@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({
-  origin: ['https://financial-fortress.onrender.com', "http://localhost:5173"], //frontend origin
+  origin: ['https://financial-fortress.onrender.com/', "http://localhost:5173"], //frontend origin
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true, //for session
 }));

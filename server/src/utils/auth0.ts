@@ -3,9 +3,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function triggerAuth0VerificationEmail(userId: string) {
-  // const domain = process.env.AUTH0_DOMAIN || "dev-l0cnkmnrn4reomjc.us.auth0.com"; 
-  // const clientId = process.env.AUTH0_CLIENT_ID || "Qp7Jge12QOLRPVmfofHhfTtfqB7wQWVo";
-  // const clientSecret = process.env.AUTH0_CLIENT_SECRET || "Jp8KZDpX-1w6UidKcytuUmymxySWy1RaY1IMjtoiiFpKipzlwkVmRDGQdcAHeYr5";
 
   if (!process.env.DOMAIN || !process.env.AUTH0_M2M_CLIENT_ID || !process.env.AUTH0_M2M_CLIENT_SECRET) {
     throw new Error("Auth0 credentials not configured in environment variables");
