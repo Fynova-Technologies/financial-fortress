@@ -66,7 +66,9 @@ export interface IStorage {
 
   // budget
   createBudget(budget: InsertBudget): Promise<Budget>;
-  createCompleteBudget(budgetData: CreateBudgetRequest): Promise<CompleteBudget>;
+  createCompleteBudget(
+    budgetData: CreateBudgetRequest
+  ): Promise<CompleteBudget>;
   getBudgetsByUserId(userId: number): Promise<Budget[]>;
   getBudget(id: number): Promise<Budget | undefined>;
   getCompleteBudget(id: number): Promise<CompleteBudget | undefined>;
@@ -76,28 +78,44 @@ export interface IStorage {
   getExpensesByBudgetId(budgetId: number): Promise<Expense[]>;
 
   // categories
-  createExpenseCategory(category: InsertExpenseCategory): Promise<ExpenseCategory>;
+  createExpenseCategory(
+    category: InsertExpenseCategory
+  ): Promise<ExpenseCategory>;
   getExpenseCategoriesByBudgetId(budgetId: number): Promise<ExpenseCategory[]>;
 
   // savings goals
   createSavingsGoal(goal: InsertSavingsGoal): Promise<SavingsGoal>;
   getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]>;
-  deleteSavingsGoal?(id: number): Promise<boolean>;
+  getSavingsGoalById(
+    goalId: number,
+    userId: number
+  ): Promise<SavingsGoal | null>;
+  deleteSavingsGoal(goalId: number, userId: number): Promise<boolean>;
 
   // mortgage
-  createMortgageCalculation(data: InsertMortgageCalculation): Promise<MortgageCalculation>;
-  getMortgageCalculationsByUserId(userId: number): Promise<MortgageCalculation[]>;
+  createMortgageCalculation(
+    data: InsertMortgageCalculation
+  ): Promise<MortgageCalculation>;
+  getMortgageCalculationsByUserId(
+    userId: number
+  ): Promise<MortgageCalculation[]>;
 
   // emi
   createEmiCalculation(data: InsertEmiCalculation): Promise<EmiCalculation>;
   getEmiCalculationsByUserId(userId: number): Promise<EmiCalculation[]>;
 
   // retirement
-  createRetirementCalculation(data: InsertRetirementCalculation): Promise<RetirementCalculation>;
-  getRetirementCalculationsByUserId(userId: number): Promise<RetirementCalculation[]>;
+  createRetirementCalculation(
+    data: InsertRetirementCalculation
+  ): Promise<RetirementCalculation>;
+  getRetirementCalculationsByUserId(
+    userId: number
+  ): Promise<RetirementCalculation[]>;
 
   // salary
-  createSalaryManagement(data: InsertSalaryManagement): Promise<SalaryManagement>;
+  createSalaryManagement(
+    data: InsertSalaryManagement
+  ): Promise<SalaryManagement>;
   getSalaryManagementByUserId(userId: number): Promise<SalaryManagement[]>;
 
   // roi

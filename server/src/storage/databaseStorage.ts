@@ -34,7 +34,7 @@ import {
 } from "../models/index.js";
 
 import { db } from "../utils/db.js";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import type { IStorage, CreateBudgetRequest, CompleteBudget } from "./types.js";
 import { v4 as uuidv4 } from "uuid";
 
@@ -62,15 +62,18 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .where(eq(users.auth0_id, auth0_id));
-    return rows[0];
+    console.log("Raw database rows:", rows);
+    console.log("First row:", rows[0]);
+    console.log("First row id:", rows[0]?.id);
+    console.log("Type of id:", typeof rows[0]?.id);
+    return rows[0] || null;
   }
 
   async getUserbyEmail(email: string): Promise<User | undefined> {
     const rows = await db.select().from(users).where(eq(users.email, email));
-      console.log("Checking user by email:", email, rows);
+    console.log("Checking user by email:", email, rows);
     return rows[0];
   }
-
 
   async createUser(insertUser: InsertUser): Promise<User> {
     console.log("Inserting user:", insertUser);
@@ -118,104 +121,117 @@ export class DatabaseStorage implements IStorage {
   /**
    * createCompleteBudget - creates budget + categories + expenses in a single transaction
    */
-async createCompleteBudget(
-  budgetData: CreateBudgetRequest
-): Promise<CompleteBudget> {
-  // Basic validation / logging so we can see what's coming from the frontend
-  console.log("createCompleteBudget - incoming budgetData:", JSON.stringify(budgetData, null, 2));
-  if (!budgetData || typeof budgetData.user_id !== "number") {
-    throw new Error("Invalid budgetData: missing user_id");
-  }
+  async createCompleteBudget(
+    budgetData: CreateBudgetRequest
+  ): Promise<CompleteBudget> {
+    // Basic validation / logging so we can see what's coming from the frontend
+    console.log(
+      "createCompleteBudget - incoming budgetData:",
+      JSON.stringify(budgetData, null, 2)
+    );
+    if (!budgetData || typeof budgetData.user_id !== "number") {
+      throw new Error("Invalid budgetData: missing user_id");
+    }
 
-  return await db.transaction(async (tx) => {
-    // 1) insert budget (total_income as string if DB expects numeric/text)
-    const [createdBudget] = await tx
-      .insert(budgets)
-      .values({
-        user_id: budgetData.user_id,
-        name: budgetData.name ?? "Untitled",
-        total_income: (budgetData.total_income ?? 0).toString(),
-      })
-      .returning();
-
-    console.log("Created budget:", createdBudget);
-    if (!createdBudget) throw new Error("Failed to create budget");
-
-    let createdCategories: ExpenseCategory[] = [];
-    let createdExpenses: Expense[] = [];
-
-    // 2) categories
-    if (Array.isArray(budgetData.expense_categories) && budgetData.expense_categories.length > 0) {
-      // Build inserts. Ensure category_id exists (generate if frontend didn't send one).
-      const categoryInserts = budgetData.expense_categories.map((c) => {
-        // Basic payload validation
-        if (!c.name) throw new Error("Expense category missing name");
-        return {
-          budget_id: createdBudget.id,
-          // category_id is a domain-level string id (generate if absent)
-          category_id: typeof c.id === "string" && c.id.length > 0 ? c.id : uuidv4(),
-          name: c.name,
-          color: c.color ?? "#cccccc",
-          amount: (c.amount ?? 0).toString(),
-        };
-      });
-
-      console.log("Category inserts:", categoryInserts);
-      createdCategories = await tx
-        .insert(expenseCategories)
-        .values(categoryInserts)
+    return await db.transaction(async (tx) => {
+      // 1) insert budget (total_income as string if DB expects numeric/text)
+      const [createdBudget] = await tx
+        .insert(budgets)
+        .values({
+          user_id: budgetData.user_id,
+          name: budgetData.name ?? "Untitled",
+          total_income: (budgetData.total_income ?? 0).toString(),
+        })
         .returning();
 
-      console.log("Inserted categories (from DB):", createdCategories);
-    }
+      console.log("Created budget:", createdBudget);
+      if (!createdBudget) throw new Error("Failed to create budget");
 
-    // 3) expenses
-    if (Array.isArray(budgetData.expenses) && budgetData.expenses.length > 0) {
-      // Build map from frontend category_id -> DB auto PK id
-      // NOTE: createdCategories should contain column 'category_id' (string) and 'id' (number)
-      const categoryMap = new Map<string, number>(
-        createdCategories.map((c) => [c.category_id, c.id])
-      );
-      console.log("categoryMap:", Array.from(categoryMap.entries()));
+      let createdCategories: ExpenseCategory[] = [];
+      let createdExpenses: Expense[] = [];
 
-      const expenseInserts = budgetData.expenses.map((e) => {
-        // e.category is expected to be frontend category_id (string)
-        const frontendCategoryId = e.category;
-        const categoryDbId = categoryMap.get(frontendCategoryId);
+      // 2) categories
+      if (
+        Array.isArray(budgetData.expense_categories) &&
+        budgetData.expense_categories.length > 0
+      ) {
+        // Build inserts. Ensure category_id exists (generate if frontend didn't send one).
+        const categoryInserts = budgetData.expense_categories.map((c) => {
+          // Basic payload validation
+          if (!c.name) throw new Error("Expense category missing name");
+          return {
+            budget_id: createdBudget.id,
+            // category_id is a domain-level string id (generate if absent)
+            category_id:
+              typeof c.id === "string" && c.id.length > 0 ? c.id : uuidv4(),
+            name: c.name,
+            color: c.color ?? "#cccccc",
+            amount: (c.amount ?? 0).toString(),
+          };
+        });
 
-        if (!categoryDbId) {
-          // If no mapping found, fail early with detailed message
-          throw new Error(
-            `Category mapping missing for expense "${e.description}" — frontend category id: ${frontendCategoryId}`
-          );
-        }
+        console.log("Category inserts:", categoryInserts);
+        createdCategories = await tx
+          .insert(expenseCategories)
+          .values(categoryInserts)
+          .returning();
 
-        if (!e.description) throw new Error("Expense missing description");
+        console.log("Inserted categories (from DB):", createdCategories);
+      }
 
-        return {
-          budget_id: createdBudget.id,
-          // expense table expects category_id (numeric FK to expense_categories.id)
-          category_id: categoryDbId,
-          expense_id: typeof e.id === "string" && e.id.length > 0 ? e.id : uuidv4(),
-          description: e.description,
-          amount: (e.amount ?? 0).toString(),
-          date: e.date ? new Date(e.date) : new Date(),
-        };
-      });
+      // 3) expenses
+      if (
+        Array.isArray(budgetData.expenses) &&
+        budgetData.expenses.length > 0
+      ) {
+        // Build map from frontend category_id -> DB auto PK id
+        // NOTE: createdCategories should contain column 'category_id' (string) and 'id' (number)
+        const categoryMap = new Map<string, number>(
+          createdCategories.map((c) => [c.category_id, c.id])
+        );
+        console.log("categoryMap:", Array.from(categoryMap.entries()));
 
-      console.log("Expense inserts:", expenseInserts);
-      createdExpenses = await tx.insert(expenses).values(expenseInserts).returning();
-      console.log("Inserted expenses (from DB):", createdExpenses);
-    }
+        const expenseInserts = budgetData.expenses.map((e) => {
+          // e.category is expected to be frontend category_id (string)
+          const frontendCategoryId = e.category;
+          const categoryDbId = categoryMap.get(frontendCategoryId);
 
-    return {
-      ...createdBudget,
-      expense_categories: createdCategories,
-      expenses: createdExpenses,
-    };
-  });
-}
+          if (!categoryDbId) {
+            // If no mapping found, fail early with detailed message
+            throw new Error(
+              `Category mapping missing for expense "${e.description}" — frontend category id: ${frontendCategoryId}`
+            );
+          }
 
+          if (!e.description) throw new Error("Expense missing description");
+
+          return {
+            budget_id: createdBudget.id,
+            // expense table expects category_id (numeric FK to expense_categories.id)
+            category_id: categoryDbId,
+            expense_id:
+              typeof e.id === "string" && e.id.length > 0 ? e.id : uuidv4(),
+            description: e.description,
+            amount: (e.amount ?? 0).toString(),
+            date: e.date ? new Date(e.date) : new Date(),
+          };
+        });
+
+        console.log("Expense inserts:", expenseInserts);
+        createdExpenses = await tx
+          .insert(expenses)
+          .values(expenseInserts)
+          .returning();
+        console.log("Inserted expenses (from DB):", createdExpenses);
+      }
+
+      return {
+        ...createdBudget,
+        expense_categories: createdCategories,
+        expenses: createdExpenses,
+      };
+    });
+  }
 
   // ------ expenses & categories ------
   async createExpense(expense: InsertExpense): Promise<Expense> {
@@ -262,10 +278,35 @@ async createCompleteBudget(
       .where(eq(savingsGoals.userId, userId));
   }
 
-  async deleteSavingsGoal(id: number): Promise<boolean> {
+  async getSavingsGoalById(
+    goalId: number,
+    userId: number
+  ): Promise<SavingsGoal | null> {
+    const rows = await db
+      .select()
+      .from(savingsGoals)
+      .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)));
+    return rows[0] || null;
+  }
+
+  async updateSavingsGoal(
+    goalId: number,
+    userId: number,
+    updates: Partial<InsertSavingsGoal>
+  ): Promise<SavingsGoal | null> {
+    const rows = await db
+      .update(savingsGoals)
+      .set(updates)
+      .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
+      .returning();
+
+    return rows[0] || null;
+  }
+
+  async deleteSavingsGoal(goalId: number, userId: number): Promise<boolean> {
     const deleted = await db
       .delete(savingsGoals)
-      .where(eq(savingsGoals.id, id))
+      .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
       .returning();
     return deleted.length > 0;
   }

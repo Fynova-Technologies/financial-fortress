@@ -83,7 +83,7 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
       if (!res.ok) throw new Error(json.error || `Server error: ${res.status}`);
 
       setSentMsg("Verification email sent — check your inbox (and spam).");
-      setCooldown(60);
+      setCooldown(10);
     } catch (err: any) {
       setError(err?.message || "Failed to send verification email.");
     } finally {
@@ -184,6 +184,7 @@ export default function VerifyModal({ onBack }: VerifyModalProps) {
         </button>
       </div>
 
+      {checking && <div className="text-blue-600 mb-2">Verifying your mail Please wait for a while</div>}
       {sentMsg && <div className="text-green-600 mb-2">{sentMsg}</div>}
       {error && <div className="text-red-600 mb-2">{error}</div>}
 

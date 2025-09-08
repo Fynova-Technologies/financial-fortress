@@ -82,7 +82,7 @@ export interface SavingsGoal {
   targetAmount: number;
   contributionType: "daily" | "monthly" | "quarterly" | "annually";
   currentAmount: number;
-  targetDate: string; // YYYY-MM-DD
+  targetDate: string; // YYYY-MM-D
 }
 
 export interface SavingsData {

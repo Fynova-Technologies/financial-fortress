@@ -1,4 +1,4 @@
-import { SavingsTracker as SavingsTrackerComponent } from "@/components/calculators/savings-tracker";
+import SavingsTrackerComponent from "@/components/calculators/savings-tracker";
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCalculator } from "@/store/Calculator/index";

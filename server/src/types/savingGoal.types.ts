@@ -13,3 +13,8 @@ export interface SavingsGoalArrayRequest
   extends Request<{}, {}, SavingsGoalArrayRequestBody> {
   auth?: { sub: string; [key: string]: any; payload?: any; userId?: string };
 }
+
+export interface SavingsGoalDeleteRequest
+  extends Request<{ id: string }, {}, {}> {
+  auth?: { sub: string; [key: string]: any; payload?: any; userId?: string };
+}

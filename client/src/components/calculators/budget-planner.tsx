@@ -488,7 +488,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                             className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
                           >
                             {budgetData.expenseCategories.map((cat) => (
-                              <option key={cat.id} value={cat.name}>
+                              <option key={cat.id} value={cat.category_id}>
                                 {cat.name}
                               </option>
                             ))}
@@ -503,7 +503,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                               color: getExpenseCategoryColor(expense.category),
                             }}
                           >
-                            {expense.category}
+                            {budgetData.expenseCategories.find((cat)=> cat.category_id === expense.category)?.name || expense.category}
                           </span>
                         )}
                       </td>
