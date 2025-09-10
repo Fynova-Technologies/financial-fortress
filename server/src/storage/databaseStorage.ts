@@ -268,6 +268,7 @@ export class DatabaseStorage implements IStorage {
   // ------ savings goals ------
   async createSavingsGoal(goal: InsertSavingsGoal): Promise<SavingsGoal> {
     const rows = await db.insert(savingsGoals).values(goal).returning();
+    console.log("Inserting goal:", goal);
     return rows[0];
   }
 
@@ -308,6 +309,7 @@ export class DatabaseStorage implements IStorage {
       .delete(savingsGoals)
       .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
       .returning();
+      console.log("Deleting goal:", goalId, userId);
     return deleted.length > 0;
   }
 

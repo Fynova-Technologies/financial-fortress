@@ -1,8 +1,11 @@
-// src/server/routes/savingsRoutes.ts
 import express from "express";
 import { checkJwt } from "../middleware/auth0Middleware.js";
 import storage from "../storage/index.js";
-import type { SavingsGoalArrayRequest, Auth0Request, SavingsGoalDeleteRequest } from "../types";
+import type {
+  SavingsGoalArrayRequest,
+  Auth0Request,
+  SavingsGoalDeleteRequest,
+} from "../types";
 import type { User } from "../models/user.js";
 
 const router = express.Router();
@@ -15,9 +18,14 @@ router.post("/", checkJwt, async (req: SavingsGoalArrayRequest, res) => {
     const user = await storage.getUserByAuth0Id(auth0_id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    console.log("Incoming goals:", req.body.savingsGoals);
+    console.log("User:", user);
+
     const { savingsGoals } = req.body;
     if (!Array.isArray(savingsGoals) || savingsGoals.length === 0) {
-      return res.status(400).json({ error: "savingsGoals must be a non-empty array" });
+      return res
+        .status(400)
+        .json({ error: "savingsGoals must be a non-empty array" });
     }
 
     const createdGoals = [];
@@ -25,7 +33,8 @@ router.post("/", checkJwt, async (req: SavingsGoalArrayRequest, res) => {
       const { name, target_amount, current_amount, target_date } = goalData;
       if (!name || !target_amount || !current_amount || !target_date) {
         return res.status(400).json({
-          error: "Each savings goal must have name, target_amount, current_amount, and target_date",
+          error:
+            "Each savings goal must have name, target_amount, current_amount, and target_date",
         });
       }
 
@@ -92,7 +101,6 @@ router.get("/", checkJwt, async (req: Auth0Request, res) => {
 //   target_date: target_date ? new Date(target_date) : existingGoal.target_date,
 // });
 
-
 //     res.json(updated);
 //   } catch (err) {
 //     console.error("Error updating savings goal:", err);
@@ -112,21 +120,27 @@ router.delete("/:id", checkJwt, async (req: SavingsGoalDeleteRequest, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const numericId = parseInt(goalId, 10);
-    if (isNaN(numericId)) return res.status(400).json({ error: "Invalid savings goal ID" });
+    if (isNaN(numericId))
+      return res.status(400).json({ error: "Invalid savings goal ID" });
 
     const existingGoal = await storage.getSavingsGoalById(numericId, user.id);
-    if (!existingGoal) return res.status(404).json({ error: "Savings goal not found" });
+    if (!existingGoal)
+      return res.status(404).json({ error: "Savings goal not found" });
 
     const deleted = await storage.deleteSavingsGoal(numericId, user.id);
-    if (!deleted) return res.status(500).json({ error: "Failed to delete savings goal" });
+    if (!deleted)
+      return res.status(500).json({ error: "Failed to delete savings goal" });
 
-    res.status(200).json({ message: "Savings goal deleted successfully", deletedGoalId: goalId });
+    res
+      .status(200)
+      .json({
+        message: "Savings goal deleted successfully",
+        deletedGoalId: goalId,
+      });
   } catch (error) {
     console.error("Error deleting savings goal:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
 
 export default router;
