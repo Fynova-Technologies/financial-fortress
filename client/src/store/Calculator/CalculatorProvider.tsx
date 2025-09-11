@@ -170,96 +170,30 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ---------- Savings ----------
-  const updateSavingsData = (data: Partial<SavingsData>) => setSavingsData((prev) => ({ ...prev, ...data }));
+// upsert full savings object
+const updateSavingsData = (data: Partial<SavingsData>) =>
+  setSavingsData((prev) => ({ ...prev, ...data }));
 
-  const addSavingsGoal = (goal: SavingsGoal) =>
-    setSavingsData((prev) => ({
-      ...prev,
-      savingsGoals: [...prev.savingsGoals, goal],
-    }));
-
-//   const addSavingsGoal = async (goal: SavingsGoal) => {
-//   const token = await getAccessTokenSilently();
-//   const res = await fetch("https://financial-fortress.onrender.com/api/savings-goals", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${token}`,
-//     },
-//     credentials: "include",
-//     body: JSON.stringify({
-//       name: goal.name,
-//       target_amount: goal.targetAmount,
-//       current_amount: goal.currentAmount,
-//       target_date: goal.targetDate,
-//     }),
-//   });
-
-//   if (!res.ok) throw new Error("Failed to add goal");
-//   const saved = await res.json();
-
-//   setSavingsData((prev) => ({
-//     ...prev,
-//     savingsGoals: [...prev.savingsGoals, {
-//       ...goal,
-//       id: String(saved.id), // use backend id
-//     }],
-//   }));
-// };
-
-
-  const updateSavingsGoal = (id: string, goal: Partial<SavingsGoal>) =>
-    setSavingsData((prev) => ({
-      ...prev,
-      savingsGoals: prev.savingsGoals.map((g) =>
-        g.id === id ? { ...g, ...goal } : g
-      ),
-    }));
-
-//   const updateSavingsGoal = async (id: string, goal: Partial<SavingsGoal>) => {
-//   const token = await getAccessTokenSilently();
-//   const res = await fetch(`https://financial-fortress.onrender.com/api/savings-goals/${id}`, {
-//     method: "PUT",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${token}`,
-//     },
-//     credentials: "include",
-//     body: JSON.stringify({
-//       name: goal.name,
-//       target_amount: goal.targetAmount,
-//       current_amount: goal.currentAmount,
-//       target_date: goal.targetDate,
-//     }),
-//   });
-
-//   if (!res.ok) throw new Error("Failed to update goal");
-//   const updated = await res.json();
-
-//   setSavingsData((prev) => ({
-//     ...prev,
-//     savingsGoals: prev.savingsGoals.map((g) =>
-//       g.id === id ? { ...g, ...updated } : g
-//     ),
-//   }));
-// };
-
-const deleteSavingsGoal = async (id: string) => {
-  const token = await getAccessTokenSilently();
-  const res = await fetch(`https://financial-fortress.onrender.com/api/savings-goals/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: "include",
-  });
-
-  if (!res.ok) throw new Error("Failed to delete goal");
-
+// push a single savings goal
+const addSavingsGoal = (goal: SavingsGoal) =>
   setSavingsData((prev) => ({
     ...prev,
-    savingsGoals: prev.savingsGoals.filter((g) => g.id !== id),
+    savingsGoals: [...(prev.savingsGoals ?? []), goal],
   }));
-};
 
+// update a goal by string id
+const updateSavingsGoal = (id: string, goal: Partial<SavingsGoal>) =>
+  setSavingsData((prev) => ({
+    ...prev,
+    savingsGoals: (prev.savingsGoals ?? []).map((g) => (g.id === id ? { ...g, ...goal } : g)),
+  }));
+
+// delete by string id
+const deleteSavingsGoal = (id: string) =>
+  setSavingsData((prev) => ({
+    ...prev,
+    savingsGoals: (prev.savingsGoals ?? []).filter((g) => g.id !== id),
+  }));
 
   const handleCalculateSavings = () => calculateSavings(savingsData);
 

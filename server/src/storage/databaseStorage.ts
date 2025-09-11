@@ -272,45 +272,96 @@ export class DatabaseStorage implements IStorage {
     return rows[0];
   }
 
-  async getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]> {
+  // async getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]> {
+  //   return await db
+  //     .select()
+  //     .from(savingsGoals)
+  //     .where(eq(savingsGoals.userId, userId));
+  // }
+
+  // async getSavingsGoalById(
+  //   goalId: number,
+  //   userId: number
+  // ): Promise<SavingsGoal | null> {
+  //   const rows = await db
+  //     .select()
+  //     .from(savingsGoals)
+  //     .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)));
+  //   return rows[0] || null;
+  // }
+
+  // async deleteSavingsGoal(goalId: number, userId: number): Promise<boolean> {
+  //   const deleted = await db
+  //     .delete(savingsGoals)
+  //     .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
+  //     .returning();
+  //     console.log("Deleting goal:", goalId, userId);
+  //   return deleted.length > 0;
+  // }
+
+  // async createSavingsGoal(payload: {
+  //   userId: number;
+  //   name: string;
+  //   target_amount: number;
+  //   current_amount: number;
+  //   target_date: Date;
+  // }) {
+  //   const rows = await db.insert(savingsGoals).values(payload).returning();
+  //   return rows[0];
+  // }
+
+  async getSavingsGoalsByUserId(userId: number) {
     return await db
       .select()
       .from(savingsGoals)
       .where(eq(savingsGoals.userId, userId));
   }
 
-  async getSavingsGoalById(
-    goalId: number,
-    userId: number
-  ): Promise<SavingsGoal | null> {
+  async getSavingsGoalById(goalId: number, userId: number) {
     const rows = await db
       .select()
       .from(savingsGoals)
       .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)));
-    return rows[0] || null;
+    return rows[0] ?? null;
+  }
+
+  async deleteSavingsGoal(goalId: number, userId: number) {
+    const deleted = await db
+      .delete(savingsGoals)
+      .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
+      .returning();
+    return deleted.length > 0;
   }
 
   async updateSavingsGoal(
     goalId: number,
     userId: number,
-    updates: Partial<InsertSavingsGoal>
-  ): Promise<SavingsGoal | null> {
+    fields: {
+      name?: string;
+      target_amount?: number;
+      current_amount?: number;
+      target_date?: Date | string;
+    }
+  ) {
+    const setObj: any = {};
+    if (fields.name !== undefined) setObj.name = fields.name;
+    if (fields.target_amount !== undefined)
+      setObj.target_amount = fields.target_amount;
+    if (fields.current_amount !== undefined)
+      setObj.current_amount = fields.current_amount;
+    if (fields.target_date !== undefined)
+      setObj.target_date =
+        fields.target_date instanceof Date
+          ? fields.target_date
+          : new Date(fields.target_date);
+
     const rows = await db
       .update(savingsGoals)
-      .set(updates)
+      .set(setObj)
       .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
       .returning();
 
-    return rows[0] || null;
-  }
-
-  async deleteSavingsGoal(goalId: number, userId: number): Promise<boolean> {
-    const deleted = await db
-      .delete(savingsGoals)
-      .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
-      .returning();
-      console.log("Deleting goal:", goalId, userId);
-    return deleted.length > 0;
+    return rows[0] ?? null;
   }
 
   // ------ mortgage, emi, retirement, salary, roi ------
