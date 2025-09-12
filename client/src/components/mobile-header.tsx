@@ -4,9 +4,15 @@ import { Button } from "@/components/ui/button";
 
 interface MobileHeaderProps {
   onToggleSidebar: () => void;
+  onSave?: () => void;
+  onExport?: () => void;
 }
 
-export function MobileHeader({ onToggleSidebar }: MobileHeaderProps) {
+export function MobileHeader({
+  onToggleSidebar,
+  onSave,
+  onExport,
+}: MobileHeaderProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -24,6 +30,28 @@ export function MobileHeader({ onToggleSidebar }: MobileHeaderProps) {
           <Logo size="md" />
         </div>
         <div className="flex items-center space-x-3">
+          {onSave && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onSave}
+              className="p-2"
+            >
+              <i className="fas fa-save" />
+            </Button>
+          )}
+
+          {/* small export icon for mobile */}
+          {onExport && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onExport}
+              className="p-2"
+            >
+              <i className="fas fa-file-export" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -32,7 +60,9 @@ export function MobileHeader({ onToggleSidebar }: MobileHeaderProps) {
           >
             <i
               className={`fas ${
-                theme === "dark" ? "fa-sun text-yellow-400" : "fa-moon text-gray-600"
+                theme === "dark"
+                  ? "fa-sun text-yellow-400"
+                  : "fa-moon text-gray-600"
               }`}
             ></i>
           </Button>

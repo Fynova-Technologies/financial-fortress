@@ -11,7 +11,6 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, description, exportTargetRef, onSave }: PageHeaderProps) {
-  const { isAuthenticated } = useAuth0();
 
   const extractData = (element: HTMLElement): Record<string, string>[] => {
     console.log("Exporting from element:", element);
@@ -35,7 +34,7 @@ export function PageHeader({ title, description, exportTargetRef, onSave }: Page
       </div>
       
       <div 
-        className="hidden lg:flex lg:items-center mt-4 lg:mt-0 space-x-3"
+        className="flex lg:items-center mt-4 lg:mt-0 space-x-3"
         
       >
         {onSave &&(

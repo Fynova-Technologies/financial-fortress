@@ -1,3 +1,5 @@
+// This component does not render anything
+
 import { useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useRegisterUser } from "@/hooks/registerUser";
@@ -18,5 +20,5 @@ export function AuthSync() {
     }
   }, [isAuthenticated, registerUser]);
 
-  return null; // This component does not render anything
+  return null; 
 }

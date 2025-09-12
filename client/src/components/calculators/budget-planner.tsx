@@ -639,7 +639,13 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
               Enter expense details to add to your budget.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAddExpense();
+            }}
+            className="space-y-4"
+          >
             <div>
               <Label htmlFor="description">Description</Label>
               <Input
@@ -698,7 +704,6 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
                 onChange={handleInputChange}
               />
             </div>
-          </div>
           <DialogFooter className="flex justify-end space-x-3 pt-4">
             <Button
               variant="outline"
@@ -708,6 +713,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
             </Button>
             <Button onClick={handleAddExpense}>Add Expense</Button>
           </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
