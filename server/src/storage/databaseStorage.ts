@@ -233,6 +233,91 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+async updateCompleteBudget(budgetId: number, data: {
+  user_id: number;
+  name: string;
+  total_income: number;
+  expense_categories: any[];
+  expenses: any[];
+}) {
+  return await db.transaction(async (tx) => {
+    // 1. Update the budget row
+    await tx.update(budgets)
+      .set({ 
+        total_income: data.total_income.toString(), // Convert to string like in create
+        name: data.name 
+      })
+      .where(eq(budgets.id, budgetId));
+
+    // 2. Delete existing categories and expenses
+    await tx.delete(expenseCategories).where(eq(expenseCategories.budget_id, budgetId));
+    await tx.delete(expenses).where(eq(expenses.budget_id, budgetId));
+
+    let createdCategories: ExpenseCategory[] = [];
+    let createdExpenses: Expense[] = [];
+
+    // 3. Insert new categories
+    if (Array.isArray(data.expense_categories) && data.expense_categories.length > 0) {
+      const categoryInserts = data.expense_categories.map((c) => ({
+        budget_id: budgetId,
+        category_id: typeof c.id === "string" && c.id.length > 0 ? c.id : 
+                    typeof c.category_id === "string" && c.category_id.length > 0 ? c.category_id : uuidv4(),
+        name: c.name,
+        color: c.color ?? "#cccccc",
+        amount: (c.amount ?? 0).toString(),
+      }));
+
+      createdCategories = await tx
+        .insert(expenseCategories)
+        .values(categoryInserts)
+        .returning();
+    }
+
+    // 4. Insert new expenses
+    if (Array.isArray(data.expenses) && data.expenses.length > 0) {
+      // Build map from frontend category_id -> DB auto PK id
+      const categoryMap = new Map<string, number>(
+        createdCategories.map((c) => [c.category_id, c.id])
+      );
+
+      const expenseInserts = data.expenses.map((e) => {
+        const frontendCategoryId = e.category;
+        const categoryDbId = categoryMap.get(frontendCategoryId);
+
+        if (!categoryDbId) {
+          throw new Error(
+            `Category mapping missing for expense "${e.description}" — frontend category id: ${frontendCategoryId}`
+          );
+        }
+
+        return {
+          budget_id: budgetId,
+          category_id: categoryDbId,
+          expense_id: typeof e.id === "string" && e.id.length > 0 ? e.id : uuidv4(),
+          description: e.description,
+          amount: (e.amount ?? 0).toString(),
+          date: e.date ? new Date(e.date) : new Date(),
+        };
+      });
+
+      createdExpenses = await tx
+        .insert(expenses)
+        .values(expenseInserts)
+        .returning();
+    }
+
+    // 5. Get the updated budget
+    const [updatedBudget] = await tx.select().from(budgets).where(eq(budgets.id, budgetId));
+
+    return {
+      ...updatedBudget,
+      expense_categories: createdCategories,
+      expenses: createdExpenses,
+    };
+  });
+}
+
+
   // ------ expenses & categories ------
   async createExpense(expense: InsertExpense): Promise<Expense> {
     const rows = await db.insert(expenses).values(expense).returning();

@@ -87,100 +87,169 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const outerRadius = window.innerWidth >= 768 ? 80 : 50;
   const { getAccessTokenSilently, user } = useAuth0();
 
-  useEffect(() => {
-    if (budgetData.expenseCategories.length > 0) {
-      setNewExpense((prev) => ({
-        ...prev,
-        category: prev.category || budgetData.expenseCategories[0].category_id,
-      }));
-    }
-  }, [budgetData.expenseCategories]);
+useEffect(() => {
+  if (budgetData.totalIncome > 0) {
+    setSubmittedIncome(budgetData.totalIncome);
+  }
+}, [budgetData.totalIncome]);
 
-  useEffect(() => {
-    const loadBudget = async () => {
-      try {
-        if (!user || !getAccessTokenSilently) return;
-        const token = await getAccessTokenSilently();
-        const res = await fetch("https://financial-fortress.onrender.com/api/budgets", {
-          headers: { Authorization: `Bearer ${token}` },
-          credentials: "include",
+useEffect(() => {
+  const loadBudget = async () => {
+    try {
+      if (!user || !getAccessTokenSilently) return;
+      const token = await getAccessTokenSilently();
+      const res = await fetch("https://financial-fortress.onrender.com/api/budgets", {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const budgets = await res.json();
+      
+      if (budgets && budgets.length > 0) {
+        const latest = budgets[0];
+
+        // Map server categories to frontend shape
+        const categories = (latest.expenseCategories || latest.expense_categories || []).map(
+          (c: any) => ({
+            id: c.category_id || String(c.id),
+            category_id: c.category_id || String(c.id),
+            name: c.name || "",
+            color: c.color || "#3B82F6",
+            amount: Number(c.amount) || 0,
+          })
+        );
+
+        // Map DB numeric category FK -> category_id for expenses if needed
+        const dbIdToUuid = new Map<number, string>();
+        (latest.expenseCategories || latest.expense_categories || []).forEach((c: any) => {
+          if (c.id != null)
+            dbIdToUuid.set(Number(c.id), c.category_id || String(c.id));
         });
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        const budgets = await res.json();
-        if (budgets && budgets.length > 0) {
-          const latest = budgets[0];
 
-          // Map server categories to frontend shape
-          const categories = (latest.expense_categories || []).map(
-            (c: any) => ({
-              id: c.category_id || String(c.id),
-              category_id: c.category_id || String(c.id),
-              name: c.name || "",
-              color: c.color || "#3B82F6",
-              amount: Number(c.amount) || 0,
-            })
-          );
+        const expenses = (latest.expenses || []).map((e: any) => ({
+          id: e.expense_id || String(e.id),
+          category: e.category || dbIdToUuid.get(Number(e.category_id)) || "",
+          amount: Number(e.amount) || 0,
+          date: e.date ? new Date(e.date).toISOString() : "",
+          description: e.description || "",
+        }));
 
-          // Map DB numeric category FK -> category_id for expenses if needed
-          const dbIdToUuid = new Map<number, string>();
-          (latest.expense_categories || []).forEach((c: any) => {
-            if (c.id != null)
-              dbIdToUuid.set(Number(c.id), c.category_id || String(c.id));
-          });
+        const totalIncome = Number(latest.total_income) || 0;
 
-          const expenses = (latest.expenses || []).map((e: any) => ({
-            id: e.expense_id || String(e.id),
-            category: dbIdToUuid.get(Number(e.category_id)) || e.category || "",
-            amount: Number(e.amount) || 0,
-            date: e.date ? new Date(e.date).toISOString() : "",
-            description: e.description || "",
-          }));
+        updateBudgetData({
+          totalIncome: totalIncome,
+          expenseCategories: categories,
+          expenses,
+        });
 
-          updateBudgetData({
-            totalIncome: Number(latest.total_income) || 0,
-            expenseCategories: categories.length
-              ? categories
-              : budgetData.expenseCategories,
-            expenses,
-          });
-        } else {
-          // nothing on server -> keep defaults (already seeded by provider)
-          updateBudgetData({
-            totalIncome: 0,
-            expenseCategories: budgetData.expenseCategories.length
-              ? budgetData.expenseCategories
-              : [],
-            expenses: [],
-          });
-        }
-      } catch (err) {
-        console.error("Failed to load budget:", err);
+        // Set the income states
+        setSubmittedIncome(totalIncome);
+        
+      } else {
+        // No budgets on server -> keep defaults
+        updateBudgetData({
+          totalIncome: 0,
+          expenseCategories: budgetData.expenseCategories.length
+            ? budgetData.expenseCategories
+            : [],
+          expenses: [],
+        });
+        setSubmittedIncome(0);
       }
-    };
-    if (user) loadBudget();
-  }, [user, getAccessTokenSilently]); // eslint-disable-line
-
-  const handleAddExpense = () => {
-    if (!newExpense.description || !newExpense.category || !newExpense.amount) {
-      return alert("Please fill in all fields.");
+    } catch (err) {
+      console.error("Failed to load budget:", err);
     }
-    const newId = Date.now().toString();
-    addExpense({
-      id: newId,
-      description: newExpense.description || "",
-      category: newExpense.category || "",
-      date: newExpense.date || "",
-      amount: newExpense.amount || 0,
-    });
-    setNewExpense({
-      id: "",
-      description: "",
-      category: budgetData.expenseCategories[0]?.category_id || "",
-      date: new Date().toISOString().split("T")[0],
-      amount: 0,
-    });
-    setShowAddExpenseModal(false);
   };
+  
+  if (user) loadBudget();
+}, [user, getAccessTokenSilently]);
+
+// Save budget data to server
+const saveBudgetToServer = async () => {
+  try {
+    if (!user || !getAccessTokenSilently) return;
+    const token = await getAccessTokenSilently();
+    
+    // Check if we have existing budgets
+    const getRes = await fetch("https://financial-fortress.onrender.com/api/budgets", {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    });
+    
+    const existingBudgets = getRes.ok ? await getRes.json() : [];
+    
+    const payload = {
+      name: "My Budget", // You might want to make this dynamic
+      total_income: budgetData.totalIncome,
+      expenseCategories: budgetData.expenseCategories.map(cat => ({
+        id: cat.category_id,
+        category_id: cat.category_id,
+        name: cat.name,
+        color: cat.color,
+        amount: cat.amount,
+      })),
+      expenses: budgetData.expenses,
+    };
+
+    let response;
+    if (existingBudgets && existingBudgets.length > 0) {
+      // Update existing budget
+      response = await fetch(`https://financial-fortress.onrender.com/api/budgets/${existingBudgets[0].id}`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+    } else {
+      // Create new budget
+      response = await fetch("https://financial-fortress.onrender.com/api/budgets", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    console.log("Budget saved successfully");
+  } catch (error) {
+    console.error("Error saving budget:", error);
+  }
+};
+
+const handleAddExpense = async () => {
+  if (!newExpense.description || !newExpense.category || !newExpense.amount) {
+    return alert("Please fill in all fields.");
+  }
+  const newId = Date.now().toString();
+  addExpense({
+    id: newId,
+    description: newExpense.description || "",
+    category: newExpense.category || "",
+    date: newExpense.date || "",
+    amount: newExpense.amount || 0,
+  });
+  setNewExpense({
+    id: "",
+    description: "",
+    category: budgetData.expenseCategories[0]?.category_id || "",
+    date: new Date().toISOString().split("T")[0],
+    amount: 0,
+  });
+  setShowAddExpenseModal(false);
+  
+  // Save to server after adding expense
+  await saveBudgetToServer();
+};
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -214,14 +283,17 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     return category ? category.color : "#718096";
   };
 
-  const handleSubmit = () => {
-    if (income !== "") {
-      const numericIncome = Number(income);
-      setSubmittedIncome(numericIncome);
-      updateBudgetData({ totalIncome: numericIncome });
-      setIncome("");
-    }
-  };
+const handleSubmit = async () => {
+  if (income !== "") {
+    const numericIncome = Number(income);
+    setSubmittedIncome(numericIncome);
+    updateBudgetData({ totalIncome: numericIncome });
+    setIncome("");
+    
+    // Save to server after updating
+    await saveBudgetToServer();
+  }
+};
 
   // Filter categories for pie chart (only show categories with expenses)
   const filteredCategories = calculatedCategories.filter(
