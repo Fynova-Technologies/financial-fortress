@@ -11,53 +11,82 @@ export default function SavingsTracker() {
   const { savingsData } = useCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
-  const handleSaveData = async () => {
-    if (!isAuthenticated) {
-      setShowAuthPopup(true);
-      return;
-    }
+const handleSaveData = async () => {
+  if (!isAuthenticated) {
+    setShowAuthPopup(true);
+    return;
+  }
 
-    if (isLoading) {
-      console.warn("Auth0 is still loading—try again later.");
-      return;
-    }
+  if (isLoading) return;
 
-    try {
-      const token = await getAccessTokenSilently();
-      console.log("access token granted Savings Tracker: ", token);
+  try {
+    const token = await getAccessTokenSilently();
 
-      const payload = {
-        savingsGoals: savingsData.savingsGoals.map((goal) => ({
-          name: goal.name,
-          target_amount: goal.targetAmount, // Ensure this matches your backend schema
-          current_amount: goal.currentAmount, // Ensure this matches your backend schema
-          target_date: new Date(goal.targetDate), // Convert to Date object if needed
-        })),
-      };
+    // Separate new and existing goals
+    const newGoals = savingsData.savingsGoals.filter((g) => !g.id);
+    const existingGoals = savingsData.savingsGoals.filter((g) => g.id);
 
-      const res = await fetch("https://financial-fortress.onrender.com/api/savings-goals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
+    // Update existing goals
+    for (const goal of existingGoals) {
+      const res = await fetch(
+        `https://financial-fortress.onrender.com/api/savings-goals/${goal.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: goal.name,
+            target_amount: goal.targetAmount,
+            current_amount: goal.currentAmount,
+            target_date: goal.targetDate,
+          }),
+        }
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
-        console.error("Response error:", errorData);
-        throw new Error(
-          errorData.error || "Failed to save Savings Tracker data"
-        );
+        console.error("Update error:", errorData);
       }
-      toast.success("Goal Tracker data saved successfully!");
-    } catch (error) {
-      console.error("Save failed:", error);
-      alert("Failed to save Savings Tracker data");
     }
-  };
+
+    // Create new goals
+    if (newGoals.length > 0) {
+      const payload = {
+        savingsGoals: newGoals.map((goal) => ({
+          name: goal.name,
+          target_amount: goal.targetAmount,
+          current_amount: goal.currentAmount,
+          target_date: goal.targetDate,
+        })),
+      };
+
+      const res = await fetch(
+        "https://financial-fortress.onrender.com/api/savings-goals",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Create error:", errorData);
+      }
+    }
+
+    toast.success("Savings goals saved successfully!");
+  } catch (err) {
+    console.error("Save failed:", err);
+    alert("Failed to save Savings Tracker data");
+  }
+};
+
 
   return (
     <div>

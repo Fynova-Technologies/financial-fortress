@@ -272,44 +272,6 @@ export class DatabaseStorage implements IStorage {
     return rows[0];
   }
 
-  // async getSavingsGoalsByUserId(userId: number): Promise<SavingsGoal[]> {
-  //   return await db
-  //     .select()
-  //     .from(savingsGoals)
-  //     .where(eq(savingsGoals.userId, userId));
-  // }
-
-  // async getSavingsGoalById(
-  //   goalId: number,
-  //   userId: number
-  // ): Promise<SavingsGoal | null> {
-  //   const rows = await db
-  //     .select()
-  //     .from(savingsGoals)
-  //     .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)));
-  //   return rows[0] || null;
-  // }
-
-  // async deleteSavingsGoal(goalId: number, userId: number): Promise<boolean> {
-  //   const deleted = await db
-  //     .delete(savingsGoals)
-  //     .where(and(eq(savingsGoals.id, goalId), eq(savingsGoals.userId, userId)))
-  //     .returning();
-  //     console.log("Deleting goal:", goalId, userId);
-  //   return deleted.length > 0;
-  // }
-
-  // async createSavingsGoal(payload: {
-  //   userId: number;
-  //   name: string;
-  //   target_amount: number;
-  //   current_amount: number;
-  //   target_date: Date;
-  // }) {
-  //   const rows = await db.insert(savingsGoals).values(payload).returning();
-  //   return rows[0];
-  // }
-
   async getSavingsGoalsByUserId(userId: number) {
     return await db
       .select()
