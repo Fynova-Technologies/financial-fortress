@@ -1,5 +1,5 @@
 import { useState, forwardRef, useEffect, useMemo } from "react";
-import { useCalculator } from "@/store/Calculator/index.js";
+import { useBudgetCalculator } from "@/store/index.js";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -30,13 +30,11 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const {
     budgetData,
     updateBudgetData,
-    addExpenseCategory,
-    updateExpenseCategory,
-    deleteExpenseCategory,
     addExpense,
     updateExpense,
     deleteExpense,
-  } = useCalculator();
+    saveBudgetToServer
+  } = useBudgetCalculator();
 
   // Calculate category totals from actual expenses
   const calculatedCategories = useMemo(() => {
@@ -90,145 +88,26 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
 useEffect(() => {
   if (budgetData.totalIncome > 0) {
     setSubmittedIncome(budgetData.totalIncome);
-  }
+  }   
 }, [budgetData.totalIncome]);
 
-useEffect(() => {
-  const loadBudget = async () => {
-    try {
-      if (!user || !getAccessTokenSilently) return;
-      const token = await getAccessTokenSilently();
-      const res = await fetch("https://financial-fortress.onrender.com/api/budgets", {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const budgets = await res.json();
-      
-      if (budgets && budgets.length > 0) {
-        const latest = budgets[0];
-
-        // Map server categories to frontend shape
-        const categories = (latest.expenseCategories || latest.expense_categories || []).map(
-          (c: any) => ({
-            id: c.category_id || String(c.id),
-            category_id: c.category_id || String(c.id),
-            name: c.name || "",
-            color: c.color || "#3B82F6",
-            amount: Number(c.amount) || 0,
-          })
-        );
-
-        // Map DB numeric category FK -> category_id for expenses if needed
-        const dbIdToUuid = new Map<number, string>();
-        (latest.expenseCategories || latest.expense_categories || []).forEach((c: any) => {
-          if (c.id != null)
-            dbIdToUuid.set(Number(c.id), c.category_id || String(c.id));
-        });
-
-        const expenses = (latest.expenses || []).map((e: any) => ({
-          id: e.expense_id || String(e.id),
-          category: e.category || dbIdToUuid.get(Number(e.category_id)) || "",
-          amount: Number(e.amount) || 0,
-          date: e.date ? new Date(e.date).toISOString() : "",
-          description: e.description || "",
-        }));
-
-        const totalIncome = Number(latest.total_income) || 0;
-
-        updateBudgetData({
-          totalIncome: totalIncome,
-          expenseCategories: categories,
-          expenses,
-        });
-
-        // Set the income states
-        setSubmittedIncome(totalIncome);
-        
-      } else {
-        // No budgets on server -> keep defaults
-        updateBudgetData({
-          totalIncome: 0,
-          expenseCategories: budgetData.expenseCategories.length
-            ? budgetData.expenseCategories
-            : [],
-          expenses: [],
-        });
-        setSubmittedIncome(0);
-      }
-    } catch (err) {
-      console.error("Failed to load budget:", err);
-    }
-  };
-  
-  if (user) loadBudget();
-}, [user, getAccessTokenSilently]);
-
-// Save budget data to server
-const saveBudgetToServer = async () => {
-  try {
-    if (!user || !getAccessTokenSilently) return;
-    const token = await getAccessTokenSilently();
-    
-    // Check if we have existing budgets
-    const getRes = await fetch("https://financial-fortress.onrender.com/api/budgets", {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    });
-    
-    const existingBudgets = getRes.ok ? await getRes.json() : [];
-    
-    const payload = {
-      name: "My Budget", // You might want to make this dynamic
-      total_income: budgetData.totalIncome,
-      expenseCategories: budgetData.expenseCategories.map(cat => ({
-        id: cat.category_id,
-        category_id: cat.category_id,
-        name: cat.name,
-        color: cat.color,
-        amount: cat.amount,
-      })),
-      expenses: budgetData.expenses,
-    };
-
-    let response;
-    if (existingBudgets && existingBudgets.length > 0) {
-      // Update existing budget
-      response = await fetch(`https://financial-fortress.onrender.com/api/budgets/${existingBudgets[0].id}`, {
-        method: "PUT",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-    } else {
-      // Create new budget
-      response = await fetch("https://financial-fortress.onrender.com/api/budgets", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-    }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    console.log("Budget saved successfully");
-  } catch (error) {
-    console.error("Error saving budget:", error);
-  }
-};
-
 const handleAddExpense = async () => {
-  if (!newExpense.description || !newExpense.category || !newExpense.amount) {
-    return alert("Please fill in all fields.");
+    const { description, category, amount, date } = newExpense;
+
+  if (!description?.trim()) {
+    return alert("Please enter a description.");
+  }
+
+  if (!category) {
+    return alert("Please select a category.");
+  }
+
+  if (amount == null || isNaN(amount)) {
+    return alert("Please enter a valid amount.");
+  }
+
+  if (!date) {
+    return alert("Please select a date.");
   }
   const newId = Date.now().toString();
   addExpense({
@@ -684,20 +563,6 @@ const handleSubmit = async () => {
               Showing {filteredExpenses?.length} of{" "}
               {budgetData?.expenses?.length} expenses
             </p>
-            {/* <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
-              >
-                Next
-              </Button>
-            </div> */}
           </div>
         </CardContent>
       </Card>

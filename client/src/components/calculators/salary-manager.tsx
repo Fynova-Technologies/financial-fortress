@@ -1,9 +1,8 @@
 import { forwardRef, useEffect, useState } from "react";
-import { useCalculator } from "@/store/Calculator/index";
+import { useCalculator } from "@/store/index";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { useAuth0 } from "@auth0/auth0-react";
 import {

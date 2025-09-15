@@ -1,7 +1,7 @@
 import SavingsTrackerComponent from "@/components/calculators/savings-tracker";
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useCalculator } from "@/store/Calculator/index";
+import { useCalculator } from "@/store/index";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import AuthPopup from "@/components/auth/AuthPopup";

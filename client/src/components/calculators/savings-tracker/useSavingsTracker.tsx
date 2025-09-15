@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from "react-toastify";
-import { useCalculator } from "@/store/Calculator/index";
+import { useCalculator } from "@/store/index";
 import type { SavingsGoal, SavingsData } from "@/types"; // adjust import path
 
 const API_BASE = "https://financial-fortress.onrender.com/api"; // change if needed

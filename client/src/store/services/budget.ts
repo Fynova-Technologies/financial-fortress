@@ -1,28 +1,58 @@
-
-import {
-  BudgetData,
-  Expense,
-  ExpenseCategory,
-} from "../types";
+import { BudgetData, Expense, ExpenseCategory } from "../types";
 
 // services/budget.ts (or a new constants file)
 export const DEFAULT_CATEGORIES: ExpenseCategory[] = [
-  { id: "cat-housing",       category_id: "cat-housing",       name: "Housing",        amount: 0, color: "#3B82F6" },
-  { id: "cat-food",          category_id: "cat-food",          name: "Food",           amount: 0, color: "#10B981" },
-  { id: "cat-transport",     category_id: "cat-transport",     name: "Transportation", amount: 0, color: "#F59E0B" },
-  { id: "cat-utilities",     category_id: "cat-utilities",     name: "Utilities",      amount: 0, color: "#EF4444" },
-  { id: "cat-entertainment", category_id: "cat-entertainment", name: "Entertainment",  amount: 0, color: "#8B5CF6" },
-  { id: "cat-other",         category_id: "cat-other",         name: "Other",          amount: 0, color: "#EC4899" },
+  {
+    id: "cat-housing",
+    category_id: "cat-housing",
+    name: "Housing",
+    amount: 0,
+    color: "#3B82F6",
+  },
+  {
+    id: "cat-food",
+    category_id: "cat-food",
+    name: "Food",
+    amount: 0,
+    color: "#10B981",
+  },
+  {
+    id: "cat-transport",
+    category_id: "cat-transport",
+    name: "Transportation",
+    amount: 0,
+    color: "#F59E0B",
+  },
+  {
+    id: "cat-utilities",
+    category_id: "cat-utilities",
+    name: "Utilities",
+    amount: 0,
+    color: "#EF4444",
+  },
+  {
+    id: "cat-entertainment",
+    category_id: "cat-entertainment",
+    name: "Entertainment",
+    amount: 0,
+    color: "#8B5CF6",
+  },
+  {
+    id: "cat-other",
+    category_id: "cat-other",
+    name: "Other",
+    amount: 0,
+    color: "#EC4899",
+  },
 ];
 
 // defaultBudgetData
 export const defaultBudgetData: BudgetData = {
   totalIncome: 0,
   totalExpenses: 0,
-  expenseCategories: DEFAULT_CATEGORIES.slice(), // ✅ put them back, as IDs (strings)
+  expenseCategories: DEFAULT_CATEGORIES.slice(), // put them back, as IDs (strings)
   expenses: [],
 };
-
 
 /* Mutation helpers used inside the provider */
 export const addExpenseCategoryImpl = (
@@ -53,7 +83,10 @@ export const deleteExpenseCategoryImpl = (
   expenseCategories: prev.expenseCategories.filter((c) => c.id !== id),
 });
 
-export const addExpenseImpl = (prev: BudgetData, expense: Expense): BudgetData => {
+export const addExpenseImpl = (
+  prev: BudgetData,
+  expense: Expense
+): BudgetData => {
   const updatedExpenses = [...prev.expenses, expense];
   return {
     ...prev,
@@ -76,7 +109,9 @@ export const updateExpenseImpl = (
 
   return {
     ...prev,
-    expenses: prev.expenses.map((e) => (e.id === id ? { ...e, ...expensePartial } : e)),
+    expenses: prev.expenses.map((e) =>
+      e.id === id ? { ...e, ...expensePartial } : e
+    ),
     totalExpenses: prev.totalExpenses + amountDiff,
   };
 };
@@ -86,6 +121,8 @@ export const deleteExpenseImpl = (prev: BudgetData, id: string): BudgetData => {
   return {
     ...prev,
     expenses: prev.expenses.filter((e) => e.id !== id),
-    totalExpenses: expense ? prev.totalExpenses - expense.amount : prev.totalExpenses,
+    totalExpenses: expense
+      ? prev.totalExpenses - expense.amount
+      : prev.totalExpenses,
   };
 };

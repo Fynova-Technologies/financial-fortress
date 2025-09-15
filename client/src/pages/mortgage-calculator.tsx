@@ -3,14 +3,14 @@ import { useRef } from "react";
 import { MortgageCalculator as MortgageCalculatorComponent } from "@/components/calculators/mortgage-calculator";
 import { PageHeader } from "@/components/page-header";
 import { useAuth0 } from "@auth0/auth0-react";
-import { useCalculator } from "@/store/Calculator/index";
 import { toast } from "react-toastify";
 import { AuthPopup } from "@/components/auth/AuthPopup";
+import { useMortgageCalculator } from "@/store/MortgageCalculatorProvider";
 
 export default function MortgageCalculator() {
   const exportRef = useRef<HTMLDivElement>(null);
-  const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
-  const { mortgageData } = useCalculator();
+  const { isLoading, isAuthenticated } = useAuth0();
+  const { saveMortgageToServer } = useMortgageCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
   const handleSaveData = async () => {
@@ -23,42 +23,8 @@ export default function MortgageCalculator() {
       console.warn("Auth0 is still loading—try again later.");
       return;
     }
-
     try {
-      const token = await getAccessTokenSilently();
-      console.log("access token granted mortgage: ", token);
-
-      const payload = {
-        homePrice: mortgageData.homePrice,
-        downPaymentAmount: mortgageData.downPaymentAmount,
-        downPaymentPercent: mortgageData.downPaymentPercent,
-        loanTerm: mortgageData.loanTerm,
-        interestRate: mortgageData.interestRate,
-        propertyTax: mortgageData.propertyTax,
-        homeInsurance: mortgageData.homeInsurance,
-        pmi: mortgageData.pmi,
-      };
-
-      const res = await fetch(
-        "https://financial-fortress.onrender.com/api/mortgage-calculations",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-          credentials: "include",
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Response error:", errorData);
-        throw new Error(
-          errorData.error || "Failed to save mortgage calculation"
-        );
-      }
+      await saveMortgageToServer();
       toast.success("Mortgage calculation saved successfully!");
     } catch (error) {
       console.error("Save failed:", error);

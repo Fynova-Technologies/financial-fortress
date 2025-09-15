@@ -2,14 +2,14 @@
 import { MortgageData } from "../types";
 
 export const defaultMortgageData: MortgageData = {
-  homePrice: 10,
-  downPaymentPercent: 10,
-  downPaymentAmount: 10,
-  loanTerm: 10,
-  interestRate: 10,
-  propertyTax: 10,
-  homeInsurance: 10,
-  pmi: 10,
+  homePrice: 0,
+  downPaymentPercent: 0,
+  downPaymentAmount: 0,
+  loanTerm: 0,
+  interestRate: 0,
+  propertyTax: 0,
+  homeInsurance: 0,
+  pmi: 0,
 };
 
 export function normalizeMortgageInput(data: Partial<MortgageData>, prev: MortgageData): MortgageData {
@@ -100,4 +100,11 @@ export function calculateMortgage(mortgageData: MortgageData) {
     amortizationSchedule,
     chartData,
   };
+}
+
+export const updateMortgageDataImpl = (
+  prev: MortgageData,
+  partial: Partial<MortgageData>
+): MortgageData => {
+  return { ...prev, ...partial };
 }

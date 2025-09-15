@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCalculator } from "@/store/Calculator/index";
+import { useCalculator } from "@/store/index";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

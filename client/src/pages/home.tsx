@@ -1,4 +1,4 @@
-import { useCalculator } from "@/store/Calculator/index";
+import { useCalculator } from "@/store/index";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";

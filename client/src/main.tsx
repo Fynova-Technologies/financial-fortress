@@ -2,7 +2,8 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { CalculatorProvider } from "@/store/Calculator/index";
+import { CalculatorProvider } from "./store";
+import { StoreProvider } from "@/store/StoreProvider";
 import { Auth0Provider } from '@auth0/auth0-react'
 import { ToastContainer } from "react-toastify";
 
@@ -18,6 +19,7 @@ createRoot(document.getElementById("root")!).render(
   >
     <ThemeProvider defaultTheme="light">
       <CalculatorProvider>
+      <StoreProvider>
         <App />
         <ToastContainer
           position="bottom-right"
@@ -30,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
           draggable
           theme="light" 
         />
+      </StoreProvider>
       </CalculatorProvider>
     </ThemeProvider>
   </Auth0Provider>
