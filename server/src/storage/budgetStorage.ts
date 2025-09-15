@@ -1,0 +1,282 @@
+// import { users, budgets, expenseCategories, expenses, type User, type InsertUser, type Budget, type InsertBudget, type Expense, type InsertExpense, type ExpenseCategory, type InsertExpenseCategory } from '../models/index.js';
+// import { db } from '../utils/db.js';
+// import { v4 as uuidv4 } from 'uuid';
+// import { BudgetCreateRequest, BudgetGetRequest, BudgetRequest } from '../types/budget.types.js';
+// import { eq, and } from 'drizzle-orm';
+// import { IStorage } from './types.js';
+
+// export class BudgetStorage  implements IStorage{
+//       async getUser(id: number): Promise<User | undefined> {
+//         const rows = await db.select().from(users).where(eq(users.id, id));
+//         return rows[0];
+//       }
+    
+//       async getUserByUsername(username: string): Promise<User | undefined> {
+//         const rows = await db
+//           .select()
+//           .from(users)
+//           .where(eq(users.username, username));
+//         return rows[0];
+//       }
+    
+//       async getUserByAuth0Id(auth0_id: string): Promise<User | undefined> {
+//         console.log("Looking for user in DB:", auth0_id);
+//         const rows = await db
+//           .select()
+//           .from(users)
+//           .where(eq(users.auth0_id, auth0_id));
+//         console.log("Raw database rows:", rows);
+//         console.log("First row:", rows[0]);
+//         console.log("First row id:", rows[0]?.id);
+//         console.log("Type of id:", typeof rows[0]?.id);
+//         return rows[0] || null;
+//       }
+    
+//       async getUserbyEmail(email: string): Promise<User | undefined> {
+//         const rows = await db.select().from(users).where(eq(users.email, email));
+//         console.log("Checking user by email:", email, rows);
+//         return rows[0];
+//       }
+    
+//       async createUser(insertUser: InsertUser): Promise<User> {
+//         console.log("Inserting user:", insertUser);
+//         try {
+//           const result = await db.insert(users).values(insertUser).returning();
+//           console.log("Insert result:", result);
+//           if (!result || result.length === 0)
+//             throw new Error("Failed to create user");
+//           return result[0];
+//         } catch (err) {
+//           console.error("DB insertion error:", err);
+//           throw err;
+//         }
+//       }
+    
+//       // ------ budget ------
+//       async createBudget(budget: InsertBudget): Promise<Budget> {
+//         const result = await db.insert(budgets).values(budget).returning();
+//         if (!result || result.length === 0)
+//           throw new Error("Failed to create budget");
+//         return result[0];
+//       }
+    
+//       async getBudgetsByUserId(userId: number): Promise<Budget[]> {
+//         return await db.select().from(budgets).where(eq(budgets.user_id, userId));
+//       }
+    
+//       async getBudget(id: number): Promise<Budget | undefined> {
+//         const rows = await db.select().from(budgets).where(eq(budgets.id, id));
+//         return rows[0];
+//       }
+    
+//       async getCompleteBudget(id: number): Promise<CompleteBudget | undefined> {
+//         const budget = await this.getBudget(id);
+//         if (!budget) return undefined;
+    
+//         const [categories, expenseList] = await Promise.all([
+//           this.getExpenseCategoriesByBudgetId(id),
+//           this.getExpensesByBudgetId(id),
+//         ]);
+    
+//         return { ...budget, expense_categories: categories, expenses: expenseList };
+//       }
+    
+//       /**
+//        * createCompleteBudget - creates budget + categories + expenses in a single transaction
+//        */
+//       async createCompleteBudget(
+//         budgetData: CreateBudgetRequest
+//       ): Promise<CompleteBudget> {
+//         // Basic validation / logging so we can see what's coming from the frontend
+//         console.log(
+//           "createCompleteBudget - incoming budgetData:",
+//           JSON.stringify(budgetData, null, 2)
+//         );
+//         if (!budgetData || typeof budgetData.user_id !== "number") {
+//           throw new Error("Invalid budgetData: missing user_id");
+//         }
+    
+//         return await db.transaction(async (tx) => {
+//           // 1) insert budget (total_income as string if DB expects numeric/text)
+//           const [createdBudget] = await tx
+//             .insert(budgets)
+//             .values({
+//               user_id: budgetData.user_id,
+//               name: budgetData.name ?? "Untitled",
+//               total_income: (budgetData.total_income ?? 0).toString(),
+//             })
+//             .returning();
+    
+//           console.log("Created budget:", createdBudget);
+//           if (!createdBudget) throw new Error("Failed to create budget");
+    
+//           let createdCategories: ExpenseCategory[] = [];
+//           let createdExpenses: Expense[] = [];
+    
+//           // 2) categories
+//           if (
+//             Array.isArray(budgetData.expense_categories) &&
+//             budgetData.expense_categories.length > 0
+//           ) {
+//             // Build inserts. Ensure category_id exists (generate if frontend didn't send one).
+//             const categoryInserts = budgetData.expense_categories.map((c) => {
+//               // Basic payload validation
+//               if (!c.name) throw new Error("Expense category missing name");
+//               return {
+//                 budget_id: createdBudget.id,
+//                 // category_id is a domain-level string id (generate if absent)
+//                 category_id:
+//                   typeof c.id === "string" && c.id.length > 0 ? c.id : uuidv4(),
+//                 name: c.name,
+//                 color: c.color ?? "#cccccc",
+//                 amount: (c.amount ?? 0).toString(),
+//               };
+//             });
+    
+//             console.log("Category inserts:", categoryInserts);
+//             createdCategories = await tx
+//               .insert(expenseCategories)
+//               .values(categoryInserts)
+//               .returning();
+    
+//             console.log("Inserted categories (from DB):", createdCategories);
+//           }
+    
+//           // 3) expenses
+//           if (
+//             Array.isArray(budgetData.expenses) &&
+//             budgetData.expenses.length > 0
+//           ) {
+//             // Build map from frontend category_id -> DB auto PK id
+//             // NOTE: createdCategories should contain column 'category_id' (string) and 'id' (number)
+//             const categoryMap = new Map<string, number>(
+//               createdCategories.map((c) => [c.category_id, c.id])
+//             );
+//             console.log("categoryMap:", Array.from(categoryMap.entries()));
+    
+//             const expenseInserts = budgetData.expenses.map((e) => {
+//               // e.category is expected to be frontend category_id (string)
+//               const frontendCategoryId = e.category;
+//               const categoryDbId = categoryMap.get(frontendCategoryId);
+    
+//               if (!categoryDbId) {
+//                 // If no mapping found, fail early with detailed message
+//                 throw new Error(
+//                   `Category mapping missing for expense "${e.description}" — frontend category id: ${frontendCategoryId}`
+//                 );
+//               }
+    
+//               if (!e.description) throw new Error("Expense missing description");
+    
+//               return {
+//                 budget_id: createdBudget.id,
+//                 // expense table expects category_id (numeric FK to expense_categories.id)
+//                 category_id: categoryDbId,
+//                 expense_id:
+//                   typeof e.id === "string" && e.id.length > 0 ? e.id : uuidv4(),
+//                 description: e.description,
+//                 amount: (e.amount ?? 0).toString(),
+//                 date: e.date ? new Date(e.date) : new Date(),
+//               };
+//             });
+    
+//             console.log("Expense inserts:", expenseInserts);
+//             createdExpenses = await tx
+//               .insert(expenses)
+//               .values(expenseInserts)
+//               .returning();
+//             console.log("Inserted expenses (from DB):", createdExpenses);
+//           }
+    
+//           return {
+//             ...createdBudget,
+//             expense_categories: createdCategories,
+//             expenses: createdExpenses,
+//           };
+//         });
+//       }
+    
+//     async updateCompleteBudget(budgetId: number, data: {
+//       user_id: number;
+//       name: string;
+//       total_income: number;
+//       expense_categories: any[];
+//       expenses: any[];
+//     }) {
+//       return await db.transaction(async (tx) => {
+//         // 1. Update the budget row
+//         await tx.update(budgets)
+//           .set({ 
+//             total_income: data.total_income.toString(), // Convert to string like in create
+//             name: data.name 
+//           })
+//           .where(eq(budgets.id, budgetId));
+    
+//         // 2. Delete existing categories and expenses
+//         await tx.delete(expenseCategories).where(eq(expenseCategories.budget_id, budgetId));
+//         await tx.delete(expenses).where(eq(expenses.budget_id, budgetId));
+    
+//         let createdCategories: ExpenseCategory[] = [];
+//         let createdExpenses: Expense[] = [];
+    
+//         // 3. Insert new categories
+//         if (Array.isArray(data.expense_categories) && data.expense_categories.length > 0) {
+//           const categoryInserts = data.expense_categories.map((c) => ({
+//             budget_id: budgetId,
+//             category_id: typeof c.id === "string" && c.id.length > 0 ? c.id : 
+//                         typeof c.category_id === "string" && c.category_id.length > 0 ? c.category_id : uuidv4(),
+//             name: c.name,
+//             color: c.color ?? "#cccccc",
+//             amount: (c.amount ?? 0).toString(),
+//           }));
+    
+//           createdCategories = await tx
+//             .insert(expenseCategories)
+//             .values(categoryInserts)
+//             .returning();
+//         }
+    
+//         // 4. Insert new expenses
+//         if (Array.isArray(data.expenses) && data.expenses.length > 0) {
+//           // Build map from frontend category_id -> DB auto PK id
+//           const categoryMap = new Map<string, number>(
+//             createdCategories.map((c) => [c.category_id, c.id])
+//           );
+    
+//           const expenseInserts = data.expenses.map((e) => {
+//             const frontendCategoryId = e.category;
+//             const categoryDbId = categoryMap.get(frontendCategoryId);
+    
+//             if (!categoryDbId) {
+//               throw new Error(
+//                 `Category mapping missing for expense "${e.description}" — frontend category id: ${frontendCategoryId}`
+//               );
+//             }
+    
+//             return {
+//               budget_id: budgetId,
+//               category_id: categoryDbId,
+//               expense_id: typeof e.id === "string" && e.id.length > 0 ? e.id : uuidv4(),
+//               description: e.description,
+//               amount: (e.amount ?? 0).toString(),
+//               date: e.date ? new Date(e.date) : new Date(),
+//             };
+//           });
+    
+//           createdExpenses = await tx
+//             .insert(expenses)
+//             .values(expenseInserts)
+//             .returning();
+//         }
+    
+//         // 5. Get the updated budget
+//         const [updatedBudget] = await tx.select().from(budgets).where(eq(budgets.id, budgetId));
+    
+//         return {
+//           ...updatedBudget,
+//           expense_categories: createdCategories,
+//           expenses: createdExpenses,
+//         };
+//       });
+//     }
+// }

@@ -1,15 +1,18 @@
 import { BudgetPlanner as BudgetPlannerComponent } from "@/components/calculators/budget-planner";
 import { PageHeader } from "@/components/page-header";
 import { useRef, useState } from "react";
-import { useCalculator } from "@/store/index";
+// import { useCalculator } from "@/store/index";
+import { useBudgetCalculator } from "@/store";
 import { useAuth0 } from "@auth0/auth0-react";
 import { AuthPopup } from "@/components/auth/AuthPopup";
 import { toast } from "react-toastify";
 
 export default function BudgetPlanner() {
   const exportRef = useRef<HTMLDivElement>(null);
-  const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
-  const { budgetData } = useCalculator();
+  const { isLoading, isAuthenticated } = useAuth0();
+  const {
+    saveBudgetToServer 
+  } = useBudgetCalculator();
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
   const handleSaveData = async () => {
@@ -24,31 +27,7 @@ export default function BudgetPlanner() {
     }
 
     try {
-      const token = await getAccessTokenSilently();
-      console.log("access token granted: ", token);
-
-      const payload = {
-        name: "My Budget",
-        total_income: budgetData.totalIncome,
-        expenseCategories: budgetData.expenseCategories,
-        expenses: budgetData.expenses,
-      };
-
-      const res = await fetch("https://financial-fortress.onrender.com/api/budgets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Response error:", errorData);
-        throw new Error(errorData.error || "Failed to save budget");
-      }
+      await saveBudgetToServer();
       toast.success("Budget saved successfully.");
     } catch (error) {
       console.error("Save failed:", error);

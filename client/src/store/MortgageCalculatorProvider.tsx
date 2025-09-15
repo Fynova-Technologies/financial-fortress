@@ -42,6 +42,8 @@ export const MortgageCalculatorProvider: React.FC<{children: React.ReactNode;}> 
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null);
   const { user, getAccessTokenSilently } = useAuth0();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   //For now locally load/save on user change
   const updateMortgageData = (data: Partial<MortgageData>) => {
     setMortgageData((prev) => {
@@ -58,7 +60,7 @@ export const MortgageCalculatorProvider: React.FC<{children: React.ReactNode;}> 
     try {
       const token = await getAccessTokenSilently();
       const res = await fetch(
-        "https://financial-fortress.onrender.com/api/mortgage",
+        `${API_URL}/api/mortgage-calculations`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -120,7 +122,7 @@ export const MortgageCalculatorProvider: React.FC<{children: React.ReactNode;}> 
     try {
       const token = await getAccessTokenSilently();
       const response = await fetch(
-        "https://financial-fortress.onrender.com/api/mortgage",
+        `${API_URL}/api/mortgage-calculations`,
         {
           method: "POST",
           headers: {

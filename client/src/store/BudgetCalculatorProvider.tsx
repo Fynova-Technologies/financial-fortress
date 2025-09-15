@@ -12,7 +12,6 @@ import {
   deleteExpenseImpl,
 } from "./services/budget";
 
-
 interface BudgetCalculatorContextType {
       // Budget
       budgetData: BudgetData;
@@ -45,6 +44,8 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
   const [isSaving, setIsSaving] = React.useState<boolean>(false);
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null);
   const { user, getAccessTokenSilently } = useAuth0();
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // Load budget from server on mount and when user changes
   useEffect(() => {
@@ -87,7 +88,7 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       if (!user || !getAccessTokenSilently) return;
       
       const token = await getAccessTokenSilently();
-      const res = await fetch("https://financial-fortress.onrender.com/api/budgets", {
+      const res = await fetch(`${API_URL}/api/budgets`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
@@ -153,7 +154,7 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       const token = await getAccessTokenSilently();
       
       // Check if we have existing budgets
-      const getRes = await fetch("https://financial-fortress.onrender.com/api/budgets", {
+      const getRes = await fetch(`${API_URL}/api/budgets`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
@@ -183,7 +184,7 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       let response;
       if (existingBudgets && existingBudgets.length > 0) {
         // Update existing budget
-        response = await fetch(`https://financial-fortress.onrender.com/api/budgets/${existingBudgets[0].id}`, {
+        response = await fetch(`${API_URL}/api/budgets/${existingBudgets[0].id}`, {
           method: "PUT",
           headers: { 
             "Content-Type": "application/json",
@@ -194,7 +195,7 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
         });
       } else {
         // Create new budget
-        response = await fetch("https://financial-fortress.onrender.com/api/budgets", {
+        response = await fetch(`${API_URL}/api/budgets`, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
