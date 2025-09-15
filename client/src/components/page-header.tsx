@@ -1,16 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { ExportExcelButton } from "./ExportDataButton";
 import { RefObject } from "react";
-import { useAuth0 } from "@auth0/auth0-react";
 
 interface PageHeaderProps {
   title: string;
   description: string;
   exportTargetRef?: RefObject<HTMLElement>;
   onSave?: () => void;
+  isSaving?: boolean;
 }
 
-export function PageHeader({ title, description, exportTargetRef, onSave }: PageHeaderProps) {
+export function PageHeader({ title, description, exportTargetRef, onSave, isSaving }: PageHeaderProps) {
 
   const extractData = (element: HTMLElement): Record<string, string>[] => {
     console.log("Exporting from element:", element);
@@ -33,17 +33,19 @@ export function PageHeader({ title, description, exportTargetRef, onSave }: Page
         <p className="text-gray-600 dark:text-gray-400">{description}</p>
       </div>
       
-      <div 
-        className="flex lg:items-center mt-4 lg:mt-0 space-x-3"
-        
-      >
-        {onSave &&(
+      <div className="flex lg:items-center mt-4 lg:mt-0 space-x-3">
+        {onSave && (
           <Button
-            className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200"
+            className={`${
+              isSaving 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
+            } text-gray-800 dark:text-gray-200`}
             onClick={onSave}
+            disabled={isSaving}
           >
-            <i className="fas fa-save mr-2"></i>
-            Save Data
+            <i className={`fas ${isSaving ? 'fa-spinner fa-spin' : 'fa-save'} mr-2`}></i>
+            {isSaving ? 'Saving...' : 'Save Data'}
           </Button>
         )}
         {exportTargetRef && (
@@ -51,7 +53,7 @@ export function PageHeader({ title, description, exportTargetRef, onSave }: Page
             targetRef={exportTargetRef} 
             fileName={`${title}.xlsx`}
             extractData={extractData}
-            />
+          />
         )}
       </div>
     </div>

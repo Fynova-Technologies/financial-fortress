@@ -1,7 +1,7 @@
 
 import { pgTable, text, serial, integer, timestamp, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { users } from './user'
+import { users } from './user.js'
 import { InferSelectModel, InferInsertModel } from "drizzle-orm"
 
 export const savingsGoals = pgTable("savings_goals", {

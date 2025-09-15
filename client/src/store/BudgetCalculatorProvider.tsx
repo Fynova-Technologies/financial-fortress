@@ -1,5 +1,5 @@
-import React, { useEffect }from "react";
-import { BudgetData, Expense, ExpenseCategory } from "./types";
+import React, { useEffect, useRef }from "react";
+import { BudgetData, Expense, ExpenseCategory } from "./index";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from "react-toastify"
 import {
@@ -43,9 +43,17 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
   const [budgetData, setBudgetData] = React.useState<BudgetData>(defaultBudgetData);
   const [isSaving, setIsSaving] = React.useState<boolean>(false);
   const [lastSaved, setLastSaved] = React.useState<Date | null>(null);
-  const { user, getAccessTokenSilently } = useAuth0();
+  const [token, setToken] = React.useState<string | null>(null);
+  const { user, getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
+
+    // Create a ref to always have the latest budget data
+  const budgetDataRef = useRef<BudgetData>(defaultBudgetData);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+    useEffect(() => {
+    budgetDataRef.current = budgetData;
+  }, [budgetData]);
 
   // Load budget from server on mount and when user changes
   useEffect(() => {
@@ -54,8 +62,27 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
     }
   }, [user]);
 
+  useEffect(() => {
+  const loadToken = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      setToken(token); // store in state or context
+    } catch (err) {
+      console.error("Failed to get token on mount", err);
+    }
+  };
+  if (!isLoading && isAuthenticated) {
+    loadToken();
+  }
+}, [isLoading, isAuthenticated, getAccessTokenSilently]);
+
+
   const updateBudgetData = (data: Partial<BudgetData>) => {
-    setBudgetData((prev) => ({ ...prev, ...data }));
+    setBudgetData((prev) => {
+      const newData = { ...prev, ...data };
+      budgetDataRef.current = newData; // Update ref immediately
+      return newData;
+    });
   };
 
   const addExpenseCategory = (category: ExpenseCategory) => {
@@ -153,6 +180,11 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       setIsSaving(true);
       const token = await getAccessTokenSilently();
       
+      // Use the ref which always has the latest data
+      const currentBudgetData = budgetDataRef.current;
+      
+      console.log("Saving budget data:", currentBudgetData); // Debug log
+      
       // Check if we have existing budgets
       const getRes = await fetch(`${API_URL}/api/budgets`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -163,15 +195,15 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       
       const payload = {
         name: "My Budget",
-        total_income: budgetData.totalIncome,
-        expenseCategories: budgetData.expenseCategories.map(cat => ({
+        total_income: currentBudgetData.totalIncome,
+        expenseCategories: currentBudgetData.expenseCategories.map(cat => ({
           id: cat.category_id,
           category_id: cat.category_id,
           name: cat.name,
           color: cat.color,
           amount: cat.amount.toString(),
         })),
-        expenses: budgetData.expenses.map(exp => ({
+        expenses: currentBudgetData.expenses.map(exp => ({
           id: exp.id,
           expense_id: exp.id,
           description: exp.description,
@@ -181,9 +213,10 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
         })),
       };
 
+      console.log("Payload being sent:", payload); // Debug log
+
       let response;
       if (existingBudgets && existingBudgets.length > 0) {
-        // Update existing budget
         response = await fetch(`${API_URL}/api/budgets/${existingBudgets[0].id}`, {
           method: "PUT",
           headers: { 
@@ -194,7 +227,6 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
           body: JSON.stringify(payload),
         });
       } else {
-        // Create new budget
         response = await fetch(`${API_URL}/api/budgets`, {
           method: "POST",
           headers: { 
@@ -213,6 +245,7 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
 
       setLastSaved(new Date());
       console.log("Budget saved successfully");
+      toast.success("Budget saved successfully!");
     } catch (error) {
       console.error("Error saving budget:", error);
       toast.error("Failed to save budget. Please try again.");

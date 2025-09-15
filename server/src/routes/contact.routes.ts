@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import { createTransport } from "../utils/mail";
+import { createTransport } from "../utils/mail.js";
 
 dotenv.config();
 
