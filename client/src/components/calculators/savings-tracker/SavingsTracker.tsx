@@ -3,6 +3,7 @@ import GoalsList from "./GoalsList";
 import Projections from "./Projections";
 import GoalModal from "./GoalModal";
 import { useSavingsTracker } from "./useSavingsTracker";
+import AuthPopup from "../../auth/AuthPopup";
 
 export default function SavingsTracker() {
   const tracker = useSavingsTracker();
@@ -31,6 +32,13 @@ export default function SavingsTracker() {
         setContributionAmount={tracker.setContributionAmount}
         onClose={() => tracker.setShowModal(false)}
         onSave={tracker.handleAddOrUpdate}
+      />
+
+      <AuthPopup
+        visible={tracker.showAuthPopup}
+        onLogin={() => {}}
+        onSignup={() => {}}
+        onClose={() => tracker.setShowAuthPopup(false)}
       />
     </div>
   );

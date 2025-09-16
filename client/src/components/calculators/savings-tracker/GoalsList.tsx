@@ -1,6 +1,5 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import GoalCard from "./GoalCard";
 import { SavingsGoal } from "./types";
 
@@ -19,8 +18,8 @@ export default function GoalsList({
   onEdit,
   onDelete,
   onContribute,
-  isDeleting,
 }: Props) {
+
   // Merge savingsGoals with their results (if available)
   const mergedGoals = (savingsData?.savingsGoals || []).map((goal: SavingsGoal) => {
     const result = results?.goalResults?.find((r: any) => r.id === goal.id);

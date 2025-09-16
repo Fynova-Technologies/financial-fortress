@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from "react-toastify";
 import { useCalculator } from "@/store/index";
-import type { SavingsGoal, SavingsData } from "@/types"; // adjust import path
+import type { SavingsGoal, SavingsData } from "@/types"; 
 
 const API_BASE = "https://financial-fortress.onrender.com/api"; // change if needed
 
 export function useSavingsTracker() {
-  const { getAccessTokenSilently, isLoading, user } = useAuth0();
+  const { getAccessTokenSilently, isLoading, user, isAuthenticated } = useAuth0();
   const {
     savingsData,
     updateSavingsData,
@@ -23,6 +23,7 @@ export function useSavingsTracker() {
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
   const [contributionAmount, setContributionAmount] = useState<number>(0);
   const [results, setResults] = useState<any>(null);
+  const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
 
   // NORMALIZER: convert backend rows -> SavingsData (ids -> string)
   const mapServerGoals = (rows: any[]): SavingsData => ({
@@ -219,12 +220,22 @@ export function useSavingsTracker() {
   };
 
   const openAddModal = () => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to add or edit goals");
+      setShowAuthPopup(true);
+      return;
+    }
     setEditingGoal(null);
     setContributionAmount(savingsData?.moneySavings ?? 0);
     setShowModal(true);
   };
 
   const openEditModal = (goal: SavingsGoal | null) => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to add or edit goals");
+      setShowAuthPopup(true);
+      return;
+    }
     if (!goal) {
       setEditingGoal(null);
       setContributionAmount(savingsData?.moneySavings ?? 0);
@@ -286,5 +297,9 @@ export function useSavingsTracker() {
       }
     },
     reload: loadGoals,
+
+    //auth
+    showAuthPopup,
+    setShowAuthPopup,
   };
 }
