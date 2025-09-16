@@ -1,2 +1,2 @@
 .env.local
-.env.production
+.env.production.local

@@ -1,12 +1,10 @@
 import { forwardRef, useEffect, useState } from "react";
-// import { useCalculator } from "@/store/index";
 import { useMortgageCalculator } from "@/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
 import { exportToExcelAmortization } from "@/utils/amortizationSchedule";
-import { useAuth0 } from "@auth0/auth0-react";
 import {
   Cell,
   Tooltip,
@@ -15,7 +13,6 @@ import {
   PieChart,
   Pie,
 } from "recharts";
-import { useWindowWidth } from "@/hooks/useWindowWidth";
 
 export const MortgageCalculator = forwardRef<HTMLDivElement>((_, ref) => {
   const { mortgageData, updateMortgageData, calculateMortgage } =

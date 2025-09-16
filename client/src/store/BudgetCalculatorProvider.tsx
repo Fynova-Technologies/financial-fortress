@@ -115,6 +115,9 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       if (!user || !getAccessTokenSilently) return;
       
       const token = await getAccessTokenSilently();
+      console.log("Loading budget with token:", token); // Debug log
+      console.log("API_URL:", API_URL); // Add this line
+      console.log("Full URL:", `${API_URL}/api/budgets`); 
       const res = await fetch(`${API_URL}/api/budgets`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
@@ -179,6 +182,7 @@ export const BudgetCalculatorProvider: React.FC<{ children: React.ReactNode }> =
       
       setIsSaving(true);
       const token = await getAccessTokenSilently();
+      console.log("Saving budget with token:", token); // Debug log
       
       // Use the ref which always has the latest data
       const currentBudgetData = budgetDataRef.current;

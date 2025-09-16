@@ -83,7 +83,6 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
   const windowWidth = useWindowWidth();
   const outerRadius = window.innerWidth >= 768 ? 80 : 50;
-  const { getAccessTokenSilently, user } = useAuth0();
 
 useEffect(() => {
   if (budgetData.totalIncome > 0) {
@@ -92,21 +91,20 @@ useEffect(() => {
 }, [budgetData.totalIncome]);
 
 const handleAddExpense = async () => {
-    const { description, category, amount, date } = newExpense;
 
-  if (!description?.trim()) {
+  if (!newExpense.description?.trim()) {
     return alert("Please enter a description.");
   }
 
-  if (!category) {
+  if (!newExpense.category) {
     return alert("Please select a category.");
   }
 
-  if (amount == null || isNaN(amount)) {
+  if (newExpense.amount == null || isNaN(newExpense.amount)) {
     return alert("Please enter a valid amount.");
   }
 
-  if (!date) {
+  if (!newExpense.date) {
     return alert("Please select a date.");
   }
   const newId = Date.now().toString();
@@ -637,18 +635,19 @@ const handleSubmit = async () => {
                 id="date"
                 name="date"
                 type="date"
-                value={newExpense.date}
+                value={newExpense.date || ""}
                 onChange={handleInputChange}
               />
             </div>
           <DialogFooter className="flex justify-end space-x-3 pt-4">
             <Button
+            type="button"
               variant="outline"
               onClick={() => setShowAddExpenseModal(false)}
             >
               Cancel
             </Button>
-            <Button onClick={handleAddExpense}>Add Expense</Button>
+            <Button type="submit">Add Expense</Button>
           </DialogFooter>
           </form>
         </DialogContent>

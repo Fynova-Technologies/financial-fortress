@@ -73,7 +73,7 @@ export default function Projections({ savingsData, results, onAdd }: any) {
           <div className="text-center p-8">
             <h4>No Data to Display</h4>
             <p>Add a savings goal to see projections.</p>
-            <button onClick={onAdd} className="mt-3 btn-primary">Add Your First Goal</button>
+            <button onClick={onAdd} className="mt-3 btn-primary"><strong>+ Add Your First Goal</strong></button>
           </div>
         )}
       </CardContent>

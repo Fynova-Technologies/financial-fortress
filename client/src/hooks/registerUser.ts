@@ -2,6 +2,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 
 export const useRegisterUser = () => {
   const { getAccessTokenSilently, user, isAuthenticated, isLoading } = useAuth0();
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const registerUser = async () => {
     if (isLoading) {
@@ -16,7 +17,7 @@ export const useRegisterUser = () => {
     try {
       const token = await getAccessTokenSilently();
 
-      const res = await fetch("https://financial-fortress.onrender.com/api/users", {
+      const res = await fetch(`${API_URL}/api/users`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
