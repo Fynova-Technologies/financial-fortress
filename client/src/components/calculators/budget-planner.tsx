@@ -23,7 +23,7 @@ import {
 } from "recharts";
 import { Expense } from "@/types";
 import IncomeInput from "../forms/InputIncome";
-import { useAuth0 } from "@auth0/auth0-react";
+import { toast } from "react-toastify";
 import { useWindowWidth } from "@/hooks/useWindowWidth";
 
 export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
@@ -33,7 +33,7 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
     addExpense,
     updateExpense,
     deleteExpense,
-    saveBudgetToServer
+    saveBudgetToServer,
   } = useBudgetCalculator();
 
   // Calculate category totals from actual expenses
@@ -83,50 +83,51 @@ export const BudgetPlanner = forwardRef<HTMLDivElement>((_, ref) => {
   const [editedExpense, setEditedExpense] = useState<Partial<Expense>>({});
   const windowWidth = useWindowWidth();
   const outerRadius = window.innerWidth >= 768 ? 80 : 50;
+  const isSaveInvalid =
+    !editedExpense.description || !editedExpense.description.toString().trim();
 
-useEffect(() => {
-  if (budgetData.totalIncome > 0) {
-    setSubmittedIncome(budgetData.totalIncome);
-  }   
-}, [budgetData.totalIncome]);
+  useEffect(() => {
+    if (budgetData.totalIncome > 0) {
+      setSubmittedIncome(budgetData.totalIncome);
+    }
+  }, [budgetData.totalIncome]);
 
-const handleAddExpense = async () => {
+  const handleAddExpense = async () => {
+    if (!newExpense.description?.trim()) {
+      return alert("Please enter a description.");
+    }
 
-  if (!newExpense.description?.trim()) {
-    return alert("Please enter a description.");
-  }
+    if (!newExpense.category) {
+      return alert("Please select a category.");
+    }
 
-  if (!newExpense.category) {
-    return alert("Please select a category.");
-  }
+    if (newExpense.amount == null || isNaN(newExpense.amount)) {
+      return alert("Please enter a valid amount.");
+    }
 
-  if (newExpense.amount == null || isNaN(newExpense.amount)) {
-    return alert("Please enter a valid amount.");
-  }
+    if (!newExpense.date) {
+      return alert("Please select a date.");
+    }
+    const newId = Date.now().toString();
+    addExpense({
+      id: newId,
+      description: newExpense.description || "",
+      category: newExpense.category || "",
+      date: newExpense.date || "",
+      amount: newExpense.amount || 0,
+    });
+    setNewExpense({
+      id: "",
+      description: "",
+      category: budgetData.expenseCategories[0]?.category_id || "",
+      date: new Date().toISOString().split("T")[0],
+      amount: 0,
+    });
+    setShowAddExpenseModal(false);
 
-  if (!newExpense.date) {
-    return alert("Please select a date.");
-  }
-  const newId = Date.now().toString();
-  addExpense({
-    id: newId,
-    description: newExpense.description || "",
-    category: newExpense.category || "",
-    date: newExpense.date || "",
-    amount: newExpense.amount || 0,
-  });
-  setNewExpense({
-    id: "",
-    description: "",
-    category: budgetData.expenseCategories[0]?.category_id || "",
-    date: new Date().toISOString().split("T")[0],
-    amount: 0,
-  });
-  setShowAddExpenseModal(false);
-  
-  // Save to server after adding expense
-  await saveBudgetToServer();
-};
+    // Save to server after adding expense
+    await saveBudgetToServer();
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -160,17 +161,17 @@ const handleAddExpense = async () => {
     return category ? category.color : "#718096";
   };
 
-const handleSubmit = async () => {
-  if (income !== "") {
-    const numericIncome = Number(income);
-    setSubmittedIncome(numericIncome);
-    updateBudgetData({ totalIncome: numericIncome });
-    setIncome("");
-    
-    // Save to server after updating
-    await saveBudgetToServer();
-  }
-};
+  const handleSubmit = async () => {
+    if (income !== "") {
+      const numericIncome = Number(income);
+      setSubmittedIncome(numericIncome);
+      updateBudgetData({ totalIncome: numericIncome });
+      setIncome("");
+
+      // Save to server after updating
+      await saveBudgetToServer();
+    }
+  };
 
   // Filter categories for pie chart (only show categories with expenses)
   const filteredCategories = calculatedCategories.filter(
@@ -307,7 +308,9 @@ const handleSubmit = async () => {
                       className="w-3 h-3 rounded-full mr-2"
                       style={{ backgroundColor: category.color }}
                     ></div>
-                    <span className="font-medium lg:text-[10px]">{category.name}</span>
+                    <span className="font-medium lg:text-[10px]">
+                      {category.name}
+                    </span>
                   </div>
                   <span className="text-gray-700 dark:text-gray-300 lg:hidden xl:flex">
                     {formatCurrency(category.amount)}
@@ -373,7 +376,9 @@ const handleSubmit = async () => {
               >
                 <option>All Categories</option>
                 {budgetData?.expenseCategories?.map((category) => (
-                  <option key={category.id} value={category.name}>{category.name}</option>
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -418,6 +423,24 @@ const handleSubmit = async () => {
                                 description: e.target.value,
                               })
                             }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                // simulate clicking Save: reuse same validation logic
+                                const desc = (editedExpense.description ?? "")
+                                  .toString()
+                                  .trim();
+                                if (!desc) {
+                                  toast.error("Description cannot be empty");
+                                  return;
+                                }
+                                updateExpense(expense.id, {
+                                  ...editedExpense,
+                                  description: desc,
+                                });
+                                setEditingId(null);
+                                setEditedExpense({});
+                              }
+                            }}
                             className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded"
                           />
                         ) : (
@@ -452,7 +475,9 @@ const handleSubmit = async () => {
                               color: getExpenseCategoryColor(expense.category),
                             }}
                           >
-                            {budgetData.expenseCategories.find((cat)=> cat.category_id === expense.category)?.name || expense.category}
+                            {budgetData.expenseCategories.find(
+                              (cat) => cat.category_id === expense.category
+                            )?.name || expense.category}
                           </span>
                         )}
                       </td>
@@ -511,11 +536,25 @@ const handleSubmit = async () => {
                           <>
                             <button
                               onClick={() => {
+                                if (isSaveInvalid) {
+                                  toast.error("Description cannot be empty");
+                                  return;
+                                }
                                 updateExpense(expense.id, editedExpense);
                                 setEditingId(null);
                                 setEditedExpense({});
                               }}
-                              className="text-green-500 hover:text-green-600 mr-2"
+                              className={`mr-2 ${
+                                isSaveInvalid
+                                  ? "opacity-50 cursor-not-allowed select-none"
+                                  : "text-green-500 hover:text-green-600"
+                              }`}
+                              aria-disabled={isSaveInvalid}
+                              title={
+                                isSaveInvalid
+                                  ? "Please enter a description"
+                                  : "Save changes"
+                              }
                             >
                               <i className="fas fa-check"></i>
                             </button>
@@ -574,7 +613,7 @@ const handleSubmit = async () => {
               Enter expense details to add to your budget.
             </DialogDescription>
           </DialogHeader>
-          <form 
+          <form
             onSubmit={(e) => {
               e.preventDefault();
               handleAddExpense();
@@ -639,16 +678,16 @@ const handleSubmit = async () => {
                 onChange={handleInputChange}
               />
             </div>
-          <DialogFooter className="flex justify-end space-x-3 pt-4">
-            <Button
-            type="button"
-              variant="outline"
-              onClick={() => setShowAddExpenseModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Add Expense</Button>
-          </DialogFooter>
+            <DialogFooter className="flex justify-end space-x-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowAddExpenseModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">Add Expense</Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
