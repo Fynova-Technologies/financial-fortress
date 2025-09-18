@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SavingsGoal } from "./types";
+import { useSavingsTracker } from "./useSavingsTracker";
 
 type Props = {
   open: boolean;
@@ -30,8 +31,10 @@ export default function GoalModal({ open, editingGoal, contributionAmount, setCo
     targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split("T")[0],
     contributionType: "monthly",
   });
+  const { savingGoal } = useSavingsTracker();
 
-  useEffect(() => {
+useEffect(() => {
+  if (open) {
     if (editingGoal) {
       setForm(editingGoal);
     } else {
@@ -40,11 +43,16 @@ export default function GoalModal({ open, editingGoal, contributionAmount, setCo
         name: "",
         targetAmount: 0,
         currentAmount: 0,
-        targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12)).toISOString().split("T")[0],
+        targetDate: new Date(new Date().setMonth(new Date().getMonth() + 12))
+          .toISOString()
+          .split("T")[0],
         contributionType: "monthly",
       });
+      setContributionAmount(0); // also reset contributionAmount if needed
     }
-  }, [editingGoal]);
+  }
+}, [open, editingGoal, setContributionAmount]);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -114,7 +122,7 @@ export default function GoalModal({ open, editingGoal, contributionAmount, setCo
 
           <DialogFooter className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">{editingGoal ? "Save Changes" : "Add Goal"}</Button>
+            <Button type="submit" disabled={savingGoal}>  {savingGoal ? (editingGoal ? "Saving..." : "Adding...") : editingGoal ? "Save Changes" : "Add Goal"} </Button>
           </DialogFooter>
         </form>
       </DialogContent>

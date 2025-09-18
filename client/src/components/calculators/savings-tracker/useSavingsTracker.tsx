@@ -24,6 +24,7 @@ export function useSavingsTracker() {
   const [contributionAmount, setContributionAmount] = useState<number>(0);
   const [results, setResults] = useState<any>(null);
   const [showAuthPopup, setShowAuthPopup] = useState<boolean>(false);
+  const [savingGoal, setSavingGoal] = useState<boolean>(false);
 
   // NORMALIZER: convert backend rows -> SavingsData (ids -> string)
   const mapServerGoals = (rows: any[]): SavingsData => ({
@@ -78,6 +79,7 @@ export function useSavingsTracker() {
 
   const handleAddOrUpdate = async (goal: SavingsGoal) => {
     const freshResults = calculateSavings();
+    setSavingGoal(true);
 
     try {
       if (!goal || !goal.name || !goal.targetAmount) {
@@ -173,7 +175,7 @@ export function useSavingsTracker() {
 
       // recalc & reload canonical list
       setResults(calculateSavings());
-      await loadGoals(); // keep canonical source-of-truth
+      // await loadGoals(); 
       setResults(freshResults);
       setEditingGoal(null);
       setShowModal(false);
@@ -181,6 +183,8 @@ export function useSavingsTracker() {
     } catch (err) {
       console.error("handleAddOrUpdate:", err);
       toast.error("Failed to save goal");
+    } finally {
+      setSavingGoal(false);
     }
   };
 
@@ -301,5 +305,6 @@ export function useSavingsTracker() {
     //auth
     showAuthPopup,
     setShowAuthPopup,
+    savingGoal,
   };
 }
