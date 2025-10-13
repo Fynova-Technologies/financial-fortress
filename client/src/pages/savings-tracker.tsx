@@ -95,11 +95,11 @@ export default function SavingsTracker() {
 
   return (
     <div>
-      <PageHeader
+      {/* <PageHeader
         title="Goal Tracker"
         description="Track your savings and goals"
         onSave={handleSaveData}
-      />
+      /> */}
       <SavingsTrackerComponent />
 
       {showAuthPopup && (

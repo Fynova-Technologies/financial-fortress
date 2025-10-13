@@ -1,3 +1,4 @@
+
 // Route definitions
 export const routes = [
   {
@@ -8,50 +9,11 @@ export const routes = [
     description: "Your financial overview",
   },
   {
-    path: "/budget-planner",
-    label: "Budget Planner",
-    icon: "fa-wallet",
-    mobileLabel: "Budget",
-    description: "Track your income and expenses",
-  },
-  {
-    path: "/mortgage-calculator",
-    label: "Mortgage Calculator",
-    icon: "fa-home",
-    mobileLabel: "Mortgage",
-    description: "Calculate your mortgage payments",
-  },
-  {
-    path: "/emi-calculator",
-    label: "EMI Calculator",
+    path: "/Calculators",
+    label: "Calculators",
     icon: "fa-calculator",
-    mobileLabel: "EMI",
-    description: "Calculate loan EMI payments",
-  },
-  {
-    path: "/retirement-planner",
-    label: "Retirement Planner",
-    icon: "fa-chart-line",
-    mobileLabel: "Retire",
-    description: "Plan for your retirement",
-  },
-  {
-    path: "/salary-manager",
-    label: "Salary Manager",
-    icon: "fa-money-check-alt",
-    description: "Analyze your salary and taxes",
-  },
-  {
-    path: "/roi-calculator",
-    label: "ROI Calculator",
-    icon: "fa-chart-pie",
-    description: "Calculate investment returns",
-  },
-  {
-    path: "/currency-converter",
-    label: "Currency Converter",
-    icon: "fa-exchange-alt",
-    description: "Convert between currencies",
+    mobileLabel: "Calc",
+    description: "Financial calculation tools",
   },
   {
     path: "/savings-tracker",
@@ -59,6 +21,12 @@ export const routes = [
     icon: "fa-piggy-bank",
     description: "Track your savings and goals",
   },
+  {
+    path: "/Advisory",
+    label: "Advisory",
+    icon: "fa-message",
+    description: "Get financial advice tailored to your philosophy"
+  }
 ];
 
 // Data model types

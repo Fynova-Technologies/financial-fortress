@@ -63,15 +63,18 @@ export function useSavingsTracker() {
       updateSavingsData(mapServerGoals(rows));
     } catch (err: any) {
       console.error("loadGoals error:", err);
-      toast.error("Unable to load savings goals");
+      toast.error("Unable to load saving goals");
     } finally {
       setLoading(false);
     }
   }, [isLoading, user, getAccessTokenSilently, updateSavingsData]);
 
-  useEffect(() => {
+useEffect(() => {
+  if (!isLoading && isAuthenticated) {
     loadGoals();
-  }, [loadGoals]);
+  }
+}, [isLoading, isAuthenticated]); 
+
 
   useEffect(() => {
     setResults(calculateSavings());
