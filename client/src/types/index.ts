@@ -1,8 +1,9 @@
+import { desc } from "drizzle-orm";
 
 // Route definitions
 export const routes = [
   {
-    path: "/",
+    path: "/dashboard",
     label: "Dashboard",
     icon: "fa-home",
     mobileLabel: "Home",
@@ -26,6 +27,24 @@ export const routes = [
     label: "Advisory",
     icon: "fa-message",
     description: "Get financial advice tailored to your philosophy"
+  },
+  {
+    path: "/reports",
+    label: "Reports",
+    icon: "fa-chart-line",
+    description: "Detailed financial reports",
+  },
+  {
+    path: "/scenarios",
+    label: "Scenarios",
+    icon: "fa-lightbulb",
+    description: "Explore financial what-if scenarios",
+  },
+  {
+    path: "/alerts",
+    label: "Alerts",
+    icon: "fa-bell",
+    description: "Important notifications and alerts",
   }
 ];
 

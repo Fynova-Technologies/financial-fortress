@@ -1,76 +1,53 @@
-import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface HealthMeterProps {
-  score: number; // 0-100
-  label?: string;
+  score?: number;
   description?: string;
 }
 
-export const HealthMeter = ({ score, label = "Financial Health", description }: HealthMeterProps) => {
-  const healthData = useMemo(() => {
-    if (score >= 80) return { status: "Excellent", color: "health-excellent", textColor: "text-health-excellent" };
-    if (score >= 65) return { status: "Good", color: "health-good", textColor: "text-health-good" };
-    if (score >= 50) return { status: "Fair", color: "health-fair", textColor: "text-health-fair" };
-    if (score >= 35) return { status: "Poor", color: "health-poor", textColor: "text-health-poor" };
-    return { status: "Critical", color: "health-critical", textColor: "text-health-critical" };
-  }, [score]);
-
+export function HealthMeter({ score = 75, description }: HealthMeterProps) {
   const rotation = (score / 100) * 180 - 90;
+  
+  // Determine health status
+  const getHealthStatus = (score: number) => {
+    if (score >= 80) return { label: "Excellent", color: "text-green-600" };
+    if (score >= 60) return { label: "Good", color: "text-emerald-600" };
+    if (score >= 40) return { label: "Fair", color: "text-yellow-600" };
+    if (score >= 20) return { label: "Poor", color: "text-orange-600" };
+    return { label: "Critical", color: "text-red-600" };
+  };
+
+  const status = getHealthStatus(score);
 
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle>{label}</CardTitle>
+        <CardTitle className="text-xl">Financial Health Score</CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center gap-4">
-          {/* Gauge */}
-          <div className="relative h-48 w-full max-w-sm">
-            <svg
-              viewBox="0 0 200 120"
-              className="h-full w-full"
-              role="img"
-              aria-label={`Financial health meter showing ${score} out of 100, status: ${healthData.status}`}
-            >
-              {/* Background arc zones */}
+      <CardContent className="space-y-6">
+        {/* Gauge Visualization */}
+        <div className="relative flex flex-col items-center">
+          <div className="relative h-40 w-80">
+            {/* Background arc */}
+            <svg className="absolute inset-0" viewBox="0 0 200 120" style={{ width: '100%', height: '100%' }}>
+              <defs>
+                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style={{ stopColor: '#ef4444', stopOpacity: 1 }} />
+                  <stop offset="25%" style={{ stopColor: '#f97316', stopOpacity: 1 }} />
+                  <stop offset="50%" style={{ stopColor: '#eab308', stopOpacity: 1 }} />
+                  <stop offset="75%" style={{ stopColor: '#10b981', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#059669', stopOpacity: 1 }} />
+                </linearGradient>
+              </defs>
+              {/* Gauge arc */}
               <path
-                d="M 20 100 A 80 80 0 0 1 100 20"
+                d="M 20 100 A 80 80 0 0 1 180 100"
                 fill="none"
-                stroke="hsl(var(--health-critical))"
+                stroke="url(#gaugeGradient)"
                 strokeWidth="20"
                 strokeLinecap="round"
               />
-              <path
-                d="M 100 20 A 80 80 0 0 1 135 30"
-                fill="none"
-                stroke="hsl(var(--health-poor))"
-                strokeWidth="20"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 135 30 A 80 80 0 0 1 165 70"
-                fill="none"
-                stroke="hsl(var(--health-fair))"
-                strokeWidth="20"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 165 70 A 80 80 0 0 1 175 90"
-                fill="none"
-                stroke="hsl(var(--health-good))"
-                strokeWidth="20"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 175 90 A 80 80 0 0 1 180 100"
-                fill="none"
-                stroke="hsl(var(--health-excellent))"
-                strokeWidth="20"
-                strokeLinecap="round"
-              />
-
               {/* Needle */}
               <g transform={`rotate(${rotation} 100 100)`}>
                 <line
@@ -78,31 +55,44 @@ export const HealthMeter = ({ score, label = "Financial Health", description }: 
                   y1="100"
                   x2="100"
                   y2="35"
-                  stroke="hsl(var(--foreground))"
+                  stroke="#1f2937"
                   strokeWidth="3"
                   strokeLinecap="round"
                 />
-                <circle cx="100" cy="100" r="6" fill="hsl(var(--foreground))" />
+                <circle cx="100" cy="100" r="6" fill="#1f2937" />
               </g>
+              {/* Score markers */}
+              <text x="20" y="115" fontSize="10" fill="#6b7280" textAnchor="start">0</text>
+              <text x="100" y="25" fontSize="10" fill="#6b7280" textAnchor="middle">50</text>
+              <text x="180" y="115" fontSize="10" fill="#6b7280" textAnchor="end">100</text>
             </svg>
-
-            {/* Center text */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
-              <span className={`text-4xl font-bold ${healthData.textColor}`}>
-                {score}
-              </span>
-              <span className="text-sm text-muted-foreground">out of 100</span>
-            </div>
           </div>
-
-          {/* Status */}
-          <div className="text-center">
-            <p className={`text-2xl font-semibold ${healthData.textColor}`}>
-              {healthData.status}
-            </p>
+          
+          {/* Score display */}
+          <div className="mt-4 text-center">
+            <div
+              className="text-5xl font-bold"
+              style={{
+                color:
+                  status.color === "text-green-600"
+                    ? "#059669"
+                    : status.color === "text-emerald-600"
+                    ? "#10b981"
+                    : status.color === "text-yellow-600"
+                    ? "#eab308"
+                    : status.color === "text-orange-600"
+                    ? "#f97316"
+                    : "#ef4444",
+              }}
+            >
+              {score}
+            </div>
+            <div className={`mt-1 text-lg font-semibold ${status.color}`}>
+              {status.label}
+            </div>
           </div>
         </div>
       </CardContent>
     </Card>
   );
-};
+}
